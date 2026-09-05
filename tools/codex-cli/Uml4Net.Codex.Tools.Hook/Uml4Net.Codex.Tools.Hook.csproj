@@ -9,6 +9,7 @@
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
     <RootNamespace>Uml4Net.Codex.Tools.Hook</RootNamespace>
+    <AssemblyName>uml4net-codex-hook</AssemblyName>
   </PropertyGroup>
 
 </Project>
