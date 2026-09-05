@@ -1,0 +1,22 @@
+{
+  "name": "uml4net",
+  "owner": {
+    "name": "Starion Group S.A.",
+    "url": "https://github.com/STARIONGROUP"
+  },
+  "metadata": {
+    "description": "The uml4net ecosystem marketplace - Claude plugins for UML-based model engineering.",
+    "version": "0.0.1"
+  },
+  "plugins": [
+    {
+      "name": "uml4net-codex",
+      "source": {
+        "source": "github",
+        "repo": "STARIONGROUP/uml4net-codex",
+        "ref": "v1.0.0"
+      },
+      "description": "UML 2.5.1 agent: metamodel lookup, standard-profile lookup, normative spec citation, and XMI model inspection."
+    }
+  ]
+}

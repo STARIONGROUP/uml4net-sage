@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.omg.org/spec/UML/20161101">
+	<uml:Package xmi:type="uml:Package" xmi:id="_0" name="Fixture" URI="http://example.com/spec/Fixture/1.0">
+		<packagedElement xmi:type="uml:Class" xmi:id="Widget" name="Widget" isAbstract="true">
+			<ownedComment xmi:type="uml:Comment" xmi:id="Widget-_ownedComment.0" annotatedElement="Widget">
+				<body>A Widget is the abstract root of the fixture's tiny class hierarchy.</body>
+			</ownedComment>
+			<ownedAttribute xmi:type="uml:Property" xmi:id="Widget-label" name="label" isOrdered="false" isUnique="true">
+				<type xmi:type="uml:PrimitiveType" href="http://example.com/spec/Fixture/1.0/FixturePrimitiveTypes.xmi#String"/>
+				<lowerValue xmi:type="uml:LiteralInteger" xmi:id="Widget-label-lv" value="0"/>
+				<upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="Widget-label-uv" value="1"/>
+			</ownedAttribute>
+			<ownedRule xmi:type="uml:Constraint" xmi:id="Widget-rule-labelNotEmpty" name="label_not_empty">
+				<specification xmi:type="uml:OpaqueExpression" xmi:id="Widget-rule-labelNotEmpty-spec">
+					<language>OCL</language>
+					<body>label-&gt;notEmpty()</body>
+				</specification>
+			</ownedRule>
+			<ownedOperation xmi:type="uml:Operation" xmi:id="Widget-describe" name="describe">
+				<ownedParameter xmi:type="uml:Parameter" xmi:id="Widget-describe-result" name="result" direction="return">
+					<type xmi:type="uml:PrimitiveType" href="http://example.com/spec/Fixture/1.0/FixturePrimitiveTypes.xmi#String"/>
+					<lowerValue xmi:type="uml:LiteralInteger" xmi:id="Widget-describe-result-lv" value="1"/>
+					<upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="Widget-describe-result-uv" value="1"/>
+				</ownedParameter>
+			</ownedOperation>
+		</packagedElement>
+		<packagedElement xmi:type="uml:Class" xmi:id="Gadget" name="Gadget" isAbstract="false">
+			<generalization xmi:type="uml:Generalization" xmi:id="Gadget-gen" general="Widget"/>
+			<ownedAttribute xmi:type="uml:Property" xmi:id="Gadget-count" name="count" isOrdered="false" isUnique="true">
+				<type xmi:type="uml:PrimitiveType" href="http://example.com/spec/Fixture/1.0/FixturePrimitiveTypes.xmi#Integer"/>
+				<lowerValue xmi:type="uml:LiteralInteger" xmi:id="Gadget-count-lv" value="1"/>
+				<upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="Gadget-count-uv" value="1"/>
+			</ownedAttribute>
+		</packagedElement>
+		<packagedElement xmi:type="uml:Class" xmi:id="SuperGadget" name="SuperGadget" isAbstract="false">
+			<generalization xmi:type="uml:Generalization" xmi:id="SuperGadget-gen" general="Gadget"/>
+		</packagedElement>
+		<packagedElement xmi:type="uml:Enumeration" xmi:id="Kind" name="Kind">
+			<ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="Kind-A" name="A"/>
+			<ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="Kind-B" name="B"/>
+		</packagedElement>
+	</uml:Package>
+</xmi:XMI>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.omg.org/spec/UML/20161101">
+	<uml:Package xmi:type="uml:Package" xmi:id="_pt0" name="FixturePrimitiveTypes" URI="http://example.com/spec/Fixture/1.0/FixturePrimitiveTypes">
+		<packagedElement xmi:type="uml:PrimitiveType" xmi:id="String" name="String">
+			<ownedComment xmi:type="uml:Comment" xmi:id="String-_ownedComment.0" annotatedElement="String">
+				<body>A fixture primitive type standing in for text.</body>
+			</ownedComment>
+		</packagedElement>
+		<packagedElement xmi:type="uml:PrimitiveType" xmi:id="Integer" name="Integer">
+			<ownedComment xmi:type="uml:Comment" xmi:id="Integer-_ownedComment.0" annotatedElement="Integer">
+				<body>A fixture primitive type standing in for whole numbers.</body>
+			</ownedComment>
+		</packagedElement>
+	</uml:Package>
+</xmi:XMI>

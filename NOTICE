@@ -1,11 +1,155 @@
-uml4net
-Copyright 2019-2026 Starion Group S.A.
-https://github.com/STARIONGROUP/uml4net
+uml4net-codex
+Copyright 2026 Starion Group S.A.
+https://github.com/STARIONGROUP/uml4net-codex
 
 This product includes software developed by Starion Group S.A.
-and contributors (https://github.com/STARIONGROUP/uml4net/graphs/contributors).
+and contributors (https://github.com/STARIONGROUP/uml4net-codex/graphs/contributors),
+licensed under the Apache License, Version 2.0 (see LICENSE).
 
-The self-contained, single-file binary distribution of uml4net.Tools
-bundles third-party software (and the .NET runtime). Attribution and
-license notices for those components are provided in the accompanying
-THIRD-PARTY-NOTICES.txt file distributed alongside the executable.
+================================================================================
+OMG UML 2.5.1 Specification - Notice
+================================================================================
+
+This plugin fetches, at runtime and on the end user's own machine, the OMG Unified Modeling
+Language (UML) 2.5.1 specification and its machine-readable XMI files directly from
+https://www.omg.org/spec/UML/. Neither the specification PDF nor the XMI files are redistributed,
+committed, or bundled with this repository or any release of it - see sources/README.md for the
+exact files and URLs, and CLAUDE.md ("Committed vs git-ignored") for how this is enforced.
+
+The following notice is reproduced from the OMG UML 2.5.1 specification (OMG Document Number
+formal/2017-12-05), as required/permitted by its own terms below.
+
+--------------------------------------------------------------------------------
+
+Copyright © 2009-2013 88Solutions
+Copyright © 2009-2010 Artisan Software Tools
+Copyright © 2001-2013 Adaptive
+Copyright © 2009-2010 Armstrong Process Group, Inc.
+Copyright © 2001-2010 Alcatel
+Copyright © 2001-2010 Borland Software Corporation
+Copyright © 2009-2010 Commissariat à l'Energie Atomique
+Copyright © 2001-2010 Computer Associates International, Inc.
+Copyright © 2009-2010 Computer Sciences Corporation
+Copyright © 2009-2013 Data Access Technologies, Inc. (Model Driven Solutions)
+Copyright © 2009-2013 Deere & Company
+Copyright © 2009-2013 European Aeronautic Defence and Space Company
+Copyright © 2001-2013 Fujitsu
+Copyright © 2001-2010 Hewlett-Packard Company
+Copyright © 2001-2010 I-Logix Inc.
+Copyright © 2001-2013 International Business Machines Corporation
+Copyright © 2001-2010 IONA Technologies
+Copyright © 2013 Ivar Jacobson International SA
+Copyright © 2001-2010 Kabira Technologies, Inc.
+Copyright © 2009-2010 Lockheed Martin
+Copyright © 2001-2010 MEGA International
+Copyright © 2009-2010 Mentor Graphics Corporation
+Copyright © 2009-2013 Microsoft Corporation
+Copyright © 2001-2010 Motorola, Inc.
+Copyright © 2009-2010 National Aeronautics and Space Administration
+Copyright © 2009-2013 No Magic, Inc.
+Copyright © 1997-2017 Object Management Group, Inc
+Copyright © 2009-2010 oose Innovative Informatik GmbH
+Copyright © 2001-2010 Oracle Corporation
+Copyright © 2009-2010 Oslo Software, Inc.
+Copyright © 2009-2010 Purdue University
+Copyright © 2012-2013 Simula Research Laboratory
+Copyright © 2009-2010 SINTEF
+Copyright © 2001-2010 SOFTEAM
+Copyright © 2009-2013 Sparx Systems Pty Ltd
+Copyright © 2001-2010 Telefonaktiebolaget LM Ericsson
+Copyright © 2009-2010 THALES
+Copyright © 2001-2013 Unisys
+Copyright © 2001-2010 X-Change Technologies Group, LLC
+
+USE OF SPECIFICATION - TERMS, CONDITIONS & NOTICES
+
+The material in this document details an Object Management Group specification in accordance with
+the terms, conditions and notices set forth below. This document does not represent a commitment to
+implement any portion of this specification in any company's products.
+
+Subject to all of the terms and conditions below, the owners of the copyright in this specification
+hereby grant you a fully-paid up, non-exclusive, nontransferable, perpetual, worldwide license
+(without the right to sublicense), to use this specification to create and distribute software and
+special purpose specifications that are based upon this specification, and to use, copy, and
+distribute this specification as provided under the Copyright Act; provided that: (1) both the
+copyright notice identified above and this permission notice appear on any copies of this
+specification; (2) the use of the specifications is for informational purposes and will not be
+copied or posted on any network computer or broadcast in any media and will not be otherwise resold
+or transferred for commercial purposes; and (3) no modifications are made to this specification.
+This limited permission automatically terminates without notice if you breach any of these terms or
+conditions. Upon termination, you will destroy immediately any copies of the specifications in your
+possession or control.
+
+PATENTS
+
+The attention of adopters is directed to the possibility that compliance with or adoption of OMG
+specifications may require use of an invention covered by patent rights. OMG shall not be
+responsible for identifying patents for which a license may be required by any OMG specification,
+or for conducting legal inquiries into the legal validity or scope of those patents that are brought
+to its attention. OMG specifications are prospective and advisory only. Prospective users are
+responsible for protecting themselves against liability for infringement of patents.
+
+This specification is published under the "RF on Limited Terms" IPR mode listed in the OMG
+Intellectual Property Rights Policy Statement, OMG Document ipr/12-09-02, available at:
+http://doc.omg.org/ipr/12-09-02
+
+GENERAL USE RESTRICTIONS
+
+Any unauthorized use of this specification may violate copyright laws, trademark laws, and
+communications regulations and statutes. This document contains information which is protected by
+copyright. All Rights Reserved. No part of this work covered by copyright herein may be reproduced
+or used in any form or by any means-graphic, electronic, or mechanical, including photocopying,
+recording, taping, or information storage and retrieval systems-without permission of the copyright
+owner.
+
+DISCLAIMER OF WARRANTY
+
+WHILE THIS PUBLICATION IS BELIEVED TO BE ACCURATE, IT IS PROVIDED "AS IS" AND MAY CONTAIN ERRORS OR
+MISPRINTS. THE OBJECT MANAGEMENT GROUP AND THE COMPANIES LISTED ABOVE MAKE NO WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, WITH REGARD TO THIS PUBLICATION, INCLUDING BUT NOT LIMITED TO ANY WARRANTY OF
+TITLE OR OWNERSHIP, IMPLIED WARRANTY OF MERCHANTABILITY OR WARRANTY OF FITNESS FOR A PARTICULAR
+PURPOSE OR USE. THE OBJECT MANAGEMENT GROUP AND THE COMPANIES LISTED ABOVE SHALL NOT BE LIABLE FOR
+ANY ERRORS CONTAINED HEREIN OR FOR DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, RELIANCE OR
+COVER DAMAGES, INCLUDING LOSS OF PROFITS, REVENUE, DATA OR USE, INCURRED BY ANY USER OR ANY THIRD
+PARTY IN CONNECTION WITH THE FURNISHING, PERFORMANCE, OR USE OF THIS MATERIAL, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGES.
+
+RESTRICTED RIGHTS LEGEND
+
+Use, duplication or disclosure by the U.S. Government is subject to the restrictions set forth in
+subparagraph (c) (1) (ii) of The Rights in Technical Data and Computer Software Clause at DFARS
+252.227-7013 or in subparagraph (c)(1) and (2) of the Commercial Computer Software - Restricted
+Rights clauses at 48 C.F.R. 52.227-19 or as specified in 48 C.F.R. 227-7202-2 of the DoD F.A.R.
+Supplement and its successors, or as specified in 48 C.F.R. 12.212 of the Federal Acquisition
+Regulations and its successors, as applicable. The specification copyright owners are as indicated
+above and may be contacted through the Object Management Group, 109 Highland Avenue, Needham, MA
+02494, U.S.A.
+
+TRADEMARKS
+
+CORBA®, CORBA logos®, FIBO®, Financial Industry Business Ontology®, FINANCIAL INSTRUMENT GLOBAL
+IDENTIFIER®, IIOP®, IMM®, Model Driven Architecture®, MDA®, Object Management Group®, OMG®, OMG
+Logo®, SoaML®, SOAML®, SysML®, UAF®, Unified Modeling Language®, UML®, UML Cube Logo®, VSIPL®, and
+XMI® are registered trademarks of the Object Management Group, Inc. For a complete list of
+trademarks, see: http://www.omg.org/legal/tm_list.htm. All other products or company names mentioned
+are used for identification purposes only, and may be trademarks of their respective owners.
+
+COMPLIANCE
+
+The copyright holders listed above acknowledge that the Object Management Group (acting itself or
+through its designees) is and shall at all times be the sole entity that may authorize developers,
+suppliers and sellers of computer software to use certification marks, trademarks or other special
+designations to indicate compliance with these materials. Software developed under the terms of
+this license may claim compliance or conformance with this specification if and only if the
+software compliance is of a nature fully matching the applicable compliance points as stated in the
+specification. Software developed only partially matching the applicable compliance points may
+claim only that the software was based on this specification, but may not claim compliance or
+conformance with this specification.
+
+--------------------------------------------------------------------------------
+
+Note on scope: this NOTICE covers only the OMG UML specification and its four machine-readable XMI
+files (UML.xmi, PrimitiveTypes.xmi, StandardProfile.xmi, UMLDI.xmi) - all owned by OMG and the
+copyright holders listed above under the same terms. Unlike mycelium-hypha's NOTICE (which covers a
+second, EPL-2.0-licensed upstream for SysML v2's pilot-implementation XMI), there is no second
+license section here: UML has no equivalent GitHub-hosted, separately-licensed mirror.

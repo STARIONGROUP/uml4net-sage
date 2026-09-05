@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.omg.org/spec/UML/20161101">
+	<uml:Package xmi:type="uml:Package" xmi:id="_0" name="SampleModel">
+		<packagedElement xmi:type="uml:Class" xmi:id="Car" name="Car"/>
+		<packagedElement xmi:type="uml:Enumeration" xmi:id="FuelKind" name="FuelKind">
+			<ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="FuelKind-petrol" name="Petrol"/>
+			<ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="FuelKind-electric" name="Electric"/>
+		</packagedElement>
+	</uml:Package>
+</xmi:XMI>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.omg.org/spec/UML/20161101">
+	<uml:Profile xmi:type="uml:Profile" xmi:id="_p0" name="FixtureProfile" metamodelReference="_pi0" URI="http://example.com/spec/Fixture/1.0/FixtureProfile">
+		<packageImport xmi:type="uml:PackageImport" xmi:id="_pi0">
+			<importedPackage href="http://example.com/spec/Fixture/1.0/Fixture.xmi#_0"/>
+		</packageImport>
+		<packagedElement xmi:type="uml:Extension" xmi:id="Widget_Sample" name="Widget_Sample" memberEnd="Widget_Sample-extension_Sample Sample-base_Widget">
+			<ownedEnd xmi:type="uml:ExtensionEnd" xmi:id="Widget_Sample-extension_Sample" name="extension_Sample" type="Sample" aggregation="composite" association="Widget_Sample">
+				<lowerValue xmi:type="uml:LiteralInteger" xmi:id="Widget_Sample-extension_Sample-lv" value="0"/>
+			</ownedEnd>
+		</packagedElement>
+		<packagedElement xmi:type="uml:Stereotype" xmi:id="Sample" name="Sample">
+			<ownedAttribute xmi:type="uml:Property" xmi:id="Sample-base_Widget" name="base_Widget" association="Widget_Sample">
+				<type xmi:type="uml:Class" href="http://example.com/spec/Fixture/1.0/Fixture.xmi#Widget"/>
+			</ownedAttribute>
+			<ownedAttribute xmi:type="uml:Property" xmi:id="Sample-note" name="note">
+				<type xmi:type="uml:PrimitiveType" href="http://example.com/spec/Fixture/1.0/FixturePrimitiveTypes.xmi#String"/>
+			</ownedAttribute>
+		</packagedElement>
+	</uml:Profile>
+</xmi:XMI>

@@ -328,5 +328,31 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 
-uml4net.xmi.Extensions.EnterpriseArchitect.Tests/Resources/UML_EA.DTD
 /.claude/settings.local.json
+
+##########################################
+# uml4net-codex knowledge base
+#
+# Nothing OMG-copyrighted (spec PDFs, metamodel XMI) or derived directly from
+# it is ever committed. Everything per-version is fetched/generated locally
+# on demand by the `uml4net-codex` CLI. See CLAUDE.md / sources/README.md.
+##########################################
+/sources/*/
+/knowledge/*/
+/knowledge/installed.json
+*.pdf
+*.xmi
+# ...except the small, hand-authored (not OMG-derived) test fixtures committed on purpose -
+# see CLAUDE.md, "No committed test fixtures derived from OMG content".
+!/tools/**/Fixtures/**/*.xmi
+
+##########################################
+# Python (tools/spec-extract)
+##########################################
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+/tools/spec-extract/.venv/
+/tools/spec-extract/dist/

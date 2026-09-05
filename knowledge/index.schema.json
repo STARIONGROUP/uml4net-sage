@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/STARIONGROUP/uml4net-codex/knowledge/index.schema.json",
+  "title": "uml4net-codex index.json files",
+  "description": "The three flat, array-shaped index files a generated knowledge base contains: metamodel/index.json, standard-profile/index.json, and (once spec text is extracted) spec/index.json. Each is an array of rows rather than a keyed map so it also qualifies as a valid Frictionless tabular-data-resource (see datapackage.schema.json).",
+  "definitions": {
+    "metamodelIndex": {
+      "type": "array",
+      "description": "knowledge/<version>/metamodel/index.json - one row per class, enumeration, or primitive type.",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind", "package", "qualifiedName", "isAbstract", "file"],
+        "properties": {
+          "name": { "type": "string" },
+          "kind": { "enum": ["class", "enumeration", "primitiveType"] },
+          "package": { "type": "string" },
+          "qualifiedName": { "type": "string" },
+          "isAbstract": { "type": "boolean" },
+          "file": { "type": "string", "description": "Relative to metamodel/, e.g. \"elements/Class.md\"." }
+        }
+      }
+    },
+    "standardProfileIndex": {
+      "type": "array",
+      "description": "knowledge/<version>/standard-profile/index.json - one row per Standard Profile stereotype.",
+      "items": {
+        "type": "object",
+        "required": ["qualifiedName", "kind", "file", "source"],
+        "properties": {
+          "qualifiedName": { "type": "string" },
+          "kind": { "const": "stereotype" },
+          "file": { "type": "string", "description": "Relative to standard-profile/, e.g. \"pages/Trace.md\"." },
+          "source": { "const": "StandardProfile" }
+        }
+      }
+    },
+    "specIndex": {
+      "type": "array",
+      "description": "knowledge/<version>/spec/index.json - one row per extracted specification clause. Present only once the PDFs have been fetched and successfully extracted.",
+      "items": {
+        "type": "object",
+        "required": ["clause", "title", "pages", "normative", "file"],
+        "properties": {
+          "clause": { "type": "string", "description": "Dotted clause number, e.g. \"9.3.2\"." },
+          "title": { "type": "string" },
+          "pages": { "type": "string", "description": "A single page number or an \"N-M\" range." },
+          "normative": { "type": "boolean" },
+          "file": { "type": "string", "description": "Relative to spec/, e.g. \"clauses/9.3.2-classifier.md\"." }
+        }
+      }
+    }
+  }
+}

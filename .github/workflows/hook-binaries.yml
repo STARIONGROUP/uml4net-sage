@@ -1,0 +1,79 @@
+name: Build hook binaries
+
+# Builds the NativeAOT SessionStart hook for all four published runtime identifiers and commits the
+# resulting binaries into hooks/native/. Manually triggered by a maintainer preparing a release -
+# see hooks/native/README.md.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+          - rid: linux-x64
+            os: ubuntu-latest
+          - rid: osx-arm64
+            os: macos-latest
+          - rid: osx-x64
+            os: macos-13
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish (NativeAOT)
+        run: >
+          dotnet publish tools/codex-cli/Uml4Net.Codex.Tools.Hook
+          -r ${{ matrix.rid }} -c Release --self-contained
+          -p:PublishAot=true
+          -o hooks/native/${{ matrix.rid }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hook-${{ matrix.rid }}
+          path: hooks/native/${{ matrix.rid }}/uml4net-codex-hook*
+
+  commit:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: hook-*
+          path: hooks/native
+          merge-multiple: false
+
+      - name: Flatten artifact directories into hooks/native/<rid>/
+        run: |
+          for dir in hooks/native/hook-*; do
+            rid="${dir#hooks/native/hook-}"
+            mkdir -p "hooks/native/$rid"
+            mv "$dir"/* "hooks/native/$rid"/
+            rmdir "$dir"
+          done
+
+      - name: Mark non-Windows binaries executable
+        run: |
+          chmod +x hooks/native/linux-x64/uml4net-codex-hook
+          chmod +x hooks/native/osx-x64/uml4net-codex-hook
+          chmod +x hooks/native/osx-arm64/uml4net-codex-hook
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add hooks/native
+          git diff --cached --quiet || git commit -m "Update hook binaries"
+          git push

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.omg.org/spec/UML/20161101">
+	<uml:Package xmi:type="uml:Package" xmi:id="_0" name="SampleModel">
+		<packagedElement xmi:type="uml:Class" xmi:id="Car" name="Car">
+			<ownedAttribute xmi:type="uml:Property" xmi:id="Car-engine" name="engine">
+				<type xmi:type="uml:Class" href="http://example.com/spec/DoesNotExist/1.0/Missing.xmi#Engine"/>
+			</ownedAttribute>
+		</packagedElement>
+	</uml:Package>
+</xmi:XMI>
