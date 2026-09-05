@@ -11,7 +11,7 @@
   "repository": "https://github.com/STARIONGROUP/uml4net-codex",
   "license": "Apache-2.0",
   "keywords": ["uml", "uml-2.5.1", "omg", "metamodel", "xmi", "uml4net", "mbse"],
-  "codexCliVersion": "1.0.0",
+  "codexCliVersion": "1.0.0-rc1",
   "hooks": {
     "SessionStart": [
       {
