@@ -36,7 +36,7 @@ jobs:
         run: >
           dotnet publish tools/codex-cli/Uml4Net.Codex.Tools.Hook
           -r ${{ matrix.rid }} -c Release --self-contained
-          -p:PublishAot=true
+          -p:PublishAot=true -p:DebugType=none
           -o hooks/native/${{ matrix.rid }}
 
       - name: Upload artifact
