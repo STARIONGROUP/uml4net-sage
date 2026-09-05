@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+
+title: "uml4net-codex"
+abstract: "abstract: Codex is the AI agent of the uml4net ecosystem, a bridge between engineers and the UML specification. Packaged as a Claude plugin with skills for metamodel lookup and spec citation."
+version: "8.5.0"
+date-released: "2026-09-05"
+url: "https://github.com/stariongroup/uml4net-codex"
+
+authors:
+  - given-names: "Sam"
+    family-names: "Gerené"
+    affiliation: "Starion Group S.A."
+    orcid: "https://orcid.org/0009-0000-1848-550X"
+
+repository-code: "https://github.com/stariongroup/uml4net-codex"
+license: "Apache-2.0"
+
+preferred-citation:
+  type: software
+  title: "uml4net-codex"
+  authors:
+    - given-names: "Sam"
+      family-names: "Gerené"
+      orcid: "https://orcid.org/0009-0000-1848-550X"
+  version: "8.5.0"
+  url: "https://github.com/stariongroup/uml4net-codex"
+  date-released: "2026-09-05"
