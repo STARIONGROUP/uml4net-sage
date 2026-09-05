@@ -12,17 +12,25 @@ NativeAOT-publishable in the first place (the full CLI is not - see the root `CL
 hooks/native/
 ├── win-x64/uml4net-codex-hook.exe
 ├── linux-x64/uml4net-codex-hook
-├── osx-x64/uml4net-codex-hook
 └── osx-arm64/uml4net-codex-hook
 ```
 
 `.claude-plugin/plugin.json`'s `SessionStart` hook command dispatches to the matching binary by
-`uname -s`/`uname -m` at runtime.
+`uname -s`/`uname -m` at runtime; on any platform without a matching case (currently Intel Mac,
+`Darwin-x86_64`) the hook simply no-ops rather than failing.
+
+**No `osx-x64` build**: GitHub's `macos-13` hosted runner (the last Intel-Mac image) queued
+indefinitely rather than starting, as of 2026-09 - consistent with GitHub retiring Intel Mac runners
+in favor of Apple Silicon. Revisit if a hosted or self-hosted Intel-Mac runner becomes available
+again; until then, Intel Mac users get no `SessionStart` status check (skills/agents still work
+normally against whatever `knowledge/` tree exists on disk - the hook is a convenience, not a
+dependency).
 
 ## How these are built
 
-`.github/workflows/hook-binaries.yml` runs a build matrix across the four runtime identifiers and
-commits the resulting binaries here as part of cutting a release. To build one locally:
+`.github/workflows/hook-binaries.yml` runs a build matrix across the three currently-buildable
+runtime identifiers and commits the resulting binaries here as part of cutting a release. To build
+one locally (including for `osx-x64`, on real Intel-Mac hardware):
 
 ```bash
 dotnet publish tools/codex-cli/Uml4Net.Codex.Tools.Hook -r <rid> -c Release --self-contained -p:PublishAot=true -o hooks/native/<rid>

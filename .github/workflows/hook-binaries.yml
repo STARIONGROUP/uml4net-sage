@@ -1,8 +1,13 @@
 name: Build hook binaries
 
-# Builds the NativeAOT SessionStart hook for all four published runtime identifiers and commits the
+# Builds the NativeAOT SessionStart hook for the published runtime identifiers and commits the
 # resulting binaries into hooks/native/. Manually triggered by a maintainer preparing a release -
 # see hooks/native/README.md.
+#
+# osx-x64 is deliberately not built here: GitHub's macos-13 hosted runner (the last Intel-Mac image)
+# queued indefinitely (10+ minutes, never started) as of 2026-09 - consistent with GitHub retiring
+# Intel Mac runners in favor of Apple Silicon. Revisit if/when a hosted Intel-Mac image is available
+# again, or self-host one.
 
 on:
   workflow_dispatch:
@@ -18,8 +23,6 @@ jobs:
             os: ubuntu-latest
           - rid: osx-arm64
             os: macos-latest
-          - rid: osx-x64
-            os: macos-13
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -67,7 +70,6 @@ jobs:
       - name: Mark non-Windows binaries executable
         run: |
           chmod +x hooks/native/linux-x64/uml4net-codex-hook
-          chmod +x hooks/native/osx-x64/uml4net-codex-hook
           chmod +x hooks/native/osx-arm64/uml4net-codex-hook
 
       - name: Commit

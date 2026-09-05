@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "case \"$(uname -s)-$(uname -m)\" in Linux-x86_64) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/linux-x64/uml4net-codex-hook\" ;; Darwin-arm64) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/osx-arm64/uml4net-codex-hook\" ;; Darwin-x86_64) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/osx-x64/uml4net-codex-hook\" ;; MINGW*|CYGWIN*|MSYS*) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/win-x64/uml4net-codex-hook.exe\" ;; esac",
+            "command": "case \"$(uname -s)-$(uname -m)\" in Linux-x86_64) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/linux-x64/uml4net-codex-hook\" ;; Darwin-arm64) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/osx-arm64/uml4net-codex-hook\" ;; MINGW*|CYGWIN*|MSYS*) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/win-x64/uml4net-codex-hook.exe\" ;; esac",
             "timeout": 15
           }
         ]
