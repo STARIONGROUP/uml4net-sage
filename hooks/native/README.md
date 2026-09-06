@@ -26,6 +26,29 @@ again; until then, Intel Mac users get no `SessionStart` status check (skills/ag
 normally against whatever `knowledge/` tree exists on disk - the hook is a convenience, not a
 dependency).
 
+**No dispatch on native Windows without Git Bash**: `.claude-plugin/plugin.json`'s `SessionStart`
+hook command is a POSIX `case`/`esac` script (`uname -s`/`uname -m` dispatch), so it needs a real
+`bash` to run at all - it pins `"shell": "bash"` explicitly rather than relying on Claude Code's
+unspecified-shell default (which, at least as of 2026-09, has been observed silently falling back to
+PowerShell on Windows even with Git for Windows properly installed and `bash.exe` on `PATH` - the
+exact default-resolution heuristic isn't publicly documented, so pinning `"shell": "bash"` is the
+more reliable of the two). On Windows this needs [Git for
+Windows](https://git-scm.com/downloads/win) (commonly already present on dev machines) so `bash` is
+on `PATH`; with no `bash` anywhere - no Git Bash, no WSL - the hook fails to run (a harmless,
+non-blocking "SessionStart:startup hook error" - skills/agents still work normally, same as the
+Intel Mac case above).
+
+There's no fix for that last case (no `bash` anywhere on Windows) beyond installing Git Bash: the
+hook schema has no way to scope a hook entry to a specific OS/platform (`matcher` only matches
+event-specific strings like `"startup|resume"`; `if` is tool-call permission syntax, not applicable
+to `SessionStart`), and a single command string cannot be valid bash *and* valid PowerShell at once
+(verified directly - PowerShell's `<# #>` block comments are fatal to bash's parser, bash's `<<`
+heredocs are fatal to PowerShell's, and PowerShell requires the *entire* command to parse before
+executing any of it, so there is no way to hide one language's syntax from the other within one
+command). Adding a second, `"shell":"powershell"`-forced hook entry to cover this case would run
+unconditionally on every platform, including POSIX machines that don't have `pwsh` installed by
+default - trading a Windows-only, non-blocking annoyance for a new one on every other platform.
+
 ## How these are built
 
 `.github/workflows/hook-binaries.yml` runs a build matrix across the three currently-buildable
