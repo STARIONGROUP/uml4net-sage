@@ -73,7 +73,7 @@ namespace Uml4Net.Codex.Knowledge.Tests
         [Test]
         public async Task GenerateAsync_produces_the_full_knowledge_tree_and_a_scoped_datapackage_without_a_spec_pdf()
         {
-            var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(new StubHttpMessageHandler())), new PythonSpecExtractRunner(FakeProcessRunner.NotFound()));
+            var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(new StubHttpMessageHandler())), new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable()));
 
             var outcome = await service.GenerateAsync(this.layout, Descriptor);
 
@@ -92,7 +92,7 @@ namespace Uml4Net.Codex.Knowledge.Tests
         [Test]
         public async Task GenerateAsync_records_the_generation_in_installed_json()
         {
-            var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(new StubHttpMessageHandler())), new PythonSpecExtractRunner(FakeProcessRunner.NotFound()));
+            var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(new StubHttpMessageHandler())), new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable()));
 
             await service.GenerateAsync(this.layout, Descriptor);
 
