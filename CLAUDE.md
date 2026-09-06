@@ -68,6 +68,15 @@ before bumping either).
   stereotype's base metaclass from its own `base_<Metaclass>` owned attribute (the OMG Standard
   Profile's fixed naming convention) instead of `IClass.Extension`. Re-check these workarounds if
   `uml4net.xmi` is upgraded past 8.5.0 - the underlying bug may be fixed.
+- **`PythonSpecExtractRunner`'s `uv` fallback**: verbatim spec-citation quoting shells out to
+  `tools/spec-extract` (Python/pdfplumber). It first tries a `.venv` under that directory or a system
+  `python`/`python3`; if neither is found, it provisions [`uv`](https://astral.sh/uv) on demand
+  (`Uml4Net.Codex.Knowledge.Toolchain.UvProvisioner`, downloaded/checksum-verified from its GitHub
+  releases and cached alongside the CLI's own self-fetch cache) and runs `uv run --project
+  tools/spec-extract python -m spec_extract ...` instead - `uv` resolves a matching Python and installs
+  the project's dependencies into a managed venv itself, so an installed plugin needs neither a
+  pre-existing Python nor a provisioned `.venv`. Every failure mode degrades to
+  `SpecExtractionOutcome.Skipped` with a reason; it never throws or aborts the rest of `generate`.
 - **Determinism of generated artifacts**: every generator sorts with `StringComparer.Ordinal`,
   writes LF line endings (`.gitattributes` pins this), and uses fixed `System.Text.Json` options
   (see `MetamodelJsonGenerator.SerializerOptions`) - checked by

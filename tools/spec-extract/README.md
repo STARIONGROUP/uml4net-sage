@@ -56,6 +56,18 @@ invoke this pipeline as a subprocess for its `spec` step:
 python -m spec_extract extract --pdf <path-to-pdf> --out <output-dir> [--document UML] [--version 2.5.1]
 ```
 
+`PythonSpecExtractRunner` runs this two ways, in order:
+
+1. A `.venv` under this directory (`.venv/Scripts/python.exe` / `.venv/bin/python`) if present, else a
+   bare `python`/`python3` on `PATH` - the maintainer dev workflow above.
+2. If neither is found, it provisions [`uv`](https://astral.sh/uv) on demand (downloaded and
+   checksum-verified from its GitHub releases, cached under the same local app-data folder the CLI's
+   own self-fetch hook uses) and runs `uv run --project tools/spec-extract python -m spec_extract ...`.
+   `uv` resolves or fetches a matching Python itself and installs this project's dependencies into a
+   managed venv, so verbatim spec citation works for an installed plugin too - no pre-existing Python
+   or provisioned `.venv` needed, just network access the first time. `uv.lock` (committed) pins that
+   resolution, the same way `Directory.Packages.props` pins exact versions on the C# side.
+
 ## Known limitations
 
 Verified against the real OMG UML 2.5.1 specification PDF: ordinary prose clauses (e.g. clause 1,

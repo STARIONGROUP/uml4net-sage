@@ -26,9 +26,9 @@ Classifier"-style questions.
 
 ## When spec text is missing
 
-If `knowledge/<version>/spec/` doesn't exist (the PDFs haven't been fetched, or Python/the
-`spec_extract` package isn't installed - see `tools/spec-extract/README.md`), **never fabricate a
-quote**. Instead:
+If `knowledge/<version>/spec/` doesn't exist (the PDFs haven't been fetched, or `uv` could not be
+provisioned to run `spec_extract` - offline on first use, or an unsupported platform; see
+`tools/spec-extract/README.md`), **never fabricate a quote**. Instead:
 - If you can still name the likely governing clause (e.g. from a metamodel element's context or
   general UML knowledge), cite the clause **number only**, tagged **DERIVED**, and say plainly that
   this is a reference, not a verbatim quote.

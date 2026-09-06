@@ -27,6 +27,7 @@ namespace Uml4Net.Codex.Tools.Commands
     using Spectre.Console;
 
     using Uml4Net.Codex.Knowledge;
+    using Uml4Net.Codex.Knowledge.Toolchain;
 
     /// <summary>
     /// <c>uml4net-codex fetch</c>: downloads a UML version's XMI (and, unless <c>--no-specs</c>, PDF) files
@@ -62,7 +63,8 @@ namespace Uml4Net.Codex.Tools.Commands
                 var setAsDefault = !parseResult.GetValue(NoDefaultOption);
 
                 using var httpClient = new HttpClient();
-                var service = new KnowledgeGenerationService(new SourceFetcher(httpClient), new PythonSpecExtractRunner(new ProcessRunner()));
+                var specExtractRunner = new PythonSpecExtractRunner(new ProcessRunner(), new UvProvisioner(httpClient));
+                var service = new KnowledgeGenerationService(new SourceFetcher(httpClient), specExtractRunner);
 
                 AnsiConsole.MarkupLineInterpolated($"Fetching UML {descriptor!.Version}{(includeSpecs ? " (including specification PDFs)" : "")}...");
                 var outcome = await service.FetchAsync(layout, descriptor, includeSpecs, setAsDefault, cancellationToken);

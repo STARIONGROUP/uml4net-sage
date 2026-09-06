@@ -27,6 +27,7 @@ namespace Uml4Net.Codex.Tools.Commands
     using Spectre.Console;
 
     using Uml4Net.Codex.Knowledge;
+    using Uml4Net.Codex.Knowledge.Toolchain;
 
     /// <summary>
     /// <c>uml4net-codex generate</c>: regenerates the metamodel, standard-profile, (if the PDF and Python
@@ -61,7 +62,8 @@ namespace Uml4Net.Codex.Tools.Commands
                 }
 
                 using var httpClient = new HttpClient();
-                var service = new KnowledgeGenerationService(new SourceFetcher(httpClient), new PythonSpecExtractRunner(new ProcessRunner()));
+                var specExtractRunner = new PythonSpecExtractRunner(new ProcessRunner(), new UvProvisioner(httpClient));
+                var service = new KnowledgeGenerationService(new SourceFetcher(httpClient), specExtractRunner);
 
                 AnsiConsole.MarkupLineInterpolated($"Generating knowledge base for UML {descriptor.Version}...");
                 var outcome = await service.GenerateAsync(layout, descriptor, cancellationToken);

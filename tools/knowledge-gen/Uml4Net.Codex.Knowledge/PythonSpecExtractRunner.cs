@@ -23,8 +23,11 @@ namespace Uml4Net.Codex.Knowledge
     using System;
     using System.ComponentModel;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Uml4Net.Codex.Knowledge.Toolchain;
 
     /// <summary>
     /// Invokes the <c>tools/spec-extract</c> Python package as a subprocess. This is the one place C#
@@ -33,20 +36,28 @@ namespace Uml4Net.Codex.Knowledge
     public sealed class PythonSpecExtractRunner
     {
         private readonly IProcessRunner processRunner;
+        private readonly IUvProvisioner uvProvisioner;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PythonSpecExtractRunner"/> class.
         /// </summary>
-        public PythonSpecExtractRunner(IProcessRunner processRunner)
+        /// <param name="processRunner">Runs the Python (or <c>uv</c>) subprocess.</param>
+        /// <param name="uvProvisioner">
+        /// Provisions <c>uv</c> as a last-resort fallback when no <c>.venv</c> or system Python is
+        /// found - see <see cref="ExtractAsync"/>.
+        /// </param>
+        public PythonSpecExtractRunner(IProcessRunner processRunner, IUvProvisioner uvProvisioner)
         {
             this.processRunner = processRunner;
+            this.uvProvisioner = uvProvisioner;
         }
 
         /// <summary>
         /// Runs <c>python -m spec_extract extract</c> against <paramref name="pdfPath"/>, writing clause
         /// markdown and indexes into <paramref name="outputDirectory"/>. Never throws: any failure
-        /// (Python not installed, the <c>spec_extract</c> package not installed, a non-zero exit code)
-        /// results in a <see cref="SpecExtractionOutcome.Skipped"/> outcome with a human-readable reason.
+        /// (no usable Python or <c>uv</c>, the <c>spec_extract</c> package not installed, a non-zero
+        /// exit code) results in a <see cref="SpecExtractionOutcome.Skipped"/> outcome with a
+        /// human-readable reason.
         /// </summary>
         /// <param name="pdfPath">
         /// The locally fetched specification PDF (e.g. <c>sources/2.5.1/specs/UML-2.5.1.pdf</c>).
@@ -55,8 +66,11 @@ namespace Uml4Net.Codex.Knowledge
         /// The <c>spec/</c> output directory (e.g. <c>knowledge/2.5.1/spec</c>).
         /// </param>
         /// <param name="specExtractProjectDirectory">
-        /// The <c>tools/spec-extract</c> directory, whose <c>.venv</c> (if present) is preferred over a
-        /// system Python interpreter.
+        /// The <c>tools/spec-extract</c> directory. A <c>.venv</c> under it, or a system Python
+        /// interpreter, is tried first; if neither is found, <c>uv</c> is provisioned on demand and used
+        /// to run <c>spec_extract</c> instead - it resolves a matching Python and installs
+        /// <c>spec_extract</c>'s dependencies into a managed venv itself, so an installed plugin needs
+        /// neither a pre-existing Python nor a provisioned <c>.venv</c>.
         /// </param>
         /// <param name="version">
         /// The UML version recorded in each clause's front matter.
@@ -74,22 +88,17 @@ namespace Uml4Net.Codex.Knowledge
                 return SpecExtractionOutcome.Skipped($"The spec-extract project was not found at {specExtractProjectDirectory} - this repository checkout may be incomplete.");
             }
 
+            var extractArguments = new[] { "-m", "spec_extract", "extract", "--pdf", pdfPath, "--out", outputDirectory, "--document", "UML", "--version", version };
+
             foreach (var pythonExecutable in PythonCandidates(specExtractProjectDirectory))
             {
                 try
                 {
-                    var result = await this.processRunner.RunAsync(
-                        pythonExecutable,
-                        ["-m", "spec_extract", "extract", "--pdf", pdfPath, "--out", outputDirectory, "--document", "UML", "--version", version],
-                        workingDirectory: srcDirectory,
-                        cancellationToken);
+                    var result = await this.processRunner.RunAsync(pythonExecutable, extractArguments, workingDirectory: srcDirectory, cancellationToken);
 
-                    if (result.ExitCode != 0)
-                    {
-                        return SpecExtractionOutcome.Skipped($"spec_extract exited with code {result.ExitCode}: {result.StandardError}");
-                    }
-
-                    return SpecExtractionOutcome.Ok();
+                    return result.ExitCode == 0
+                        ? SpecExtractionOutcome.Ok()
+                        : SpecExtractionOutcome.Skipped($"spec_extract exited with code {result.ExitCode}: {result.StandardError}");
                 }
                 catch (Win32Exception)
                 {
@@ -97,9 +106,29 @@ namespace Uml4Net.Codex.Knowledge
                 }
             }
 
-            return SpecExtractionOutcome.Skipped(
-                "Python was not found. Verbatim spec citation is unavailable until it's installed - " +
-                "see tools/spec-extract/README.md (Python >= 3.12, `pip install -e \".[dev]\"`).");
+            var uvExecutable = await this.uvProvisioner.EnsureAsync(cancellationToken);
+            if (uvExecutable is null)
+            {
+                return SpecExtractionOutcome.Skipped(
+                    "No Python interpreter was found and uv could not be provisioned (offline, or an " +
+                    "unsupported platform). Verbatim spec citation is unavailable until one of them is - " +
+                    "see tools/spec-extract/README.md.");
+            }
+
+            try
+            {
+                var uvArguments = new[] { "run", "--project", specExtractProjectDirectory, "python" }.Concat(extractArguments).ToArray();
+                var uvResult = await this.processRunner.RunAsync(uvExecutable.FullName, uvArguments, workingDirectory: specExtractProjectDirectory, cancellationToken);
+
+                return uvResult.ExitCode == 0
+                    ? SpecExtractionOutcome.Ok()
+                    : SpecExtractionOutcome.Skipped($"spec_extract (via uv) exited with code {uvResult.ExitCode}: {uvResult.StandardError}");
+            }
+            catch (Win32Exception)
+            {
+                return SpecExtractionOutcome.Skipped(
+                    $"The provisioned uv executable at {uvExecutable.FullName} could not be started.");
+            }
         }
 
         private static string[] PythonCandidates(string specExtractProjectDirectory)

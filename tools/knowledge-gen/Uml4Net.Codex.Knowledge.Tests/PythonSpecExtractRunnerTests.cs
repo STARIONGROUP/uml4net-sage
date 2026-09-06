@@ -44,7 +44,7 @@ namespace Uml4Net.Codex.Knowledge.Tests
         [Test]
         public async Task ExtractAsync_skips_with_a_clear_reason_when_the_pdf_is_missing()
         {
-            var runner = new PythonSpecExtractRunner(FakeProcessRunner.Returning(new ProcessRunResult(0, string.Empty, string.Empty)));
+            var runner = new PythonSpecExtractRunner(FakeProcessRunner.Returning(new ProcessRunResult(0, string.Empty, string.Empty)), FakeUvProvisioner.Unavailable());
 
             var outcome = await runner.ExtractAsync(
                 Path.Combine(this.tempDirectory, "missing.pdf"),
@@ -63,7 +63,7 @@ namespace Uml4Net.Codex.Knowledge.Tests
             File.WriteAllText(pdfPath, "not a real pdf");
             var incompleteCheckout = Path.Combine(this.tempDirectory, "no-such-checkout");
 
-            var runner = new PythonSpecExtractRunner(FakeProcessRunner.Returning(new ProcessRunResult(0, string.Empty, string.Empty)));
+            var runner = new PythonSpecExtractRunner(FakeProcessRunner.Returning(new ProcessRunResult(0, string.Empty, string.Empty)), FakeUvProvisioner.Unavailable());
 
             var outcome = await runner.ExtractAsync(pdfPath, Path.Combine(this.tempDirectory, "spec"), incompleteCheckout, "2.5.1");
 
@@ -72,17 +72,18 @@ namespace Uml4Net.Codex.Knowledge.Tests
         }
 
         [Test]
-        public async Task ExtractAsync_skips_with_a_clear_reason_when_python_is_not_available()
+        public async Task ExtractAsync_skips_with_a_clear_reason_when_neither_python_nor_uv_is_available()
         {
             var pdfPath = Path.Combine(this.tempDirectory, "UML-2.5.1.pdf");
             File.WriteAllText(pdfPath, "not a real pdf");
 
-            var runner = new PythonSpecExtractRunner(FakeProcessRunner.NotFound());
+            var runner = new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable());
 
             var outcome = await runner.ExtractAsync(pdfPath, Path.Combine(this.tempDirectory, "spec"), this.tempDirectory, "2.5.1");
 
             Assert.That(outcome.Succeeded, Is.False);
-            Assert.That(outcome.SkippedReason, Does.Contain("Python was not found"));
+            Assert.That(outcome.SkippedReason, Does.Contain("No Python interpreter was found"));
+            Assert.That(outcome.SkippedReason, Does.Contain("uv could not be provisioned"));
         }
 
         [Test]
@@ -93,7 +94,7 @@ namespace Uml4Net.Codex.Knowledge.Tests
             var outputDirectory = Path.Combine(this.tempDirectory, "spec");
 
             var processRunner = FakeProcessRunner.Returning(new ProcessRunResult(0, "Extracted 42 clauses", string.Empty));
-            var runner = new PythonSpecExtractRunner(processRunner);
+            var runner = new PythonSpecExtractRunner(processRunner, FakeUvProvisioner.Unavailable());
 
             var outcome = await runner.ExtractAsync(pdfPath, outputDirectory, this.tempDirectory, "2.5.1");
 
@@ -107,12 +108,50 @@ namespace Uml4Net.Codex.Knowledge.Tests
             var pdfPath = Path.Combine(this.tempDirectory, "UML-2.5.1.pdf");
             File.WriteAllText(pdfPath, "not a real pdf");
 
-            var runner = new PythonSpecExtractRunner(FakeProcessRunner.Returning(new ProcessRunResult(1, string.Empty, "boom")));
+            var runner = new PythonSpecExtractRunner(FakeProcessRunner.Returning(new ProcessRunResult(1, string.Empty, "boom")), FakeUvProvisioner.Unavailable());
 
             var outcome = await runner.ExtractAsync(pdfPath, Path.Combine(this.tempDirectory, "spec"), this.tempDirectory, "2.5.1");
 
             Assert.That(outcome.Succeeded, Is.False);
             Assert.That(outcome.SkippedReason, Does.Contain("boom"));
+        }
+
+        [Test]
+        public async Task ExtractAsync_falls_back_to_uv_and_succeeds_when_no_python_interpreter_is_found()
+        {
+            var pdfPath = Path.Combine(this.tempDirectory, "UML-2.5.1.pdf");
+            File.WriteAllText(pdfPath, "not a real pdf");
+            var outputDirectory = Path.Combine(this.tempDirectory, "spec");
+
+            var uvExecutable = new FileInfo(Path.Combine(this.tempDirectory, "uv.exe"));
+            var processRunner = FakeProcessRunner.NotFoundExceptFor(
+                uvExecutable.FullName, new ProcessRunResult(0, "Extracted 42 clauses", string.Empty));
+            var runner = new PythonSpecExtractRunner(processRunner, FakeUvProvisioner.Returning(uvExecutable));
+
+            var outcome = await runner.ExtractAsync(pdfPath, outputDirectory, this.tempDirectory, "2.5.1");
+
+            Assert.That(outcome.Succeeded, Is.True);
+            Assert.That(processRunner.LastFileName, Is.EqualTo(uvExecutable.FullName));
+            Assert.That(
+                processRunner.LastArguments,
+                Is.EqualTo(new[] { "run", "--project", this.tempDirectory, "python", "-m", "spec_extract", "extract", "--pdf", pdfPath, "--out", outputDirectory, "--document", "UML", "--version", "2.5.1" }));
+        }
+
+        [Test]
+        public async Task ExtractAsync_skips_with_the_stderr_when_the_uv_fallback_exits_non_zero()
+        {
+            var pdfPath = Path.Combine(this.tempDirectory, "UML-2.5.1.pdf");
+            File.WriteAllText(pdfPath, "not a real pdf");
+
+            var uvExecutable = new FileInfo(Path.Combine(this.tempDirectory, "uv.exe"));
+            var processRunner = FakeProcessRunner.NotFoundExceptFor(
+                uvExecutable.FullName, new ProcessRunResult(1, string.Empty, "uv boom"));
+            var runner = new PythonSpecExtractRunner(processRunner, FakeUvProvisioner.Returning(uvExecutable));
+
+            var outcome = await runner.ExtractAsync(pdfPath, Path.Combine(this.tempDirectory, "spec"), this.tempDirectory, "2.5.1");
+
+            Assert.That(outcome.Succeeded, Is.False);
+            Assert.That(outcome.SkippedReason, Does.Contain("uv boom"));
         }
     }
 }
