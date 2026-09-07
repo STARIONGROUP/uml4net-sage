@@ -39,6 +39,16 @@ jobs:
           -p:PublishAot=true -p:DebugType=none
           -o hooks/native/${{ matrix.rid }}
 
+      - name: Remove native debug-symbol bundles
+        # -p:DebugType=none only suppresses managed PDBs; NativeAOT's own native-symbol stripping
+        # (dsymutil on macOS, objcopy on Linux) writes a separate .dSYM bundle / .dbg file
+        # regardless, which is unnecessary bloat for a plugin repo end users clone/download (a
+        # macOS .dSYM was ~14MB - see git history for the same issue recurring). Removed
+        # unconditionally rather than chasing the exact MSBuild property, since none reliably
+        # suppressed generation across both platforms.
+        shell: bash
+        run: rm -rf hooks/native/${{ matrix.rid }}/*.dSYM hooks/native/${{ matrix.rid }}/*.dbg hooks/native/${{ matrix.rid }}/*.pdb
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
