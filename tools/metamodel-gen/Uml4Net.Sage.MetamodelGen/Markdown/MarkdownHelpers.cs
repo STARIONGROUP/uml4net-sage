@@ -98,6 +98,17 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
                 builder.Append("\n  - subsets `").Append(subsetted).Append('`');
             }
 
+            foreach (var body in feature.Body)
+            {
+                for (var index = 0; index < body.Body.Count; index++)
+                {
+                    var language = index < body.Languages.Count ? body.Languages[index] : "OCL";
+                    builder.Append("\n\n  ```").Append(language.ToLowerInvariant()).Append('\n');
+                    builder.Append("  ").Append(body.Body[index]).Append('\n');
+                    builder.Append("  ```");
+                }
+            }
+
             return builder.ToString();
         }
 

@@ -59,5 +59,31 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(feature.Lower, Is.EqualTo(1));
             Assert.That(feature.Upper, Is.EqualTo("1"));
         }
+
+        [Test]
+        public void FromOperation_captures_the_bodyCondition_ocl_specification()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+            var widget = catalog.Classes.Single(c => c.Name == "Widget");
+            var describe = widget.OwnedOperation.Single(o => o.Name == "describe");
+
+            var feature = FeatureExtractor.FromOperation(describe, widget.QualifiedName);
+
+            Assert.That(feature.Body, Has.Count.EqualTo(1));
+            Assert.That(feature.Body[0].Name, Is.EqualTo("describe_body"));
+            Assert.That(feature.Body[0].Body, Is.EqualTo(new[] { "result = (label)" }));
+        }
+
+        [Test]
+        public void FromProperty_has_no_body()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+            var widget = catalog.Classes.Single(c => c.Name == "Widget");
+            var label = widget.OwnedAttribute.Single(a => a.Name == "label");
+
+            var feature = FeatureExtractor.FromProperty(label, widget.QualifiedName);
+
+            Assert.That(feature.Body, Is.Empty);
+        }
     }
 }

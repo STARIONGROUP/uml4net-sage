@@ -55,7 +55,8 @@ namespace Uml4Net.Sage.MetamodelGen
                 IsComposite: property.IsComposite,
                 Redefines: property.RedefinedProperty.Where(p => !string.IsNullOrEmpty(p.QualifiedName)).Select(p => p.QualifiedName).ToList(),
                 Subsets: property.SubsettedProperty.Where(p => !string.IsNullOrEmpty(p.QualifiedName)).Select(p => p.QualifiedName).ToList(),
-                OwnerQualifiedName: ownerQualifiedName);
+                OwnerQualifiedName: ownerQualifiedName,
+                Body: []);
         }
 
         /// <summary>
@@ -86,7 +87,8 @@ namespace Uml4Net.Sage.MetamodelGen
                 IsComposite: false,
                 Redefines: operation.RedefinedOperation.Where(o => !string.IsNullOrEmpty(o.QualifiedName)).Select(o => o.QualifiedName).ToList(),
                 Subsets: [],
-                OwnerQualifiedName: ownerQualifiedName);
+                OwnerQualifiedName: ownerQualifiedName,
+                Body: ConstraintExtractor.FromOperationBody(operation));
         }
     }
 }

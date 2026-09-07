@@ -22,14 +22,15 @@ namespace Uml4Net.Sage.MetamodelGen
 {
     using System.Collections.Generic;
 
+    using uml4net.Classification;
     using uml4net.CommonStructure;
     using uml4net.Values;
 
     using Uml4Net.Sage.MetamodelGen.Model;
 
     /// <summary>
-    /// Extracts <c>ownedRule</c> constraints from a namespace (the MODEL provenance tier: read directly
-    /// from the metamodel XMI, not the specification text).
+    /// Extracts <c>ownedRule</c> constraints from a namespace, and <c>bodyCondition</c> constraints from an
+    /// operation (the MODEL provenance tier: read directly from the metamodel XMI, not the specification text).
     /// </summary>
     public static class ConstraintExtractor
     {
@@ -38,9 +39,23 @@ namespace Uml4Net.Sage.MetamodelGen
         /// </summary>
         public static IReadOnlyList<ConstraintInfo> FromNamespace(INamespace @namespace)
         {
+            return FromConstraints(@namespace.OwnedRule);
+        }
+
+        /// <summary>
+        /// Converts a query operation's <c>bodyCondition</c> - the OCL specification that backs a derived
+        /// property's accessor, e.g. <c>Connector::kind()</c> or <c>Message::messageKind()</c>.
+        /// </summary>
+        public static IReadOnlyList<ConstraintInfo> FromOperationBody(IOperation operation)
+        {
+            return FromConstraints(operation.BodyCondition);
+        }
+
+        private static IReadOnlyList<ConstraintInfo> FromConstraints(IEnumerable<IConstraint> constraints)
+        {
             var result = new List<ConstraintInfo>();
 
-            foreach (var constraint in @namespace.OwnedRule)
+            foreach (var constraint in constraints)
             {
                 foreach (var specification in constraint.Specification)
                 {

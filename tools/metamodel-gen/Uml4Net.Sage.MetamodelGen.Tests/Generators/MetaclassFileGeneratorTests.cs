@@ -88,6 +88,17 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
         }
 
         [Test]
+        public void Render_renders_an_operations_bodyCondition_ocl_as_a_fenced_code_block()
+        {
+            var widget = this.catalog.Classes.Single(c => c.Name == "Widget");
+
+            var markdown = MetaclassFileGenerator.Render(widget, this.graph);
+
+            Assert.That(markdown, Does.Contain("**describe**"));
+            Assert.That(markdown, Does.Contain("result = (label)"));
+        }
+
+        [Test]
         public void Render_says_none_for_a_class_with_no_constraints()
         {
             var gadget = this.catalog.Classes.Single(c => c.Name == "Gadget");

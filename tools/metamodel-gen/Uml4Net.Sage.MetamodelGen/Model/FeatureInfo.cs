@@ -38,6 +38,11 @@ namespace Uml4Net.Sage.MetamodelGen.Model
     /// <param name="Redefines">The qualified names of features this one redefines.</param>
     /// <param name="Subsets">The qualified names of features this one subsets.</param>
     /// <param name="OwnerQualifiedName">The qualified name of the metaclass that owns this feature.</param>
+    /// <param name="Body">
+    /// For an operation with a <c>bodyCondition</c>, the OCL specification that backs it (the formula behind
+    /// a derived property's <c>Query*()</c> accessor, e.g. <c>Connector::kind()</c>); empty for attributes and
+    /// for operations with no <c>bodyCondition</c>.
+    /// </param>
     public sealed record FeatureInfo(
         string Name,
         string Kind,
@@ -51,5 +56,6 @@ namespace Uml4Net.Sage.MetamodelGen.Model
         bool IsComposite,
         IReadOnlyList<string> Redefines,
         IReadOnlyList<string> Subsets,
-        string OwnerQualifiedName);
+        string OwnerQualifiedName,
+        IReadOnlyList<ConstraintInfo> Body);
 }
