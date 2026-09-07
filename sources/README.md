@@ -1,6 +1,6 @@
 # sources/
 
-Raw files fetched directly from omg.org by `uml4net-codex fetch`. **Nothing under `sources/` is
+Raw files fetched directly from omg.org by `uml4net-sage fetch`. **Nothing under `sources/` is
 ever committed to this repository** - see the root `CLAUDE.md` ("Committed vs git-ignored") and
 `NOTICE`. Only this README (which contains no OMG content, just URLs and licensing notes) is
 committed.
@@ -21,7 +21,7 @@ verbatim "USE OF SPECIFICATION" terms are reproduced in the root `NOTICE` file.
 
 Unlike SysML v2 (whose pilot-implementation XMI is mirrored on GitHub under EPL-2.0), UML has no
 GitHub-hosted mirror - every file above is fetched with a plain HTTPS GET directly from omg.org, no
-API pagination or tag discovery involved. See `Uml4Net.Codex.Knowledge.SourceFetcher` and
+API pagination or tag discovery involved. See `Uml4Net.Sage.Knowledge.SourceFetcher` and
 `KnownUmlVersions` for the exact URLs (kept in sync with this table by hand).
 
 `UMLDI.xmi` (the Diagram Interchange metamodel) is fetched for completeness but not yet mined into
@@ -32,6 +32,6 @@ fast-follow, not a v1 gap that blocks anything.
 ## Test fixtures
 
 No file under `sources/` (or anything derived from it) is used as a committed test fixture -
-`Uml4Net.Codex.MetamodelGen.Tests` uses small, hand-authored XMI files under its own `Fixtures/`
+`Uml4Net.Sage.MetamodelGen.Tests` uses small, hand-authored XMI files under its own `Fixtures/`
 directory instead, describing a fictional toy metamodel (`Widget`/`Gadget`/`Sample`), specifically
 to avoid any question about whether OMG's XMI may be redistributed as test data.

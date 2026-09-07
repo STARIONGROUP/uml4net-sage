@@ -1,4 +1,4 @@
-"""Thin, non-interactive entry point so the `uml4net-codex` C# CLI can invoke this pipeline.
+"""Thin, non-interactive entry point so the `uml4net-sage` C# CLI can invoke this pipeline.
 
     python -m spec_extract extract --pdf <path-to-pdf> --out <output-dir> [--document UML] [--version 2.5.1]
 

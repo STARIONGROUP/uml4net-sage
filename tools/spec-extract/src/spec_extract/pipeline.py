@@ -1,6 +1,6 @@
 """Stage 6: orchestrate stages 1-5 across a whole PDF and write the knowledge-base output.
 
-Output layout (matches the uml4net-codex knowledge base convention):
+Output layout (matches the uml4net-sage knowledge base convention):
     <output_dir>/clauses/<number>-<slug>.md   one file per clause
     <output_dir>/index.json                   array of {clause, title, pages, normative, file}
     <output_dir>/index.md                     human-readable table of the same

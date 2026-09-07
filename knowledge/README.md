@@ -1,18 +1,18 @@
 # knowledge/
 
 The generated UML 2.5.1 knowledge base skills read from. **Nothing under `knowledge/<version>/` is
-committed to this repository** - it's generated on your own machine by `uml4net-codex fetch` +
-`uml4net-codex generate`, from OMG's own XMI and PDF files, which are themselves never committed
+committed to this repository** - it's generated on your own machine by `uml4net-sage fetch` +
+`uml4net-sage generate`, from OMG's own XMI and PDF files, which are themselves never committed
 either (see the root `CLAUDE.md`, "Committed vs git-ignored", and `NOTICE`).
 
 ## Committed here
 
 - `registry.json` - the static list of UML versions this tool knows about (mirrors
-  `Uml4Net.Codex.Knowledge.KnownUmlVersions`), so skills can see what's available without invoking
+  `Uml4Net.Sage.Knowledge.KnownUmlVersions`), so skills can see what's available without invoking
   the CLI.
 - `metamodel.schema.json`, `index.schema.json`, `datapackage.schema.json` - JSON Schema
   documentation of the generated shapes below. None of these are copyrighted OMG content - they
-  describe uml4net-codex's own output format.
+  describe uml4net-sage's own output format.
 
 ## Generated per version (git-ignored)
 
@@ -32,7 +32,7 @@ knowledge/<version>/
 ```
 
 `knowledge/installed.json` (also git-ignored) records which version(s) are fetched/generated on
-this machine and which is the default - see `Uml4Net.Codex.Knowledge.InstalledVersionsStore`.
+this machine and which is the default - see `Uml4Net.Sage.Knowledge.InstalledVersionsStore`.
 
 ## Why `datapackage.json` and not a bespoke index
 

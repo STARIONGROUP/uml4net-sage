@@ -18,13 +18,13 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore uml4net-codex.slnx
+        run: dotnet restore uml4net-sage.slnx
 
       - name: Build
-        run: dotnet build uml4net-codex.slnx --no-restore --configuration Release /p:ContinuousIntegrationBuild=true
+        run: dotnet build uml4net-sage.slnx --no-restore --configuration Release /p:ContinuousIntegrationBuild=true
 
       - name: Test
-        run: dotnet test uml4net-codex.slnx --no-restore --no-build --configuration Release --logger "trx" --results-directory TestResults
+        run: dotnet test uml4net-sage.slnx --no-restore --no-build --configuration Release --logger "trx" --results-directory TestResults
 
       - name: Upload test results
         if: always()

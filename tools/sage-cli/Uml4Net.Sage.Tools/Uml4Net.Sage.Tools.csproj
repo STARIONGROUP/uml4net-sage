@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\knowledge-gen\Uml4Net.Sage.Knowledge\Uml4Net.Sage.Knowledge.csproj" />
+    <ProjectReference Include="..\..\metamodel-gen\Uml4Net.Sage.MetamodelGen\Uml4Net.Sage.MetamodelGen.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>uml4net-sage</AssemblyName>
+  </PropertyGroup>
+
+</Project>

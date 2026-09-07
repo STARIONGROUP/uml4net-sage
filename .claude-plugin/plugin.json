@@ -1,17 +1,17 @@
 {
-  "name": "uml4net-codex",
-  "displayName": "Codex — UML 2.5.1 Agent",
+  "name": "uml4net-sage",
+  "displayName": "Sage — UML 2.5.1 Agent",
   "version": "1.1.0",
-  "description": "Codex is the AI agent of the uml4net ecosystem: grounded, spec-accurate answers about the OMG UML 2.5.1 specification, backed by a knowledge base built from the UML metamodel XMI, the specification text and uml4net.",
+  "description": "Sage is the AI agent of the uml4net ecosystem: grounded, spec-accurate answers about the OMG UML 2.5.1 specification, backed by a knowledge base built from the UML metamodel XMI, the specification text and uml4net.",
   "author": {
     "name": "Starion Group S.A.",
     "url": "https://github.com/STARIONGROUP"
   },
-  "homepage": "https://github.com/STARIONGROUP/uml4net-codex",
-  "repository": "https://github.com/STARIONGROUP/uml4net-codex",
+  "homepage": "https://github.com/STARIONGROUP/uml4net-sage",
+  "repository": "https://github.com/STARIONGROUP/uml4net-sage",
   "license": "Apache-2.0",
   "keywords": ["uml", "uml-2.5.1", "omg", "metamodel", "xmi", "uml4net", "mbse"],
-  "codexCliVersion": "1.1.0",
+  "sageCliVersion": "1.1.0",
   "hooks": {
     "SessionStart": [
       {
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "case \"$(uname -s)-$(uname -m)\" in Linux-x86_64) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/linux-x64/uml4net-codex-hook\" ;; Darwin-arm64) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/osx-arm64/uml4net-codex-hook\" ;; MINGW*|CYGWIN*|MSYS*) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/win-x64/uml4net-codex-hook.exe\" ;; esac",
+            "command": "case \"$(uname -s)-$(uname -m)\" in Linux-x86_64) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/linux-x64/uml4net-sage-hook\" ;; Darwin-arm64) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/osx-arm64/uml4net-sage-hook\" ;; MINGW*|CYGWIN*|MSYS*) exec \"${CLAUDE_PLUGIN_ROOT}/hooks/native/win-x64/uml4net-sage-hook.exe\" ;; esac",
             "shell": "bash",
             "timeout": 15
           }

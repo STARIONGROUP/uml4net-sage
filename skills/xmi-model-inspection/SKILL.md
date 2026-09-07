@@ -14,7 +14,7 @@ Run the CLI directly (this is the one skill that executes the CLI rather than on
 knowledge base):
 
 ```bash
-uml4net-codex inspect <path-to-file> --json
+uml4net-sage inspect <path-to-file> --json
 ```
 
 If the CLI reports the version hasn't been generated yet, run the `knowledge-setup` skill's fetch +

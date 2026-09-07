@@ -21,12 +21,12 @@ stays Python while everything else is C#.
 
 ```bash
 # .NET (everything except spec-extract)
-dotnet restore uml4net-codex.slnx
-dotnet build uml4net-codex.slnx
-dotnet test uml4net-codex.slnx --no-build
+dotnet restore uml4net-sage.slnx
+dotnet build uml4net-sage.slnx
+dotnet test uml4net-sage.slnx --no-build
 
 # Run a single test project
-dotnet test tools/metamodel-gen/Uml4Net.Codex.MetamodelGen.Tests/Uml4Net.Codex.MetamodelGen.Tests.csproj
+dotnet test tools/metamodel-gen/Uml4Net.Sage.MetamodelGen.Tests/Uml4Net.Sage.MetamodelGen.Tests.csproj
 
 # Python (tools/spec-extract only)
 cd tools/spec-extract
@@ -45,15 +45,15 @@ before bumping either).
 
 | Project | Purpose |
 |---|---|
-| `tools/metamodel-gen/Uml4Net.Codex.MetamodelGen` | Reads UML.xmi/PrimitiveTypes.xmi/StandardProfile.xmi via `uml4net.xmi`, generates `metamodel/` + `standard-profile/` |
-| `tools/knowledge-gen/Uml4Net.Codex.Knowledge` | `KnownUmlVersions` registry, `SourceFetcher` (plain HTTPS GETs from omg.org), `PythonSpecExtractRunner` (the C#/Python seam), `DataPackageGenerator`, `InstalledVersionsStore` |
-| `tools/codex-cli/Uml4Net.Codex.Tools` | The `uml4net-codex` CLI: `fetch`, `generate`, `versions`, `use`, `remove`, `check`, `inspect` |
-| `tools/codex-cli/Uml4Net.Codex.Tools.Hook` | The committed, NativeAOT, dependency-free SessionStart hook |
+| `tools/metamodel-gen/Uml4Net.Sage.MetamodelGen` | Reads UML.xmi/PrimitiveTypes.xmi/StandardProfile.xmi via `uml4net.xmi`, generates `metamodel/` + `standard-profile/` |
+| `tools/knowledge-gen/Uml4Net.Sage.Knowledge` | `KnownUmlVersions` registry, `SourceFetcher` (plain HTTPS GETs from omg.org), `PythonSpecExtractRunner` (the C#/Python seam), `DataPackageGenerator`, `InstalledVersionsStore` |
+| `tools/sage-cli/Uml4Net.Sage.Tools` | The `uml4net-sage` CLI: `fetch`, `generate`, `versions`, `use`, `remove`, `check`, `inspect` |
+| `tools/sage-cli/Uml4Net.Sage.Tools.Hook` | The committed, NativeAOT, dependency-free SessionStart hook |
 | `tools/spec-extract` | Python: PDF-to-markdown clause extraction |
 
 ### Key types & patterns
 
-- **Reading UML metamodel XMI**: `Uml4Net.Codex.MetamodelGen.XmiModelReader.Read(path, localReferenceBasePath)`
+- **Reading UML metamodel XMI**: `Uml4Net.Sage.MetamodelGen.XmiModelReader.Read(path, localReferenceBasePath)`
   wraps `uml4net.xmi`'s `XmiReaderBuilder`. UML.xmi/PrimitiveTypes.xmi/StandardProfile.xmi/UMLDI.xmi
   cross-reference each other via **absolute http(s) hrefs** (e.g.
   `http://www.omg.org/spec/UML/20161101/UML.xmi#Class`), not `pathmap://` URIs - `uml4net.xmi`
@@ -71,7 +71,7 @@ before bumping either).
 - **`PythonSpecExtractRunner`'s `uv` fallback**: verbatim spec-citation quoting shells out to
   `tools/spec-extract` (Python/pdfplumber). It first tries a `.venv` under that directory or a system
   `python`/`python3`; if neither is found, it provisions [`uv`](https://astral.sh/uv) on demand
-  (`Uml4Net.Codex.Knowledge.Toolchain.UvProvisioner`, downloaded/checksum-verified from its GitHub
+  (`Uml4Net.Sage.Knowledge.Toolchain.UvProvisioner`, downloaded/checksum-verified from its GitHub
   releases and cached alongside the CLI's own self-fetch cache) and runs `uv run --project
   tools/spec-extract python -m spec_extract ...` instead - `uv` resolves a matching Python and installs
   the project's dependencies into a managed venv itself, so an installed plugin needs neither a
@@ -92,16 +92,16 @@ license (see `NOTICE`): OMG permits informational use of its specification but n
 **Never committed**: anything under `sources/<version>/` (the raw XMI/PDF files) or
 `knowledge/<version>/` (the generated knowledge base, since it's derived from and in the `spec/`
 case *is* the OMG text) or `knowledge/installed.json` (purely local machine state). All regenerated
-fresh, per machine, by `uml4net-codex fetch` + `generate`.
+fresh, per machine, by `uml4net-sage fetch` + `generate`.
 
 **Committed**: everything version-independent - `knowledge/registry.json` and the `*.schema.json`
-files (they describe uml4net-codex's own output shape, not OMG content), `sources/README.md` and
+files (they describe uml4net-sage's own output shape, not OMG content), `sources/README.md` and
 `knowledge/README.md` (provenance/shape documentation, no OMG text), the plugin's `skills/`/
 `agents/`/`commands/`, and `hooks/native/*` binaries (compiled from this repo's own C# source - see
 `hooks/native/README.md` for why binaries are the one exception to "nothing generated is
 committed").
 
-**No committed test fixtures derived from OMG content**: `Uml4Net.Codex.MetamodelGen.Tests` uses
+**No committed test fixtures derived from OMG content**: `Uml4Net.Sage.MetamodelGen.Tests` uses
 small, hand-authored XMI describing a fictional toy metamodel (`Widget`/`Gadget`/`Sample`) under its
 own `Fixtures/` directory, specifically to sidestep any question about whether OMG's XMI may be
 legally redistributed as test data (its specification *license* only clearly covers the *text*, not

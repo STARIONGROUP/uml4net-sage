@@ -32,8 +32,8 @@ provisioned to run `spec_extract` - offline on first use, or an unsupported plat
 - If you can still name the likely governing clause (e.g. from a metamodel element's context or
   general UML knowledge), cite the clause **number only**, tagged **DERIVED**, and say plainly that
   this is a reference, not a verbatim quote.
-- Tell the user how to unlock verbatim citation: run `uml4net-codex fetch --version <version>` (if
-  not already fetched with PDFs) then `uml4net-codex generate --version <version>`.
+- Tell the user how to unlock verbatim citation: run `uml4net-sage fetch --version <version>` (if
+  not already fetched with PDFs) then `uml4net-sage generate --version <version>`.
 
 ## Known extraction limitations
 

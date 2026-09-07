@@ -10,10 +10,10 @@
   },
   "plugins": [
     {
-      "name": "uml4net-codex",
+      "name": "uml4net-sage",
       "source": {
         "source": "github",
-        "repo": "STARIONGROUP/uml4net-codex",
+        "repo": "STARIONGROUP/uml4net-sage",
         "ref": "v1.1.0"
       },
       "description": "UML 2.5.1 agent: metamodel lookup, standard-profile lookup, normative spec citation, and XMI model inspection."

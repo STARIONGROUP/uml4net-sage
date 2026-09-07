@@ -1,8 +1,8 @@
 # hooks/native/
 
 Committed, platform-specific `SessionStart` hook binaries: a small, dependency-free NativeAOT build
-of `tools/codex-cli/Uml4Net.Codex.Tools.Hook`. This binary only checks local knowledge-base status
-and (on demand) downloads/verifies the full `uml4net-codex` CLI from a GitHub Release - it never
+of `tools/sage-cli/Uml4Net.Sage.Tools.Hook`. This binary only checks local knowledge-base status
+and (on demand) downloads/verifies the full `uml4net-sage` CLI from a GitHub Release - it never
 depends on `uml4net.xmi`, PdfPig-equivalents, or any other heavy library, which is what makes it
 NativeAOT-publishable in the first place (the full CLI is not - see the root `CLAUDE.md`).
 
@@ -10,9 +10,9 @@ NativeAOT-publishable in the first place (the full CLI is not - see the root `CL
 
 ```
 hooks/native/
-├── win-x64/uml4net-codex-hook.exe
-├── linux-x64/uml4net-codex-hook
-└── osx-arm64/uml4net-codex-hook
+├── win-x64/uml4net-sage-hook.exe
+├── linux-x64/uml4net-sage-hook
+└── osx-arm64/uml4net-sage-hook
 ```
 
 `.claude-plugin/plugin.json`'s `SessionStart` hook command dispatches to the matching binary by
@@ -56,7 +56,7 @@ runtime identifiers and commits the resulting binaries here as part of cutting a
 one locally (including for `osx-x64`, on real Intel-Mac hardware):
 
 ```bash
-dotnet publish tools/codex-cli/Uml4Net.Codex.Tools.Hook -r <rid> -c Release --self-contained -p:PublishAot=true -o hooks/native/<rid>
+dotnet publish tools/sage-cli/Uml4Net.Sage.Tools.Hook -r <rid> -c Release --self-contained -p:PublishAot=true -o hooks/native/<rid>
 ```
 
 **Prerequisites for a NativeAOT publish**: the C++ linker toolchain for your platform (on Windows,
@@ -69,6 +69,6 @@ has no such dependency).
 
 This is the one deliberate exception to "nothing generated is committed" (see the root `CLAUDE.md`,
 "Committed vs git-ignored") - these binaries contain no OMG-derived content whatsoever (they're
-compiled from this repository's own C# source, `tools/codex-cli/Uml4Net.Codex.Tools.Hook/`), and a
+compiled from this repository's own C# source, `tools/sage-cli/Uml4Net.Sage.Tools.Hook/`), and a
 plugin install needs a ready-to-run hook without requiring the end user to have a .NET SDK and a
 C++ linker toolchain installed just to use the plugin at all.

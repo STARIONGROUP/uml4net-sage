@@ -1,8 +1,8 @@
 name: Release CLI
 
-# Publishes the full uml4net-codex CLI as a self-contained, per-runtime-identifier zip for each of
+# Publishes the full uml4net-sage CLI as a self-contained, per-runtime-identifier zip for each of
 # the four published platforms, records each asset's SHA-256 in the release body (parsed by
-# Uml4Net.Codex.Tools.Hook.ChecksumTable), and drafts a GitHub Release tagged tools-v<version>.
+# Uml4Net.Sage.Tools.Hook.ChecksumTable), and drafts a GitHub Release tagged tools-v<version>.
 # NativeAOT is deliberately NOT used here - see CLAUDE.md ("uml4net.xmi is reflection-heavy").
 
 on:
@@ -30,26 +30,26 @@ jobs:
 
       - name: Publish
         run: >
-          dotnet publish tools/codex-cli/Uml4Net.Codex.Tools
+          dotnet publish tools/sage-cli/Uml4Net.Sage.Tools
           -r ${{ matrix.rid }} -c Release --self-contained
           -o publish/${{ matrix.rid }}
 
       - name: Zip
         working-directory: publish/${{ matrix.rid }}
-        run: zip -r "../../uml4net-codex-${{ steps.version.outputs.version }}-${{ matrix.rid }}.zip" .
+        run: zip -r "../../uml4net-sage-${{ steps.version.outputs.version }}-${{ matrix.rid }}.zip" .
 
       - name: Checksum
         id: checksum
         run: |
-          hash=$(sha256sum "uml4net-codex-${{ steps.version.outputs.version }}-${{ matrix.rid }}.zip" | cut -d' ' -f1)
-          echo "line=uml4net-codex-${{ steps.version.outputs.version }}-${{ matrix.rid }}.zip sha256:$hash" >> "$GITHUB_OUTPUT"
+          hash=$(sha256sum "uml4net-sage-${{ steps.version.outputs.version }}-${{ matrix.rid }}.zip" | cut -d' ' -f1)
+          echo "line=uml4net-sage-${{ steps.version.outputs.version }}-${{ matrix.rid }}.zip sha256:$hash" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.rid }}
           path: |
-            uml4net-codex-*.zip
+            uml4net-sage-*.zip
           retention-days: 7
 
       - name: Save checksum line
@@ -86,7 +86,7 @@ jobs:
       - name: Build release body
         run: |
           {
-            echo "## uml4net-codex tools v${{ steps.version.outputs.version }}"
+            echo "## uml4net-sage tools v${{ steps.version.outputs.version }}"
             echo
             echo "Checksums:"
             echo

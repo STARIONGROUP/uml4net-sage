@@ -1,6 +1,6 @@
 ---
 name: knowledge-setup
-description: Check whether the UML 2.5.1 knowledge base is fetched/generated, and fetch and/or generate it. Use when another skill reports the knowledge base is missing or incomplete, when the user asks to set up/update/refresh the UML knowledge, or when a SessionStart hook message mentions uml4net-codex needing setup.
+description: Check whether the UML 2.5.1 knowledge base is fetched/generated, and fetch and/or generate it. Use when another skill reports the knowledge base is missing or incomplete, when the user asks to set up/update/refresh the UML knowledge, or when a SessionStart hook message mentions uml4net-sage needing setup.
 ---
 
 # Knowledge setup
@@ -14,7 +14,7 @@ against exists (unlike SysML v2's rolling releases).
 ## Checking status
 
 ```bash
-uml4net-codex check --json
+uml4net-sage check --json
 ```
 
 Fully offline (no network call) - reads `knowledge/installed.json` and file existence only. Reports
@@ -22,7 +22,7 @@ whether any version is fetched, whether the default is generated, and whether sp
 citation) is available.
 
 ```bash
-uml4net-codex versions --json
+uml4net-sage versions --json
 ```
 
 Lists every UML version this tool knows about (today, just 2.5.1) alongside its local state.
@@ -33,9 +33,9 @@ Both of these make network calls / write files - **confirm with the user before 
 unless they've clearly already asked for this ("set up the UML knowledge base", "fetch UML 2.5.1").
 
 ```bash
-uml4net-codex fetch --version 2.5.1           # XMI + specification PDFs from omg.org
-uml4net-codex fetch --version 2.5.1 --no-specs # XMI only - faster, but spec-citation degrades to clause numbers
-uml4net-codex generate --version 2.5.1         # metamodel + standard-profile + (if PDFs fetched) spec text + datapackage.json
+uml4net-sage fetch --version 2.5.1           # XMI + specification PDFs from omg.org
+uml4net-sage fetch --version 2.5.1 --no-specs # XMI only - faster, but spec-citation degrades to clause numbers
+uml4net-sage generate --version 2.5.1         # metamodel + standard-profile + (if PDFs fetched) spec text + datapackage.json
 ```
 
 `generate` never fails outright if spec extraction can't run (PDFs missing, or Python/the
@@ -48,8 +48,8 @@ Only relevant once more than one UML version is ever installed (there's no reaso
 CLI supports it for when OMG eventually ships a new version):
 
 ```bash
-uml4net-codex use --version <version>              # switch the default; refuses unless generated
-uml4net-codex remove --version <version> [--force] # delete a version's sources + knowledge base
+uml4net-sage use --version <version>              # switch the default; refuses unless generated
+uml4net-sage remove --version <version> [--force] # delete a version's sources + knowledge base
 ```
 
 ## Answering
