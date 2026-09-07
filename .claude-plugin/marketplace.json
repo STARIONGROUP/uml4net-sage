@@ -14,7 +14,7 @@
       "source": {
         "source": "github",
         "repo": "STARIONGROUP/uml4net-codex",
-        "ref": "v1.0.0"
+        "ref": "v1.1.0"
       },
       "description": "UML 2.5.1 agent: metamodel lookup, standard-profile lookup, normative spec citation, and XMI model inspection."
     }
