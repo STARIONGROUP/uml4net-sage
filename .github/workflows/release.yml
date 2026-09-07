@@ -100,4 +100,4 @@ jobs:
           name: "tools v${{ steps.version.outputs.version }}"
           body_path: release-body.md
           files: dist/*.zip
-          prerelease: ${{ contains(github.ref_name, '-') }}
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
