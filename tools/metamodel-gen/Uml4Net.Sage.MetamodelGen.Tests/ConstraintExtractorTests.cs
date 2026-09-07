@@ -47,5 +47,20 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
 
             Assert.That(ConstraintExtractor.FromNamespace(gadget), Is.Empty);
         }
+
+        [Test]
+        public void FromOperationBody_reads_the_ocl_body_of_an_operation_bodyCondition()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+            var widget = catalog.Classes.Single(c => c.Name == "Widget");
+            var describe = widget.OwnedOperation.Single(o => o.Name == "describe");
+
+            var constraints = ConstraintExtractor.FromOperationBody(describe);
+
+            Assert.That(constraints, Has.Count.EqualTo(1));
+            Assert.That(constraints[0].Name, Is.EqualTo("describe_body"));
+            Assert.That(constraints[0].Languages, Is.EqualTo(new[] { "OCL" }));
+            Assert.That(constraints[0].Body, Is.EqualTo(new[] { "result = (label)" }));
+        }
     }
 }

@@ -22,6 +22,13 @@
 					<lowerValue xmi:type="uml:LiteralInteger" xmi:id="Widget-describe-result-lv" value="1"/>
 					<upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="Widget-describe-result-uv" value="1"/>
 				</ownedParameter>
+				<bodyCondition xmi:idref="Widget-describe-body"/>
+				<ownedRule xmi:type="uml:Constraint" xmi:id="Widget-describe-body" name="describe_body">
+					<specification xmi:type="uml:OpaqueExpression" xmi:id="Widget-describe-body-spec">
+						<language>OCL</language>
+						<body>result = (label)</body>
+					</specification>
+				</ownedRule>
 			</ownedOperation>
 		</packagedElement>
 		<packagedElement xmi:type="uml:Class" xmi:id="Gadget" name="Gadget" isAbstract="false">
