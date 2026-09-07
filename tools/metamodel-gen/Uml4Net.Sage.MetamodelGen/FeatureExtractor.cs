@@ -1,0 +1,92 @@
+// -------------------------------------------------------------------------------------------------
+// <copyright file="FeatureExtractor.cs" company="Starion Group S.A.">
+//
+//   Copyright (C) 2019-2026 Starion Group S.A.
+//
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+// </copyright>
+// ------------------------------------------------------------------------------------------------
+
+namespace Uml4Net.Sage.MetamodelGen
+{
+    using System.Linq;
+
+    using uml4net.Classification;
+    using uml4net.CommonStructure;
+    using uml4net.SimpleClassifiers;
+    using uml4net.StructuredClassifiers;
+
+    using Uml4Net.Sage.MetamodelGen.Model;
+
+    /// <summary>
+    /// Converts <see cref="IProperty"/>/<see cref="IOperation"/> instances read from XMI into render-ready
+    /// <see cref="FeatureInfo"/> records (the MODEL provenance tier: read directly from the metamodel XMI).
+    /// </summary>
+    public static class FeatureExtractor
+    {
+        /// <summary>
+        /// Converts an owned attribute.
+        /// </summary>
+        public static FeatureInfo FromProperty(IProperty property, string ownerQualifiedName)
+        {
+            var type = property.Type as INamedElement;
+
+            return new FeatureInfo(
+                Name: property.Name,
+                Kind: "attribute",
+                TypeName: type?.Name,
+                TypeQualifiedName: type?.QualifiedName,
+                Lower: property.Lower,
+                Upper: property.Upper,
+                IsDerived: property.IsDerived,
+                IsOrdered: property.IsOrdered,
+                IsUnique: property.IsUnique,
+                IsComposite: property.IsComposite,
+                Redefines: property.RedefinedProperty.Where(p => !string.IsNullOrEmpty(p.QualifiedName)).Select(p => p.QualifiedName).ToList(),
+                Subsets: property.SubsettedProperty.Where(p => !string.IsNullOrEmpty(p.QualifiedName)).Select(p => p.QualifiedName).ToList(),
+                OwnerQualifiedName: ownerQualifiedName);
+        }
+
+        /// <summary>
+        /// Converts an owned operation.
+        /// </summary>
+        /// <remarks>
+        /// The return type and its multiplicity/ordering are read from the <c>return</c>-directed owned
+        /// parameter rather than <see cref="IOperation.Type"/>/<see cref="IOperation.Lower"/>/
+        /// <see cref="IOperation.Upper"/>/<see cref="IOperation.IsOrdered"/>/<see cref="IOperation.IsUnique"/>:
+        /// those derived properties are not yet implemented by uml4net's generated code (they throw
+        /// <see cref="System.NotSupportedException"/>) as of uml4net.xmi 8.5.0.
+        /// </remarks>
+        public static FeatureInfo FromOperation(IOperation operation, string ownerQualifiedName)
+        {
+            var returnParameter = operation.OwnedParameter.FirstOrDefault(p => p.Direction == ParameterDirectionKind.Return);
+            var type = returnParameter?.Type as INamedElement;
+
+            return new FeatureInfo(
+                Name: operation.Name,
+                Kind: "operation",
+                TypeName: type?.Name,
+                TypeQualifiedName: type?.QualifiedName,
+                Lower: returnParameter?.Lower ?? 0,
+                Upper: returnParameter?.Upper ?? "0",
+                IsDerived: false,
+                IsOrdered: returnParameter?.IsOrdered ?? false,
+                IsUnique: returnParameter?.IsUnique ?? true,
+                IsComposite: false,
+                Redefines: operation.RedefinedOperation.Where(o => !string.IsNullOrEmpty(o.QualifiedName)).Select(o => o.QualifiedName).ToList(),
+                Subsets: [],
+                OwnerQualifiedName: ownerQualifiedName);
+        }
+    }
+}

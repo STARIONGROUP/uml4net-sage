@@ -1,9 +1,9 @@
-# uml4net-codex
+# uml4net-sage
 
 Claude plugin providing grounded, spec-accurate answers about UML, backed by a knowledge base built
 from the OMG UML specification, the metamodel and uml4net.
 
-Codex is the AI agent of the [uml4net](https://github.com/STARIONGROUP/uml4net) ecosystem: a bridge
+Sage is the AI agent of the [uml4net](https://github.com/STARIONGROUP/uml4net) ecosystem: a bridge
 between engineers and the UML 2.5.1 specification. It reads the OMG UML metamodel XMI, the Standard
 Profile, and (optionally) the specification PDF - all fetched fresh on your own machine, never
 redistributed by this plugin - and answers questions grounded in that data instead of general
@@ -12,8 +12,8 @@ training knowledge.
 ## Install
 
 ```
-/plugin marketplace add STARIONGROUP/uml4net-codex
-/plugin install uml4net-codex@uml4net
+/plugin marketplace add STARIONGROUP/uml4net-sage
+/plugin install uml4net-sage@uml4net
 ```
 
 Nothing is downloaded at install time - OMG's specification files aren't redistributed here (see
@@ -21,8 +21,8 @@ Nothing is downloaded at install time - OMG's specification files aren't redistr
 knowledge base, or run directly:
 
 ```bash
-uml4net-codex fetch --version 2.5.1     # XMI + specification PDFs, from omg.org
-uml4net-codex generate --version 2.5.1  # builds the knowledge base
+uml4net-sage fetch --version 2.5.1     # XMI + specification PDFs, from omg.org
+uml4net-sage generate --version 2.5.1  # builds the knowledge base
 ```
 
 Pass `--no-specs` to `fetch` to skip the PDFs - metamodel/Standard Profile lookups still work fully;
@@ -47,7 +47,7 @@ without the PDF available).
 One UML version is relevant today - 2.5.1 - fetched from a fixed, static set of OMG URLs (see
 `sources/README.md`). Unlike specifications with a rolling release cadence, there's no
 update-checking machinery here: if OMG ever ships a new UML version, a maintainer adds one entry to
-`Uml4Net.Codex.Knowledge.KnownUmlVersions` and cuts a new plugin release - a deliberate,
+`Uml4Net.Sage.Knowledge.KnownUmlVersions` and cuts a new plugin release - a deliberate,
 human-in-the-loop step rather than automated discovery.
 
 ## The knowledge base
@@ -68,7 +68,7 @@ markdown page. Without `jq`, they fall back to `Grep`/`Read`.
 
 The OMG UML 2.5.1 specification PDF and its four metamodel XMI files are copyrighted by OMG and its
 member companies (see `NOTICE` for the full list and license terms) and are **never committed to
-this repository or bundled with any release** - `uml4net-codex fetch` downloads them fresh, directly
+this repository or bundled with any release** - `uml4net-sage fetch` downloads them fresh, directly
 from omg.org, onto your own machine:
 
 - Specification PDF: https://www.omg.org/spec/UML/2.5.1/PDF

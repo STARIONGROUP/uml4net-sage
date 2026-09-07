@@ -34,7 +34,7 @@ jobs:
 
       - name: Publish (NativeAOT)
         run: >
-          dotnet publish tools/codex-cli/Uml4Net.Codex.Tools.Hook
+          dotnet publish tools/sage-cli/Uml4Net.Sage.Tools.Hook
           -r ${{ matrix.rid }} -c Release --self-contained
           -p:PublishAot=true -p:DebugType=none
           -o hooks/native/${{ matrix.rid }}
@@ -43,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hook-${{ matrix.rid }}
-          path: hooks/native/${{ matrix.rid }}/uml4net-codex-hook*
+          path: hooks/native/${{ matrix.rid }}/uml4net-sage-hook*
 
   commit:
     needs: build
@@ -69,8 +69,8 @@ jobs:
 
       - name: Mark non-Windows binaries executable
         run: |
-          chmod +x hooks/native/linux-x64/uml4net-codex-hook
-          chmod +x hooks/native/osx-arm64/uml4net-codex-hook
+          chmod +x hooks/native/linux-x64/uml4net-sage-hook
+          chmod +x hooks/native/osx-arm64/uml4net-sage-hook
 
       - name: Commit
         run: |

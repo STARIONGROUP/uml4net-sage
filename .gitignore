@@ -331,11 +331,11 @@ ASALocalRun/
 /.claude/settings.local.json
 
 ##########################################
-# uml4net-codex knowledge base
+# uml4net-sage knowledge base
 #
 # Nothing OMG-copyrighted (spec PDFs, metamodel XMI) or derived directly from
 # it is ever committed. Everything per-version is fetched/generated locally
-# on demand by the `uml4net-codex` CLI. See CLAUDE.md / sources/README.md.
+# on demand by the `uml4net-sage` CLI. See CLAUDE.md / sources/README.md.
 ##########################################
 /sources/*/
 /knowledge/*/

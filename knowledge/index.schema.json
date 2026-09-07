@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/STARIONGROUP/uml4net-codex/knowledge/index.schema.json",
-  "title": "uml4net-codex index.json files",
+  "$id": "https://github.com/STARIONGROUP/uml4net-sage/knowledge/index.schema.json",
+  "title": "uml4net-sage index.json files",
   "description": "The three flat, array-shaped index files a generated knowledge base contains: metamodel/index.json, standard-profile/index.json, and (once spec text is extracted) spec/index.json. Each is an array of rows rather than a keyed map so it also qualifies as a valid Frictionless tabular-data-resource (see datapackage.schema.json).",
   "definitions": {
     "metamodelIndex": {

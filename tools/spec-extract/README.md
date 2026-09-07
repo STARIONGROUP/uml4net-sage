@@ -49,7 +49,7 @@ the full pipeline against a real OMG UML spec PDF, but only when `UML_SPEC_PDF_P
 locally-supplied copy — it is never fetched or committed by the test itself, and it asserts only
 structural properties (clause count, a known clause-number prefix), never verbatim spec text.
 
-A thin, non-interactive entry point exists so the `uml4net-codex` C# CLI's `generate` verb can
+A thin, non-interactive entry point exists so the `uml4net-sage` C# CLI's `generate` verb can
 invoke this pipeline as a subprocess for its `spec` step:
 
 ```bash

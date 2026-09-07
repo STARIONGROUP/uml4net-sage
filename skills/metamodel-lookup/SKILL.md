@@ -14,7 +14,7 @@ primitive types (Integer, String, ...). Not for Standard Profile stereotypes (`Â
 ## Read order
 
 1. `knowledge/installed.json` - resolve the default UML version (the `default` field). If the file
-   doesn't exist or has no versions, tell the user to run `uml4net-codex fetch` first (see the
+   doesn't exist or has no versions, tell the user to run `uml4net-sage fetch` first (see the
    `knowledge-setup` skill) and stop.
 2. `knowledge/<version>/metamodel/index.json` - an array of `{name, kind, package, qualifiedName,
    isAbstract, file}` rows. Find the row for the element the user asked about (case-insensitive
