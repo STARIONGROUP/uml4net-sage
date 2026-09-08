@@ -61,13 +61,15 @@ before bumping either).
   as all four files sit together under their original names, no `PathMaps` entries are needed.
   (`PathMaps`/`pathmap://` still matters for the `inspect` verb's `XmiInspector`, which loads
   arbitrary user-supplied XMI that may use that scheme, e.g. Enterprise Architect/MagicDraw exports.)
-- **Known uml4net.xmi 8.x gaps**: `IOperation.Type`/`Lower`/`Upper`/`IsOrdered`/`IsUnique` and
-  `IClass.Extension` are derived properties uml4net hasn't implemented yet - they throw
-  `NotSupportedException`. `FeatureExtractor.FromOperation` reads the return type/multiplicity from
-  the operation's `return`-directed `OwnedParameter` instead; `StereotypeFileGenerator` derives a
-  stereotype's base metaclass from its own `base_<Metaclass>` owned attribute (the OMG Standard
-  Profile's fixed naming convention) instead of `IClass.Extension`. Re-check these workarounds if
-  `uml4net.xmi` is upgraded past 8.5.0 - the underlying bug may be fixed.
+- **Known uml4net.xmi 8.x gaps**: as of uml4net.xmi 8.5.0, `IOperation.Type`/`Lower`/`Upper`/
+  `IsOrdered`/`IsUnique` and `IClass.Extension` were derived properties uml4net hadn't implemented yet
+  - they threw `NotSupportedException`. uml4net.xmi 8.5.1 fixed the `IOperation` gap (and
+  `IClass.Extension` itself), so `FeatureExtractor.FromOperation` now reads those directly rather than
+  duplicating the return-parameter lookup by hand. `IExtension.Metaclass`/`IsRequired` still throw as
+  of 8.5.1, though, so `StereotypeFileGenerator` still derives a stereotype's base metaclass from its
+  own `base_<Metaclass>` owned attribute (the OMG Standard Profile's fixed naming convention) instead
+  of walking `IClass.Extension` → `IExtension.Metaclass`. Re-check that workaround if `uml4net.xmi` is
+  upgraded past 8.5.1 - the underlying bug may be fixed.
 - **`PythonSpecExtractRunner`'s `uv` fallback**: verbatim spec-citation quoting shells out to
   `tools/spec-extract` (Python/pdfplumber). It first tries a `.venv` under that directory or a system
   `python`/`python3`; if neither is found, it provisions [`uv`](https://astral.sh/uv) on demand
