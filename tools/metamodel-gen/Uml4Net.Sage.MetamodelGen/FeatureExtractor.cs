@@ -24,7 +24,6 @@ namespace Uml4Net.Sage.MetamodelGen
 
     using uml4net.Classification;
     using uml4net.CommonStructure;
-    using uml4net.SimpleClassifiers;
     using uml4net.StructuredClassifiers;
 
     using Uml4Net.Sage.MetamodelGen.Model;
@@ -62,28 +61,20 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Converts an owned operation.
         /// </summary>
-        /// <remarks>
-        /// The return type and its multiplicity/ordering are read from the <c>return</c>-directed owned
-        /// parameter rather than <see cref="IOperation.Type"/>/<see cref="IOperation.Lower"/>/
-        /// <see cref="IOperation.Upper"/>/<see cref="IOperation.IsOrdered"/>/<see cref="IOperation.IsUnique"/>:
-        /// those derived properties are not yet implemented by uml4net's generated code (they throw
-        /// <see cref="System.NotSupportedException"/>) as of uml4net.xmi 8.5.0.
-        /// </remarks>
         public static FeatureInfo FromOperation(IOperation operation, string ownerQualifiedName)
         {
-            var returnParameter = operation.OwnedParameter.FirstOrDefault(p => p.Direction == ParameterDirectionKind.Return);
-            var type = returnParameter?.Type as INamedElement;
+            var type = operation.Type as INamedElement;
 
             return new FeatureInfo(
                 Name: operation.Name,
                 Kind: "operation",
                 TypeName: type?.Name,
                 TypeQualifiedName: type?.QualifiedName,
-                Lower: returnParameter?.Lower ?? 0,
-                Upper: returnParameter?.Upper ?? "0",
+                Lower: operation.Lower,
+                Upper: operation.Upper,
                 IsDerived: false,
-                IsOrdered: returnParameter?.IsOrdered ?? false,
-                IsUnique: returnParameter?.IsUnique ?? true,
+                IsOrdered: operation.IsOrdered,
+                IsUnique: operation.IsUnique,
                 IsComposite: false,
                 Redefines: operation.RedefinedOperation.Where(o => !string.IsNullOrEmpty(o.QualifiedName)).Select(o => o.QualifiedName).ToList(),
                 Subsets: [],

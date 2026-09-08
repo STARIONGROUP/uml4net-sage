@@ -45,9 +45,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
         [Test]
         public void FromOperation_reads_type_and_multiplicity_from_the_return_parameter()
         {
-            // Regression test: IOperation.Type/Lower/Upper/IsOrdered/IsUnique throw NotSupportedException in
-            // uml4net.xmi 8.5.0 (unimplemented derived properties) - FeatureExtractor must read these from the
-            // "return"-directed owned parameter instead.
             var catalog = TestFixtures.BuildCatalog();
             var widget = catalog.Classes.Single(c => c.Name == "Widget");
             var describe = widget.OwnedOperation.Single(o => o.Name == "describe");

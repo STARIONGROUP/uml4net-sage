@@ -41,8 +41,11 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <remarks>
         /// Base metaclasses are derived from the stereotype's own "base_&lt;Metaclass&gt;" owned attributes
         /// (the OMG Standard Profile's fixed naming convention for the implicit extension-end property),
-        /// rather than from <see cref="IClass.Extension"/>/<see cref="IExtension.Metaclass"/>: those derived
-        /// properties are not yet implemented by uml4net's generated code as of uml4net.xmi 8.5.0.
+        /// rather than from <see cref="IClass.Extension"/>/<see cref="IExtension.Metaclass"/>. As of
+        /// uml4net.xmi 8.5.1, <see cref="IClass.Extension"/> itself is implemented, but the follow-on
+        /// <see cref="IExtension.Metaclass"/>/<see cref="IExtension.IsRequired"/> still throw
+        /// <see cref="System.NotSupportedException"/>, so the naming-convention approach remains necessary
+        /// (and is simpler besides - no need to resolve which extension-end is the stereotype's own).
         /// </remarks>
         public static string Render(IStereotype stereotype)
         {
