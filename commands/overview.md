@@ -34,6 +34,8 @@ until you fetch them.
   definition of Association." (needs the PDFs fetched)
 - **XMI specification text** - "What does XMI say about `href` vs `idref`?", "Cite the rule for
   cross-document linking." (needs the PDFs fetched)
+- **XMI schema structure** - "What attributes does XMI's `Extension` element support?", "Why can't
+  `XMI.xsd` validate UML content on its own?" (needs the schema files fetched)
 - **Model conformance** - "Check this XMI file against the metamodel: path/to/model.xmi"
 
 ## Specifications & licensing

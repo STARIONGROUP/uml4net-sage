@@ -155,44 +155,62 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(handler.RequestCount, Is.EqualTo(5));
         }
 
-        [Test]
-        public async Task FetchXmiSpecAsync_downloads_the_pdf_into_its_own_top_level_sibling_tree()
-        {
-            var xmiDescriptor = new XmiSpecDescriptor(
-                Version: "2.5.1",
-                IsCurrent: true,
-                SpecificationPdfUrl: "https://example.com/XMI/PDF",
-                OmgDocumentId: "formal/15-06-07");
+        private static readonly XmiSpecDescriptor XmiDescriptor = new(
+            Version: "2.5.1",
+            IsCurrent: true,
+            SpecificationPdfUrl: "https://example.com/XMI/PDF",
+            OmgDocumentId: "formal/15-06-07",
+            XsdUrl: "https://example.com/XMI/XMI.xsd",
+            CanonicalXsdUrl: "https://example.com/XMI/XMI-Canonical.xsd");
 
+        [Test]
+        public async Task FetchXmiSpecAsync_downloads_the_pdf_and_both_schema_files_into_its_own_top_level_sibling_tree()
+        {
             var handler = new StubHttpMessageHandler();
             handler.EnqueueSuccess(Encoding.UTF8.GetBytes("%PDF-1.5 fake xmi spec"));
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<xsd:schema>fake XMI.xsd</xsd:schema>"));
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<xsd:schema>fake XMI-Canonical.xsd</xsd:schema>"));
 
             var fetcher = new SourceFetcher(new HttpClient(handler));
 
-            var entries = await fetcher.FetchXmiSpecAsync(xmiDescriptor, this.tempDirectory);
+            var entries = await fetcher.FetchXmiSpecAsync(XmiDescriptor, this.tempDirectory);
 
-            Assert.That(handler.RequestCount, Is.EqualTo(1));
-            Assert.That(entries, Has.Count.EqualTo(1));
+            Assert.That(handler.RequestCount, Is.EqualTo(3));
+            Assert.That(entries, Has.Count.EqualTo(3));
             Assert.That(File.Exists(Path.Combine(this.tempDirectory, "xmi", "2.5.1", "specs", "XMI-2.5.1.pdf")));
+            Assert.That(File.Exists(Path.Combine(this.tempDirectory, "xmi", "2.5.1", "schema", "XMI.xsd")));
+            Assert.That(File.Exists(Path.Combine(this.tempDirectory, "xmi", "2.5.1", "schema", "XMI-Canonical.xsd")));
             Assert.That(File.Exists(Path.Combine(this.tempDirectory, "xmi", "2.5.1", "fetch-manifest.json")));
         }
 
         [Test]
-        public void FetchXmiSpecAsync_throws_when_the_url_does_not_return_a_pdf()
+        public void FetchXmiSpecAsync_throws_when_the_pdf_url_does_not_return_a_pdf()
         {
-            var xmiDescriptor = new XmiSpecDescriptor(
-                Version: "2.5.1",
-                IsCurrent: true,
-                SpecificationPdfUrl: "https://example.com/XMI/PDF",
-                OmgDocumentId: "formal/15-06-07");
-
             var handler = new StubHttpMessageHandler();
             handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<html>404 Not Found</html>"));
 
             var fetcher = new SourceFetcher(new HttpClient(handler));
 
             Assert.That(
-                async () => await fetcher.FetchXmiSpecAsync(xmiDescriptor, this.tempDirectory),
+                async () => await fetcher.FetchXmiSpecAsync(XmiDescriptor, this.tempDirectory),
+                Throws.TypeOf<InvalidDataException>());
+        }
+
+        [Test]
+        public void FetchXmiSpecAsync_throws_when_a_schema_url_does_not_return_xml()
+        {
+            var handler = new StubHttpMessageHandler();
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("%PDF-1.5 fake xmi spec"));
+
+            // Deliberately not XML-shaped at all (no leading "<") - e.g. a plain-text rate-limit
+            // message or a JSON API error, not an HTML error page (which often also starts with "<"
+            // and so isn't reliably distinguishable from real XML by this lightweight a check).
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("rate limit exceeded"));
+
+            var fetcher = new SourceFetcher(new HttpClient(handler));
+
+            Assert.That(
+                async () => await fetcher.FetchXmiSpecAsync(XmiDescriptor, this.tempDirectory),
                 Throws.TypeOf<InvalidDataException>());
         }
     }

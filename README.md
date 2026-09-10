@@ -36,6 +36,7 @@ only verbatim specification citation needs them.
 | `standard-profile-lookup` | "What does the `«Trace»` stereotype mean?" |
 | `uml-spec-citation` | "What does the UML spec say about generalization?" |
 | `xmi-spec-citation` | "What does the XMI standard say about `href` vs `idref`?" |
+| `xmi-schema-lookup` | "What attributes does XMI's `Extension` element support?" |
 | `uml-xmi-model-inspection` | "Check this XMI file against the metamodel: `path/to/model.xmi`" |
 | `knowledge-setup` | "Is the UML knowledge base fetched and generated?" |
 

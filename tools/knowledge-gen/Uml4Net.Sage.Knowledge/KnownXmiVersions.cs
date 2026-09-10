@@ -40,7 +40,11 @@ namespace Uml4Net.Sage.Knowledge
                 Version: "2.5.1",
                 IsCurrent: true,
                 SpecificationPdfUrl: "https://www.omg.org/spec/XMI/2.5.1/PDF",
-                OmgDocumentId: "formal/15-06-07"),
+                OmgDocumentId: "formal/15-06-07",
+                // Both schema files are published under dated paths, not the "2.5.1" version path
+                // the PDF uses above - confirmed against the real files, not a typo.
+                XsdUrl: "https://www.omg.org/spec/XMI/20131001/XMI.xsd",
+                CanonicalXsdUrl: "https://www.omg.org/spec/XMI/20110501/XMI-Canonical.xsd"),
         ];
 
         /// <summary>

@@ -1,6 +1,6 @@
 ---
 name: xmi-spec-citation
-description: Quote or cite the normative text of the OMG XMI 2.5.1 specification - the XML serialization standard itself (namespaces, xmi:id/idref/href, xmi:type, document structure), independent of UML - with an exact clause number. Use when the user asks what the XMI standard requires or means, not the UML specification's own text (see uml-spec-citation), UML metamodel structure (see metamodel-lookup), or a specific UML model file's conformance (see uml-xmi-model-inspection).
+description: Quote or cite the normative PROSE of the OMG XMI 2.5.1 specification - the XML serialization standard itself (namespaces, xmi:id/idref/href, xmi:type, document structure), independent of UML - with an exact clause number. Use when the user asks what the XMI standard requires or means in its own words. Not for XMI's schema-level STRUCTURE (attributes/complex types - see xmi-schema-lookup), the UML specification's own text (see uml-spec-citation), UML metamodel structure (see metamodel-lookup), or a specific UML model file's conformance (see uml-xmi-model-inspection).
 ---
 
 # XMI spec citation
@@ -8,9 +8,11 @@ description: Quote or cite the normative text of the OMG XMI 2.5.1 specification
 Quotes the **verbatim OMG XMI 2.5.1 specification text**, with an exact clause number, when it has
 been locally extracted. XMI is an independent OMG standard from UML - it defines the XML
 serialization format UML models (and this specification's own machine-readable files) are written
-in, versioning on its own schedule even though it happens to also be at "2.5.1" today. For the UML
-specification's own text, use `uml-spec-citation` instead; for a specific UML model file's
-conformance to the UML metamodel, use `uml-xmi-model-inspection`.
+in, versioning on its own schedule even though it happens to also be at "2.5.1" today. For XMI's
+schema-level *structure* (what attributes an element carries, what a complex type extends) rather
+than its prose, use `xmi-schema-lookup` instead. For the UML specification's own text, use
+`uml-spec-citation`; for a specific UML model file's conformance to the UML metamodel, use
+`uml-xmi-model-inspection`.
 
 ## Read order
 
