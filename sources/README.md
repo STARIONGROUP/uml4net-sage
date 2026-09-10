@@ -39,11 +39,17 @@ UML version:
 | File | Fetched from | OMG document ID | License |
 |---|---|---|---|
 | `xmi/2.5.1/specs/XMI-2.5.1.pdf` | https://www.omg.org/spec/XMI/2.5.1/PDF | formal/15-06-07 | OMG specification license (see `NOTICE`) |
+| `xmi/2.5.1/schema/XMI.xsd` | https://www.omg.org/spec/XMI/20131001/XMI.xsd | (machine-readable schema, no separate document ID) | OMG specification license |
+| `xmi/2.5.1/schema/XMI-Canonical.xsd` | https://www.omg.org/spec/XMI/20110501/XMI-Canonical.xsd | (machine-readable schema, no separate document ID) | OMG specification license |
 
-Full OMG licensing terms as above. See `Uml4Net.Sage.Knowledge.KnownXmiVersions` for the exact URL.
-Fetched alongside the UML sources whenever `fetch`/`generate` run without `--no-specs`; unlike the
-UML XMI/PDF files above, a failure to fetch this file degrades to a warning rather than aborting UML
-setup, since it's a supplementary corpus.
+Note the two schema files use their own **dated** URL paths (`20131001`, `20110501`), not the PDF's
+`2.5.1` version path above - confirmed against the real files, not a typo. Full OMG licensing terms
+as above. See `Uml4Net.Sage.Knowledge.KnownXmiVersions` for the exact URLs. All three files are
+fetched together alongside the UML sources whenever `fetch`/`generate` run without `--no-specs`;
+unlike the UML XMI/PDF files above, a failure to fetch any of them degrades to a warning rather than
+aborting UML setup, since this is a supplementary corpus. The two schema files are read directly by
+the `xmi-schema-lookup` skill - small enough (~120 lines together) that there's no generated
+knowledge tree for them, unlike `spec/`'s PDF-extracted clauses.
 
 ## Test fixtures
 

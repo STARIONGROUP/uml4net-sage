@@ -96,8 +96,9 @@ namespace Uml4Net.Sage.Knowledge
         }
 
         /// <summary>
-        /// Downloads the companion OMG XMI specification PDF for <paramref name="descriptor"/> into
-        /// <paramref name="sourcesRootDirectory"/>/xmi/&lt;version&gt;/specs/, and records it in its own
+        /// Downloads the companion OMG XMI specification PDF and its two machine-readable schema files
+        /// (<c>XMI.xsd</c>, <c>XMI-Canonical.xsd</c>) for <paramref name="descriptor"/> into
+        /// <paramref name="sourcesRootDirectory"/>/xmi/&lt;version&gt;/, and records them in their own
         /// <c>fetch-manifest.json</c>. Kept separate from <see cref="FetchAsync"/> rather than folded into
         /// it: the XMI spec is a top-level sibling corpus (see <c>knowledge/xmi/&lt;version&gt;/</c>), not
         /// tied to any one UML version's directory.
@@ -106,9 +107,20 @@ namespace Uml4Net.Sage.Knowledge
         {
             var versionDirectory = Path.Combine(sourcesRootDirectory, "xmi", descriptor.Version);
             var specsDirectory = Path.Combine(versionDirectory, "specs");
+            var schemaDirectory = Path.Combine(versionDirectory, "schema");
 
-            var entry = await this.DownloadOneAsync(descriptor.SpecificationPdfUrl, Path.Combine(specsDirectory, $"XMI-{descriptor.Version}.pdf"), cancellationToken);
-            var entries = new List<FetchManifestEntry> { entry };
+            var downloads = new List<(string Url, string DestinationPath)>
+            {
+                (descriptor.SpecificationPdfUrl, Path.Combine(specsDirectory, $"XMI-{descriptor.Version}.pdf")),
+                (descriptor.XsdUrl, Path.Combine(schemaDirectory, "XMI.xsd")),
+                (descriptor.CanonicalXsdUrl, Path.Combine(schemaDirectory, "XMI-Canonical.xsd")),
+            };
+
+            var entries = new List<FetchManifestEntry>();
+            foreach (var (url, destinationPath) in downloads)
+            {
+                entries.Add(await this.DownloadOneAsync(url, destinationPath, cancellationToken));
+            }
 
             File.WriteAllText(Path.Combine(versionDirectory, "fetch-manifest.json"), JsonSerializer.Serialize(entries, SerializerOptions));
 
@@ -132,6 +144,12 @@ namespace Uml4Net.Sage.Knowledge
                     $"{url} did not return a PDF file (expected the first bytes to be \"%PDF\") - the server may have returned an error page instead of the document.");
             }
 
+            if (destinationPath.EndsWith(".xsd", StringComparison.OrdinalIgnoreCase) && !LooksLikeXml(bytes))
+            {
+                throw new InvalidDataException(
+                    $"{url} did not return an XML file (expected to find \"<\" after any leading whitespace/BOM) - the server may have returned an error page instead of the schema.");
+            }
+
             await File.WriteAllBytesAsync(destinationPath, bytes, cancellationToken);
 
             var sha256 = Convert.ToHexStringLower(SHA256.HashData(bytes));
@@ -143,6 +161,32 @@ namespace Uml4Net.Sage.Knowledge
         {
             ReadOnlySpan<byte> pdfMagic = "%PDF"u8;
             return bytes.Length >= pdfMagic.Length && bytes.AsSpan(0, pdfMagic.Length).SequenceEqual(pdfMagic);
+        }
+
+        /// <summary>
+        /// A loose "is this actually XML" sanity check - unlike a PDF, XML has no fixed magic bytes, so
+        /// this just confirms the first non-whitespace byte (after an optional UTF-8 BOM) is "&lt;", which
+        /// every well-formed XML document starts with (a leading <c>&lt;?xml ...?&gt;</c> declaration is
+        /// optional but a document must still open with an element). Deliberately weaker than
+        /// <see cref="HasPdfMagicBytes"/>: an HTML error page often also starts with "&lt;" (e.g.
+        /// <c>&lt;!DOCTYPE html&gt;</c>), so this only reliably catches responses that aren't even
+        /// XML-shaped at all (empty, plain text, JSON) - not a mistaken HTML response.
+        /// </summary>
+        private static bool LooksLikeXml(byte[] bytes)
+        {
+            var span = bytes.AsSpan();
+            if (span.Length >= 3 && span[0] == 0xEF && span[1] == 0xBB && span[2] == 0xBF)
+            {
+                span = span[3..];
+            }
+
+            var index = 0;
+            while (index < span.Length && char.IsWhiteSpace((char)span[index]))
+            {
+                index++;
+            }
+
+            return index < span.Length && span[index] == (byte)'<';
         }
     }
 }

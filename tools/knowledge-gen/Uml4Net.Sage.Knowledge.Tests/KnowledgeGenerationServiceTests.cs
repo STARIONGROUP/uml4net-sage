@@ -132,20 +132,24 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.XmiSpecExtraction.Succeeded, Is.True);
         }
 
+        private static readonly XmiSpecDescriptor XmiDescriptor = new(
+            Version: "2.5.1",
+            IsCurrent: true,
+            SpecificationPdfUrl: "https://example.com/XMI/PDF",
+            OmgDocumentId: "formal/15-06-07",
+            XsdUrl: "https://example.com/XMI/XMI.xsd",
+            CanonicalXsdUrl: "https://example.com/XMI/XMI-Canonical.xsd");
+
         [Test]
         public async Task FetchXmiSpecAsync_succeeds_and_records_the_fetch_in_installed_json()
         {
-            var xmiDescriptor = new XmiSpecDescriptor(
-                Version: "2.5.1",
-                IsCurrent: true,
-                SpecificationPdfUrl: "https://example.com/XMI/PDF",
-                OmgDocumentId: "formal/15-06-07");
-
             var handler = new StubHttpMessageHandler();
             handler.EnqueueSuccess(Encoding.UTF8.GetBytes("%PDF-1.5 fake xmi spec"));
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<xsd:schema>fake XMI.xsd</xsd:schema>"));
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<xsd:schema>fake XMI-Canonical.xsd</xsd:schema>"));
             var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(handler)), new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable()));
 
-            var outcome = await service.FetchXmiSpecAsync(this.layout, xmiDescriptor);
+            var outcome = await service.FetchXmiSpecAsync(this.layout, XmiDescriptor);
 
             Assert.That(outcome.Succeeded, Is.True);
             var manifest = new InstalledVersionsStore(this.layout.KnowledgeRoot).Load();
@@ -155,17 +159,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
         [Test]
         public async Task FetchXmiSpecAsync_degrades_to_a_warning_instead_of_throwing_on_failure()
         {
-            var xmiDescriptor = new XmiSpecDescriptor(
-                Version: "2.5.1",
-                IsCurrent: true,
-                SpecificationPdfUrl: "https://example.com/XMI/PDF",
-                OmgDocumentId: "formal/15-06-07");
-
             var handler = new StubHttpMessageHandler();
             handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<html>404 Not Found</html>"));
             var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(handler)), new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable()));
 
-            var outcome = await service.FetchXmiSpecAsync(this.layout, xmiDescriptor);
+            var outcome = await service.FetchXmiSpecAsync(this.layout, XmiDescriptor);
 
             Assert.That(outcome.Succeeded, Is.False);
             Assert.That(outcome.Warning, Does.Contain("XMI"));
