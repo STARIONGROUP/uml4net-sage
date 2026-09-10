@@ -8,8 +8,8 @@ description: Look up the structure of a UML 2.5.1 metaclass - its owned and inhe
 Answers questions about the **structure of the UML 2.5.1 metamodel itself** - metaclasses (Class,
 Classifier, Property, Association, ...), enumerations (VisibilityKind, AggregationKind, ...), and
 primitive types (Integer, String, ...). Not for Standard Profile stereotypes (`«Trace»`, `«Create»`,
-...) - see the `standard-profile-lookup` skill for those. Not for verbatim spec prose - see
-`spec-citation`.
+...) - see the `standard-profile-lookup` skill for those. Not for verbatim UML spec prose - see
+`uml-spec-citation`.
 
 ## Read order
 
@@ -41,7 +41,7 @@ Example: `jq '.classes[] | select(.isAbstract == false and (.allAncestors | inde
 
 - Always state which UML version the answer is for (e.g. "In UML 2.5.1, ...").
 - Tag facts read from `metamodel.json`/the element markdown as **MODEL** tier (read directly from
-  the metamodel XMI) - distinct from **NORMATIVE** (verbatim spec quote, see `spec-citation`) and
+  the metamodel XMI) - distinct from **NORMATIVE** (verbatim spec quote, see `uml-spec-citation`) and
   **DERIVED** (computed/inferred here, e.g. "no clause reference is available").
 - Link to related metaclasses by name so the user can ask a follow-up ("tell me more about
   Property") rather than dumping the whole inheritance chain unprompted.

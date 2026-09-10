@@ -1,15 +1,17 @@
 ---
-name: spec-citation
-description: Quote or cite the normative text of the OMG UML 2.5.1 specification, with an exact clause number. Use when the user asks "what does the spec say about X", "quote the definition of Y", "which clause covers Z", or wants a citable reference for a UML rule.
+name: uml-spec-citation
+description: Quote or cite the normative text of the OMG UML 2.5.1 specification (the modeling language itself), with an exact clause number. Use when the user asks "what does the UML spec say about X", "quote the definition of Y", "which clause covers Z", or wants a citable reference for a UML rule. Not for the OMG XMI specification's own text (the independent serialization format UML happens to be written in) - see xmi-spec-citation for that.
 ---
 
-# Spec citation
+# UML spec citation
 
 Quotes the **verbatim OMG UML 2.5.1 specification text**, with an exact clause number, when it has
-been locally extracted. For questions about the metamodel's *structure* (features, generalizations)
-rather than its prose, use `metamodel-lookup` instead - that data is always available (it comes
-from the metamodel XMI, not the copyrighted PDF) and is usually a better answer to "what is a
-Classifier"-style questions.
+been locally extracted. Covers the UML specification only; for the independent OMG XMI
+specification's own normative text (e.g. `href` vs `idref`, cross-document linking rules) - not UML
+content, but the serialization standard itself - use `xmi-spec-citation` instead. For questions
+about the metamodel's *structure* (features, generalizations) rather than its prose, use
+`metamodel-lookup` instead - that data is always available (it comes from the metamodel XMI, not the
+copyrighted PDF) and is usually a better answer to "what is a Classifier"-style questions.
 
 ## Read order
 

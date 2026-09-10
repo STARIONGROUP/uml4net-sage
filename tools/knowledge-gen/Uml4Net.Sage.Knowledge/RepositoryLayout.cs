@@ -66,5 +66,16 @@ namespace Uml4Net.Sage.Knowledge
         /// Gets <c>knowledge/&lt;version&gt;</c>.
         /// </summary>
         public string KnowledgeDirectoryFor(string version) => Path.Combine(this.KnowledgeRoot, version);
+
+        /// <summary>
+        /// Gets <c>sources/xmi/&lt;version&gt;</c> - the companion OMG XMI specification's sources, kept as
+        /// a top-level sibling of the per-UML-version directories since XMI versions independently of UML.
+        /// </summary>
+        public string XmiSourcesDirectoryFor(string version) => Path.Combine(this.SourcesRoot, "xmi", version);
+
+        /// <summary>
+        /// Gets <c>knowledge/xmi/&lt;version&gt;</c>.
+        /// </summary>
+        public string XmiKnowledgeDirectoryFor(string version) => Path.Combine(this.KnowledgeRoot, "xmi", version);
     }
 }

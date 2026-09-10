@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/STARIONGROUP/uml4net-sage/knowledge/index.schema.json",
   "title": "uml4net-sage index.json files",
-  "description": "The three flat, array-shaped index files a generated knowledge base contains: metamodel/index.json, standard-profile/index.json, and (once spec text is extracted) spec/index.json. Each is an array of rows rather than a keyed map so it also qualifies as a valid Frictionless tabular-data-resource (see datapackage.schema.json).",
+  "description": "The flat, array-shaped index files a generated knowledge base contains: metamodel/index.json, standard-profile/index.json, and (once spec text is extracted) spec/index.json - the last of these shared by both knowledge/<version>/spec/ (the OMG UML specification) and the top-level sibling knowledge/xmi/<version>/spec/ (the companion OMG XMI specification), disambiguated by each row's own \"document\" field. Each is an array of rows rather than a keyed map so it also qualifies as a valid Frictionless tabular-data-resource (see datapackage.schema.json).",
   "definitions": {
     "metamodelIndex": {
       "type": "array",
@@ -36,16 +36,17 @@
     },
     "specIndex": {
       "type": "array",
-      "description": "knowledge/<version>/spec/index.json - one row per extracted specification clause. Present only once the PDFs have been fetched and successfully extracted.",
+      "description": "<spec-tree>/index.json - one row per extracted specification clause, where <spec-tree> is either knowledge/<version>/spec/ (UML) or knowledge/xmi/<version>/spec/ (the companion XMI specification). Present only once the corresponding PDF has been fetched and successfully extracted.",
       "items": {
         "type": "object",
-        "required": ["clause", "title", "pages", "normative", "file"],
+        "required": ["clause", "title", "document", "pages", "normative", "file"],
         "properties": {
           "clause": { "type": "string", "description": "Dotted clause number, e.g. \"9.3.2\"." },
           "title": { "type": "string" },
+          "document": { "type": "string", "description": "Which OMG document these clauses were extracted from, e.g. \"UML\" or \"XMI\" - disambiguates rows from the two structurally-identical spec index files." },
           "pages": { "type": "string", "description": "A single page number or an \"N-M\" range." },
           "normative": { "type": "boolean" },
-          "file": { "type": "string", "description": "Relative to spec/, e.g. \"clauses/9.3.2-classifier.md\"." }
+          "file": { "type": "string", "description": "Relative to the spec tree, e.g. \"clauses/9.3.2-classifier.md\"." }
         }
       }
     }

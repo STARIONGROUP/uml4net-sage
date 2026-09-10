@@ -60,7 +60,7 @@ namespace Uml4Net.Sage.Tools.Hook
             {
                 return $"uml4net-sage: UML {result.Default} metamodel/standard-profile knowledge base is ready. " +
                        "Verbatim specification citation is not yet available (the PDFs weren't fetched, or Python/spec_extract " +
-                       "isn't installed) - spec-citation will degrade to clause numbers only.";
+                       "isn't installed) - uml-spec-citation will degrade to clause numbers only.";
             }
 
             return null;

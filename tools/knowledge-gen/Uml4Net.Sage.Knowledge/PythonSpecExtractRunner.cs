@@ -24,6 +24,7 @@ namespace Uml4Net.Sage.Knowledge
     using System.ComponentModel;
     using System.IO;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -73,9 +74,14 @@ namespace Uml4Net.Sage.Knowledge
         /// neither a pre-existing Python nor a provisioned <c>.venv</c>.
         /// </param>
         /// <param name="version">
-        /// The UML version recorded in each clause's front matter.
+        /// The specification version recorded in each clause's front matter.
         /// </param>
-        public async Task<SpecExtractionOutcome> ExtractAsync(string pdfPath, string outputDirectory, string specExtractProjectDirectory, string version, CancellationToken cancellationToken = default)
+        /// <param name="document">
+        /// The document name recorded in each clause's front matter and passed as <c>--document</c>
+        /// (e.g. <c>"UML"</c> or <c>"XMI"</c>) - distinguishes which OMG specification's clauses these are,
+        /// since more than one may be extracted into sibling knowledge trees.
+        /// </param>
+        public async Task<SpecExtractionOutcome> ExtractAsync(string pdfPath, string outputDirectory, string specExtractProjectDirectory, string version, string document, CancellationToken cancellationToken = default)
         {
             if (!File.Exists(pdfPath))
             {
@@ -88,7 +94,7 @@ namespace Uml4Net.Sage.Knowledge
                 return SpecExtractionOutcome.Skipped($"The spec-extract project was not found at {specExtractProjectDirectory} - this repository checkout may be incomplete.");
             }
 
-            var extractArguments = new[] { "-m", "spec_extract", "extract", "--pdf", pdfPath, "--out", outputDirectory, "--document", "UML", "--version", version };
+            var extractArguments = new[] { "-m", "spec_extract", "extract", "--pdf", pdfPath, "--out", outputDirectory, "--document", document, "--version", version };
 
             foreach (var pythonExecutable in PythonCandidates(specExtractProjectDirectory))
             {
@@ -97,7 +103,7 @@ namespace Uml4Net.Sage.Knowledge
                     var result = await this.processRunner.RunAsync(pythonExecutable, extractArguments, workingDirectory: srcDirectory, cancellationToken);
 
                     return result.ExitCode == 0
-                        ? SpecExtractionOutcome.Ok()
+                        ? ValidateExtractedIndex(outputDirectory)
                         : SpecExtractionOutcome.Skipped($"spec_extract exited with code {result.ExitCode}: {result.StandardError}");
                 }
                 catch (Win32Exception)
@@ -121,7 +127,7 @@ namespace Uml4Net.Sage.Knowledge
                 var uvResult = await this.processRunner.RunAsync(uvExecutable.FullName, uvArguments, workingDirectory: specExtractProjectDirectory, cancellationToken);
 
                 return uvResult.ExitCode == 0
-                    ? SpecExtractionOutcome.Ok()
+                    ? ValidateExtractedIndex(outputDirectory)
                     : SpecExtractionOutcome.Skipped($"spec_extract (via uv) exited with code {uvResult.ExitCode}: {uvResult.StandardError}");
             }
             catch (Win32Exception)
@@ -129,6 +135,36 @@ namespace Uml4Net.Sage.Knowledge
                 return SpecExtractionOutcome.Skipped(
                     $"The provisioned uv executable at {uvExecutable.FullName} could not be started.");
             }
+        }
+
+        /// <summary>
+        /// Confirms <c>spec_extract</c> actually produced usable clauses rather than merely exiting 0 -
+        /// a run that silently extracted zero clauses (e.g. because OMG served an HTML error page instead
+        /// of the PDF, or a heuristic misfired on an unfamiliar document layout) would otherwise be recorded
+        /// as a success, and every downstream reader would trust an empty index.
+        /// </summary>
+        private static SpecExtractionOutcome ValidateExtractedIndex(string outputDirectory)
+        {
+            var indexPath = Path.Combine(outputDirectory, "index.json");
+            if (!File.Exists(indexPath))
+            {
+                return SpecExtractionOutcome.Skipped($"spec_extract exited successfully but did not write {indexPath}.");
+            }
+
+            int clauseCount;
+            try
+            {
+                using var document = JsonDocument.Parse(File.ReadAllText(indexPath));
+                clauseCount = document.RootElement.GetArrayLength();
+            }
+            catch (JsonException exception)
+            {
+                return SpecExtractionOutcome.Skipped($"spec_extract exited successfully but {indexPath} could not be parsed: {exception.Message}");
+            }
+
+            return clauseCount > 0
+                ? SpecExtractionOutcome.Ok()
+                : SpecExtractionOutcome.Skipped($"spec_extract exited successfully but extracted 0 clauses from {indexPath} - the PDF may be malformed or the extraction heuristics may not fit this document's layout.");
         }
 
         private static string[] PythonCandidates(string specExtractProjectDirectory)

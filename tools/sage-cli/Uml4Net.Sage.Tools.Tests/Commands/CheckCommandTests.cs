@@ -65,5 +65,19 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
 
             Assert.That(exitCode, Is.EqualTo(0));
         }
+
+        [Test]
+        public void Invoke_returns_0_when_the_uml_version_is_generated_but_the_xmi_spec_is_not()
+        {
+            var layout = new RepositoryLayout(this.repositoryRoot);
+            var store = new InstalledVersionsStore(layout.KnowledgeRoot);
+            store.MarkFetched("2.5.1", setAsDefault: true);
+            store.MarkGenerated("2.5.1", specGenerated: true);
+
+            // No MarkXmiSpecGenerated call - the XMI corpus was never fetched/generated on this machine.
+            var exitCode = CheckCommand.Build().Parse(["--repository-root", this.repositoryRoot]).Invoke();
+
+            Assert.That(exitCode, Is.EqualTo(0));
+        }
     }
 }

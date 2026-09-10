@@ -80,10 +80,13 @@ namespace Uml4Net.Sage.Knowledge.Tests
         public async Task FetchAsync_with_specs_also_downloads_the_two_pdfs_with_explicit_file_names()
         {
             var handler = new StubHttpMessageHandler();
-            for (var i = 0; i < 6; i++)
+            for (var i = 0; i < 4; i++)
             {
-                handler.EnqueueSuccess(Encoding.UTF8.GetBytes("content"));
+                handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<xmi/>"));
             }
+
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("%PDF-1.5 fake spec"));
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("%PDF-1.5 fake changebar"));
 
             var fetcher = new SourceFetcher(new HttpClient(handler));
 
@@ -91,6 +94,24 @@ namespace Uml4Net.Sage.Knowledge.Tests
 
             Assert.That(File.Exists(Path.Combine(this.tempDirectory, "2.5.1", "specs", "UML-2.5.1.pdf")));
             Assert.That(File.Exists(Path.Combine(this.tempDirectory, "2.5.1", "specs", "UML-2.5.1-changebar.pdf")));
+        }
+
+        [Test]
+        public void FetchAsync_throws_when_a_pdf_url_does_not_return_a_pdf()
+        {
+            var handler = new StubHttpMessageHandler();
+            for (var i = 0; i < 4; i++)
+            {
+                handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<xmi/>"));
+            }
+
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<html>404 Not Found</html>"));
+
+            var fetcher = new SourceFetcher(new HttpClient(handler));
+
+            Assert.That(
+                async () => await fetcher.FetchAsync(Descriptor, this.tempDirectory, includeSpecs: true),
+                Throws.TypeOf<InvalidDataException>());
         }
 
         [Test]
@@ -132,6 +153,47 @@ namespace Uml4Net.Sage.Knowledge.Tests
 
             Assert.That(entries, Has.Count.EqualTo(4));
             Assert.That(handler.RequestCount, Is.EqualTo(5));
+        }
+
+        [Test]
+        public async Task FetchXmiSpecAsync_downloads_the_pdf_into_its_own_top_level_sibling_tree()
+        {
+            var xmiDescriptor = new XmiSpecDescriptor(
+                Version: "2.5.1",
+                IsCurrent: true,
+                SpecificationPdfUrl: "https://example.com/XMI/PDF",
+                OmgDocumentId: "formal/15-06-07");
+
+            var handler = new StubHttpMessageHandler();
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("%PDF-1.5 fake xmi spec"));
+
+            var fetcher = new SourceFetcher(new HttpClient(handler));
+
+            var entries = await fetcher.FetchXmiSpecAsync(xmiDescriptor, this.tempDirectory);
+
+            Assert.That(handler.RequestCount, Is.EqualTo(1));
+            Assert.That(entries, Has.Count.EqualTo(1));
+            Assert.That(File.Exists(Path.Combine(this.tempDirectory, "xmi", "2.5.1", "specs", "XMI-2.5.1.pdf")));
+            Assert.That(File.Exists(Path.Combine(this.tempDirectory, "xmi", "2.5.1", "fetch-manifest.json")));
+        }
+
+        [Test]
+        public void FetchXmiSpecAsync_throws_when_the_url_does_not_return_a_pdf()
+        {
+            var xmiDescriptor = new XmiSpecDescriptor(
+                Version: "2.5.1",
+                IsCurrent: true,
+                SpecificationPdfUrl: "https://example.com/XMI/PDF",
+                OmgDocumentId: "formal/15-06-07");
+
+            var handler = new StubHttpMessageHandler();
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<html>404 Not Found</html>"));
+
+            var fetcher = new SourceFetcher(new HttpClient(handler));
+
+            Assert.That(
+                async () => await fetcher.FetchXmiSpecAsync(xmiDescriptor, this.tempDirectory),
+                Throws.TypeOf<InvalidDataException>());
         }
     }
 }

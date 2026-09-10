@@ -79,6 +79,15 @@ namespace Uml4Net.Sage.Tools.Commands
                     AnsiConsole.MarkupLineInterpolated($"  [yellow]skipped[/] spec/ - {outcome.SpecExtraction.SkippedReason}");
                 }
 
+                if (outcome.XmiSpecExtraction.Succeeded)
+                {
+                    AnsiConsole.MarkupLine("  [green]done[/] xmi-spec/ (XMI specification citation available)");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLineInterpolated($"  [yellow]skipped[/] xmi-spec/ - {outcome.XmiSpecExtraction.SkippedReason}");
+                }
+
                 AnsiConsole.MarkupLine("  [green]done[/] datapackage.json");
                 return 0;
             });
