@@ -1,12 +1,14 @@
 ---
 name: xmi-model-inspection
-description: Check a user-supplied .xmi or .uml model file for conformance to the UML 2.5.1 metamodel - unresolved references, abstract metaclasses instantiated directly, and other reader-level diagnostics. Use when the user shares a UML model file and asks to validate it, check it for errors, or find problems in it.
+description: Check a user-supplied .xmi or .uml model FILE for conformance to the UML 2.5.1 metamodel - unresolved references, abstract metaclasses instantiated directly, and other reader-level diagnostics. Use when the user shares a UML model file and asks to validate it, check it for errors, or find problems in it. Does not quote the XMI specification's own normative text - see xmi-spec-citation for that.
 ---
 
 # XMI model inspection
 
 Loads a user-supplied `.xmi`/`.uml` model file with `uml4net.xmi` - the same reader the knowledge
-base itself is built with - and checks it against the generated metamodel graph.
+base itself is built with - and checks it against the generated metamodel graph. This skill is about
+checking one specific file; for questions about what the XMI standard itself requires or means (not
+tied to a particular file), use `xmi-spec-citation` instead.
 
 ## Running the check
 
@@ -44,7 +46,14 @@ the user asks for a check this skill doesn't perform, rather than implying full 
 ## Answering
 
 - Report findings grouped by severity, most severe first.
-- For each finding, explain *why* it matters using `metamodel-lookup` if useful (e.g. "Classifier is
-  abstract because ... - see its Specializations for the concrete metaclasses you can use instead").
+- For each `abstract-instantiation` finding, explain *why* it matters using `metamodel-lookup` if
+  useful (e.g. "Classifier is abstract because ... - see its Specializations for the concrete
+  metaclasses you can use instead").
+- For each `reader-diagnostic` finding, where the underlying mechanism is governed by the XMI
+  standard itself rather than the UML metamodel (e.g. an unresolved `href` - governed by XMI's
+  cross-document linking rules, clause 7.10), name the relevant XMI clause and use
+  `xmi-spec-citation` to quote or cite it, the same way `abstract-instantiation` findings lean on
+  `metamodel-lookup`. Not every reader diagnostic maps to a specific clause - only do this when it
+  genuinely clarifies the finding, not as a rote addition to every message.
 - If there are zero findings, say so plainly - don't imply a clean bill of health beyond what the
   two implemented checks actually cover (see "Known scope" above).

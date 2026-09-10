@@ -95,6 +95,26 @@ namespace Uml4Net.Sage.Knowledge
             return entries;
         }
 
+        /// <summary>
+        /// Downloads the companion OMG XMI specification PDF for <paramref name="descriptor"/> into
+        /// <paramref name="sourcesRootDirectory"/>/xmi/&lt;version&gt;/specs/, and records it in its own
+        /// <c>fetch-manifest.json</c>. Kept separate from <see cref="FetchAsync"/> rather than folded into
+        /// it: the XMI spec is a top-level sibling corpus (see <c>knowledge/xmi/&lt;version&gt;/</c>), not
+        /// tied to any one UML version's directory.
+        /// </summary>
+        public async Task<IReadOnlyList<FetchManifestEntry>> FetchXmiSpecAsync(XmiSpecDescriptor descriptor, string sourcesRootDirectory, CancellationToken cancellationToken = default)
+        {
+            var versionDirectory = Path.Combine(sourcesRootDirectory, "xmi", descriptor.Version);
+            var specsDirectory = Path.Combine(versionDirectory, "specs");
+
+            var entry = await this.DownloadOneAsync(descriptor.SpecificationPdfUrl, Path.Combine(specsDirectory, $"XMI-{descriptor.Version}.pdf"), cancellationToken);
+            var entries = new List<FetchManifestEntry> { entry };
+
+            File.WriteAllText(Path.Combine(versionDirectory, "fetch-manifest.json"), JsonSerializer.Serialize(entries, SerializerOptions));
+
+            return entries;
+        }
+
         private async Task<FetchManifestEntry> DownloadOneAsync(string url, string destinationPath, CancellationToken cancellationToken)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
@@ -106,11 +126,23 @@ namespace Uml4Net.Sage.Knowledge
                 return await response.Content.ReadAsByteArrayAsync(cancellationToken);
             });
 
+            if (destinationPath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) && !HasPdfMagicBytes(bytes))
+            {
+                throw new InvalidDataException(
+                    $"{url} did not return a PDF file (expected the first bytes to be \"%PDF\") - the server may have returned an error page instead of the document.");
+            }
+
             await File.WriteAllBytesAsync(destinationPath, bytes, cancellationToken);
 
             var sha256 = Convert.ToHexStringLower(SHA256.HashData(bytes));
 
             return new FetchManifestEntry(url, Path.GetFileName(destinationPath), sha256, DateTimeOffset.UtcNow);
+        }
+
+        private static bool HasPdfMagicBytes(byte[] bytes)
+        {
+            ReadOnlySpan<byte> pdfMagic = "%PDF"u8;
+            return bytes.Length >= pdfMagic.Length && bytes.AsSpan(0, pdfMagic.Length).SequenceEqual(pdfMagic);
         }
     }
 }

@@ -81,6 +81,12 @@ namespace Uml4Net.Sage.Tools.Commands
                 }
 
                 AnsiConsole.Write(table);
+
+                // The companion OMG XMI specification versions independently of UML - it isn't a per-UML-
+                // version fact, so it gets a footer rather than a column on the table above.
+                var xmiSpecEntry = manifest.XmiSpecs.FirstOrDefault(x => x.Version == KnownXmiVersions.Current.Version);
+                AnsiConsole.MarkupLineInterpolated($"XMI {KnownXmiVersions.Current.Version} specification citation: {(xmiSpecEntry?.Generated == true ? "available" : "not available")}");
+
                 return 0;
             });
 

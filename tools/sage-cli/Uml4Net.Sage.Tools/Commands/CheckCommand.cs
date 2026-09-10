@@ -53,6 +53,7 @@ namespace Uml4Net.Sage.Tools.Commands
                     manifest.Default,
                     HasAnyVersion = manifest.Versions.Count > 0,
                     Versions = manifest.Versions,
+                    XmiSpecs = manifest.XmiSpecs,
                 };
 
                 if (parseResult.GetValue(GlobalOptions.Json))
@@ -74,13 +75,25 @@ namespace Uml4Net.Sage.Tools.Commands
                     return 0;
                 }
 
+                var xmiSpecReady = manifest.XmiSpecs.Find(x => x.Version == KnownXmiVersions.Current.Version) is { Generated: true };
+
                 if (defaultEntry is { SpecGenerated: false })
                 {
                     AnsiConsole.MarkupLineInterpolated($"UML {manifest.Default} is ready (spec citation limited to clause numbers - PDFs not fetched or Python unavailable).");
+                    if (!xmiSpecReady)
+                    {
+                        AnsiConsole.MarkupLine("XMI specification citation is not available either.");
+                    }
+
                     return 0;
                 }
 
                 AnsiConsole.MarkupLineInterpolated($"UML {manifest.Default} is fully generated, including verbatim spec citation.");
+                if (!xmiSpecReady)
+                {
+                    AnsiConsole.MarkupLine("XMI specification citation is not yet available - see 'uml4net-sage generate' output for why.");
+                }
+
                 return 0;
             });
 

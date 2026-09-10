@@ -6,10 +6,12 @@ description: Quote or cite the normative text of the OMG UML 2.5.1 specification
 # Spec citation
 
 Quotes the **verbatim OMG UML 2.5.1 specification text**, with an exact clause number, when it has
-been locally extracted. For questions about the metamodel's *structure* (features, generalizations)
-rather than its prose, use `metamodel-lookup` instead - that data is always available (it comes
-from the metamodel XMI, not the copyrighted PDF) and is usually a better answer to "what is a
-Classifier"-style questions.
+been locally extracted. Covers the UML specification only; for the independent OMG XMI
+specification's own normative text (e.g. `href` vs `idref`, cross-document linking rules), use
+`xmi-spec-citation` instead. For questions about the metamodel's *structure* (features,
+generalizations) rather than its prose, use `metamodel-lookup` instead - that data is always
+available (it comes from the metamodel XMI, not the copyrighted PDF) and is usually a better answer
+to "what is a Classifier"-style questions.
 
 ## Read order
 

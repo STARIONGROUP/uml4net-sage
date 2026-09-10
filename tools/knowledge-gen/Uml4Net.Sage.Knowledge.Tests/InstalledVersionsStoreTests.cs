@@ -110,5 +110,38 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(manifest.Versions, Is.Empty);
             Assert.That(manifest.Default, Is.Null);
         }
+
+        [Test]
+        public void MarkXmiSpecFetched_and_MarkXmiSpecGenerated_round_trip_independently_of_uml_versions()
+        {
+            this.store.MarkXmiSpecFetched("2.5.1");
+            this.store.MarkXmiSpecGenerated("2.5.1", succeeded: true);
+
+            var entry = this.store.Load().XmiSpecs.Single();
+            Assert.That(entry.Version, Is.EqualTo("2.5.1"));
+            Assert.That(entry.Fetched, Is.True);
+            Assert.That(entry.Generated, Is.True);
+        }
+
+        [Test]
+        public void MarkXmiSpecGenerated_is_sticky_true_like_SpecGenerated()
+        {
+            this.store.MarkXmiSpecGenerated("2.5.1", succeeded: true);
+            this.store.MarkXmiSpecGenerated("2.5.1", succeeded: false);
+
+            Assert.That(this.store.Load().XmiSpecs.Single().Generated, Is.True, "a later failed attempt must not clear a prior success");
+        }
+
+        [Test]
+        public void Load_coalesces_a_missing_xmiSpecs_property_to_an_empty_list()
+        {
+            // installed.json written before InstalledXmiSpec existed - regression guard for users
+            // upgrading the plugin with an on-disk manifest from an older version.
+            Directory.CreateDirectory(this.tempDirectory);
+            File.WriteAllText(Path.Combine(this.tempDirectory, "installed.json"), """{"default":"2.5.1","versions":[]}""");
+
+            Assert.That(() => this.store.Load(), Throws.Nothing);
+            Assert.That(this.store.Load().XmiSpecs, Is.Empty);
+        }
     }
 }

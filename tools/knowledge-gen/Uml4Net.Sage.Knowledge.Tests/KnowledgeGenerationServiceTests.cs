@@ -23,6 +23,7 @@ namespace Uml4Net.Sage.Knowledge.Tests
     using System.IO;
     using System.Linq;
     using System.Net.Http;
+    using System.Text;
     using System.Threading.Tasks;
 
     [TestFixture]
@@ -100,6 +101,74 @@ namespace Uml4Net.Sage.Knowledge.Tests
             var entry = manifest.Versions.Single(v => v.Version == "2.5.1");
             Assert.That(entry.Generated, Is.True);
             Assert.That(entry.SpecGenerated, Is.False);
+        }
+
+        [Test]
+        public async Task GenerateAsync_attempts_xmi_spec_extraction_and_does_not_fail_generate_when_it_is_skipped()
+        {
+            var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(new StubHttpMessageHandler())), new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable()));
+
+            var outcome = await service.GenerateAsync(this.layout, Descriptor);
+
+            Assert.That(outcome.XmiSpecExtraction.Succeeded, Is.False, "no XMI PDF was fetched in this test");
+            Assert.That(outcome.XmiSpecExtraction.SkippedReason, Does.Contain("XMI"));
+        }
+
+        [Test]
+        public async Task GenerateAsync_does_not_re_extract_the_xmi_spec_when_it_already_exists()
+        {
+            // Simulates a previous generate call (for this or another UML version) having already
+            // extracted the version-independent XMI corpus - no XMI PDF exists in sources/ at all here, so
+            // if the re-extraction guard didn't short-circuit, ExtractAsync would have to hit its
+            // "PDF not found" branch and return Skipped, not Ok.
+            var xmiSpecDirectory = Path.Combine(this.layout.XmiKnowledgeDirectoryFor("2.5.1"), "spec");
+            Directory.CreateDirectory(xmiSpecDirectory);
+            File.WriteAllText(Path.Combine(xmiSpecDirectory, "index.json"), "[{}]");
+
+            var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(new StubHttpMessageHandler())), new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable()));
+
+            var outcome = await service.GenerateAsync(this.layout, Descriptor);
+
+            Assert.That(outcome.XmiSpecExtraction.Succeeded, Is.True);
+        }
+
+        [Test]
+        public async Task FetchXmiSpecAsync_succeeds_and_records_the_fetch_in_installed_json()
+        {
+            var xmiDescriptor = new XmiSpecDescriptor(
+                Version: "2.5.1",
+                IsCurrent: true,
+                SpecificationPdfUrl: "https://example.com/XMI/PDF",
+                OmgDocumentId: "formal/15-06-07");
+
+            var handler = new StubHttpMessageHandler();
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("%PDF-1.5 fake xmi spec"));
+            var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(handler)), new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable()));
+
+            var outcome = await service.FetchXmiSpecAsync(this.layout, xmiDescriptor);
+
+            Assert.That(outcome.Succeeded, Is.True);
+            var manifest = new InstalledVersionsStore(this.layout.KnowledgeRoot).Load();
+            Assert.That(manifest.XmiSpecs.Single(x => x.Version == "2.5.1").Fetched, Is.True);
+        }
+
+        [Test]
+        public async Task FetchXmiSpecAsync_degrades_to_a_warning_instead_of_throwing_on_failure()
+        {
+            var xmiDescriptor = new XmiSpecDescriptor(
+                Version: "2.5.1",
+                IsCurrent: true,
+                SpecificationPdfUrl: "https://example.com/XMI/PDF",
+                OmgDocumentId: "formal/15-06-07");
+
+            var handler = new StubHttpMessageHandler();
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<html>404 Not Found</html>"));
+            var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(handler)), new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable()));
+
+            var outcome = await service.FetchXmiSpecAsync(this.layout, xmiDescriptor);
+
+            Assert.That(outcome.Succeeded, Is.False);
+            Assert.That(outcome.Warning, Does.Contain("XMI"));
         }
     }
 }

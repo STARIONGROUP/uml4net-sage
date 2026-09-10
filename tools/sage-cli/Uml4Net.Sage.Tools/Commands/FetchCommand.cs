@@ -74,6 +74,22 @@ namespace Uml4Net.Sage.Tools.Commands
                     AnsiConsole.MarkupLineInterpolated($"  [green]fetched[/] {entry.File} (sha256 {entry.Sha256[..12]}...)");
                 }
 
+                if (includeSpecs)
+                {
+                    var xmiOutcome = await service.FetchXmiSpecAsync(layout, KnownXmiVersions.Current, cancellationToken);
+                    if (xmiOutcome.Succeeded)
+                    {
+                        foreach (var entry in xmiOutcome.Entries)
+                        {
+                            AnsiConsole.MarkupLineInterpolated($"  [green]fetched[/] {entry.File} (sha256 {entry.Sha256[..12]}...)");
+                        }
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLineInterpolated($"  [yellow]warning[/] {xmiOutcome.Warning}");
+                    }
+                }
+
                 AnsiConsole.MarkupLineInterpolated($"[green]Done.[/] Run 'uml4net-sage generate --version {descriptor.Version}' next.");
                 return 0;
             });

@@ -29,6 +29,22 @@ the generated knowledge base - UML users overwhelmingly ask about the abstract s
 Standard Profile, not diagram interchange. A dedicated skill/generator for it is a possible
 fast-follow, not a v1 gap that blocks anything.
 
+## Provenance (XMI 2.5.1)
+
+UML models are themselves serialized using XMI, an OMG standard independent of UML - it versions on
+its own schedule, even though both happen to be at "2.5.1" today. Its specification PDF is fetched
+into a top-level sibling directory rather than under `sources/2.5.1/`, since it isn't tied to any one
+UML version:
+
+| File | Fetched from | OMG document ID | License |
+|---|---|---|---|
+| `xmi/2.5.1/specs/XMI-2.5.1.pdf` | https://www.omg.org/spec/XMI/2.5.1/PDF | formal/15-06-07 | OMG specification license (see `NOTICE`) |
+
+Full OMG licensing terms as above. See `Uml4Net.Sage.Knowledge.KnownXmiVersions` for the exact URL.
+Fetched alongside the UML sources whenever `fetch`/`generate` run without `--no-specs`; unlike the
+UML XMI/PDF files above, a failure to fetch this file degrades to a warning rather than aborting UML
+setup, since it's a supplementary corpus.
+
 ## Test fixtures
 
 No file under `sources/` (or anything derived from it) is used as a committed test fixture -

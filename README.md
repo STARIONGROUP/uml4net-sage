@@ -35,6 +35,7 @@ only verbatim specification citation needs them.
 | `metamodel-lookup` | "What features does `Classifier` own and inherit?" |
 | `standard-profile-lookup` | "What does the `«Trace»` stereotype mean?" |
 | `spec-citation` | "What does the UML spec say about generalization?" |
+| `xmi-spec-citation` | "What does XMI say about `href` vs `idref`?" |
 | `xmi-model-inspection` | "Check this XMI file against the metamodel: `path/to/model.xmi`" |
 | `knowledge-setup` | "Is the UML knowledge base fetched and generated?" |
 
@@ -48,7 +49,9 @@ One UML version is relevant today - 2.5.1 - fetched from a fixed, static set of 
 `sources/README.md`). Unlike specifications with a rolling release cadence, there's no
 update-checking machinery here: if OMG ever ships a new UML version, a maintainer adds one entry to
 `Uml4Net.Sage.Knowledge.KnownUmlVersions` and cuts a new plugin release - a deliberate,
-human-in-the-loop step rather than automated discovery.
+human-in-the-loop step rather than automated discovery. The companion OMG XMI specification (also
+2.5.1 today, by coincidence - it versions independently) is tracked the same way, in
+`Uml4Net.Sage.Knowledge.KnownXmiVersions`.
 
 ## The knowledge base
 
@@ -57,7 +60,9 @@ Generated locally, never committed - see `knowledge/README.md` for the full file
 markdown + JSON derived from OMG's metamodel XMI (structural facts, not the specification's
 copyrighted prose); `spec/` (present once the PDFs are fetched and extracted) holds the
 specification's own text and is treated identically to the source PDFs for licensing purposes -
-generated locally, never committed, never redistributed.
+generated locally, never committed, never redistributed. `knowledge/xmi/<version>/spec/` holds the
+same for the companion OMG XMI specification (the serialization standard UML models are themselves
+written in) as a top-level sibling, since it versions independently of UML.
 
 If you have [`jq`](https://jqlang.github.io/jq/) installed, skills use it to query
 `knowledge/<version>/metamodel/metamodel.json` directly for set/closure-shaped questions (e.g.
@@ -66,16 +71,17 @@ markdown page. Without `jq`, they fall back to `Grep`/`Read`.
 
 ## Specifications & licensing
 
-The OMG UML 2.5.1 specification PDF and its four metamodel XMI files are copyrighted by OMG and its
-member companies (see `NOTICE` for the full list and license terms) and are **never committed to
-this repository or bundled with any release** - `uml4net-sage fetch` downloads them fresh, directly
-from omg.org, onto your own machine:
+The OMG UML 2.5.1 specification PDF, its four metamodel XMI files, and the companion OMG XMI 2.5.1
+specification PDF are copyrighted by OMG and its member companies (see `NOTICE` for the full list
+and license terms) and are **never committed to this repository or bundled with any release** -
+`uml4net-sage fetch` downloads them fresh, directly from omg.org, onto your own machine:
 
-- Specification PDF: https://www.omg.org/spec/UML/2.5.1/PDF
+- UML Specification PDF: https://www.omg.org/spec/UML/2.5.1/PDF
 - Abstract Syntax Metamodel XMI: https://www.omg.org/spec/UML/20161101/UML.xmi
 - Primitive Types XMI: https://www.omg.org/spec/UML/20161101/PrimitiveTypes.xmi
 - Standard Profile XMI: https://www.omg.org/spec/UML/20161101/StandardProfile.xmi
 - Diagram Interchange Metamodel XMI: https://www.omg.org/spec/UML/20161101/UMLDI.xmi
+- XMI Specification PDF: https://www.omg.org/spec/XMI/2.5.1/PDF
 
 See `sources/README.md` for the full provenance table and `NOTICE` for OMG's complete licensing
 terms.

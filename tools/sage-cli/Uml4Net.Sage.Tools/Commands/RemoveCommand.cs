@@ -78,6 +78,7 @@ namespace Uml4Net.Sage.Tools.Commands
                 store.Remove(version);
 
                 AnsiConsole.MarkupLineInterpolated($"[green]Removed UML {version}.[/]");
+                AnsiConsole.MarkupLine("(The companion XMI specification knowledge under knowledge/xmi/ is a shared, version-independent corpus and is left in place.)");
                 return 0;
             });
 

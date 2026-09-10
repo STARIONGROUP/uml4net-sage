@@ -1,5 +1,8 @@
 {
   "versions": [
     { "version": "2.5.1", "current": true, "omgDocumentId": "formal/17-12-05" }
+  ],
+  "xmiVersions": [
+    { "version": "2.5.1", "current": true, "omgDocumentId": "formal/15-06-07" }
   ]
 }

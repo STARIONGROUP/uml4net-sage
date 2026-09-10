@@ -2,7 +2,7 @@
 
 Output layout (matches the uml4net-sage knowledge base convention):
     <output_dir>/clauses/<number>-<slug>.md   one file per clause
-    <output_dir>/index.json                   array of {clause, title, pages, normative, file}
+    <output_dir>/index.json                   array of {clause, title, document, pages, normative, file}
     <output_dir>/index.md                     human-readable table of the same
 
 This module is deliberately not a distributed CLI in the usual sense - see __main__.py
@@ -41,11 +41,15 @@ def _write_text(path: Path, content: str) -> None:
         handle.write(content)
 
 
-def _write_index(output_dir: Path, clauses: list[Clause]) -> None:
+def _write_index(output_dir: Path, clauses: list[Clause], *, document: str) -> None:
+    # `document` is included on every row (not just in each clause's own front matter) so that two
+    # sibling knowledge trees extracted from different OMG documents (e.g. the UML and XMI
+    # specifications) never produce byte-shape-identical rows an agent could ground in the wrong one.
     rows = [
         {
             "clause": clause.number,
             "title": clause.title,
+            "document": document,
             "pages": f"{clause.page_start}"
             if clause.page_start == clause.page_end
             else f"{clause.page_start}-{clause.page_end}",
@@ -56,9 +60,10 @@ def _write_index(output_dir: Path, clauses: list[Clause]) -> None:
     ]
     _write_text(output_dir / "index.json", json.dumps(rows, indent=2, sort_keys=True) + "\n")
 
-    lines = ["| Clause | Title | Pages | Normative | File |", "|---|---|---|---|---|"]
+    lines = ["| Clause | Title | Document | Pages | Normative | File |", "|---|---|---|---|---|---|"]
     for row in rows:
-        lines.append(f"| {row['clause']} | {row['title']} | {row['pages']} | {row['normative']} | {row['file']} |")
+        cells = [row["clause"], row["title"], row["document"], row["pages"], row["normative"], row["file"]]
+        lines.append("| " + " | ".join(str(cell) for cell in cells) + " |")
     _write_text(output_dir / "index.md", "\n".join(lines) + "\n")
 
 
@@ -80,6 +85,6 @@ def extract_document(
         markdown = render_clause_markdown(clause, document=document, version=version)
         _write_text(output_dir / "clauses" / clause.file_name, markdown)
 
-    _write_index(output_dir, clauses)
+    _write_index(output_dir, clauses, document=document)
 
     return ExtractionResult(clauses=clauses, output_dir=output_dir)

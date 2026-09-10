@@ -60,7 +60,11 @@ namespace Uml4Net.Sage.Knowledge
             }
 
             var json = File.ReadAllText(this.manifestPath);
-            return JsonSerializer.Deserialize<InstalledVersionsManifest>(json, SerializerOptions) ?? InstalledVersionsManifest.Empty;
+            var manifest = JsonSerializer.Deserialize<InstalledVersionsManifest>(json, SerializerOptions) ?? InstalledVersionsManifest.Empty;
+
+            // installed.json written before XmiSpecs existed deserializes that property as null, not [] -
+            // coalesce so every other member never has to null-check it.
+            return manifest.XmiSpecs is null ? manifest with { XmiSpecs = [] } : manifest;
         }
 
         /// <summary>
@@ -120,6 +124,29 @@ namespace Uml4Net.Sage.Knowledge
             this.Save(manifest with { Versions = remaining, Default = newDefault });
         }
 
+        /// <summary>
+        /// Records that the companion OMG XMI specification's PDF has been fetched, creating or updating
+        /// its entry. Tracked independently of any UML version - see <see cref="InstalledXmiSpec"/>.
+        /// </summary>
+        public void MarkXmiSpecFetched(string version)
+        {
+            var manifest = this.Load();
+            var updated = UpsertXmiSpec(manifest, version, entry => entry with { Fetched = true });
+            this.Save(updated);
+        }
+
+        /// <summary>
+        /// Records whether the companion OMG XMI specification's clause text has been extracted. Sticky
+        /// like <see cref="InstalledVersion.SpecGenerated"/>: once <see langword="true"/>, a later failed
+        /// attempt does not clear it back to <see langword="false"/>.
+        /// </summary>
+        public void MarkXmiSpecGenerated(string version, bool succeeded)
+        {
+            var manifest = this.Load();
+            var updated = UpsertXmiSpec(manifest, version, entry => entry with { Generated = entry.Generated || succeeded });
+            this.Save(updated);
+        }
+
         private static InstalledVersionsManifest Upsert(InstalledVersionsManifest manifest, string version, System.Func<InstalledVersion, InstalledVersion> update)
         {
             var existing = manifest.Versions.FirstOrDefault(v => v.Version == version);
@@ -127,6 +154,15 @@ namespace Uml4Net.Sage.Knowledge
 
             var versions = manifest.Versions.Where(v => v.Version != version).Append(updatedEntry).OrderBy(v => v.Version, System.StringComparer.Ordinal).ToList();
             return manifest with { Versions = versions };
+        }
+
+        private static InstalledVersionsManifest UpsertXmiSpec(InstalledVersionsManifest manifest, string version, System.Func<InstalledXmiSpec, InstalledXmiSpec> update)
+        {
+            var existing = manifest.XmiSpecs.FirstOrDefault(v => v.Version == version);
+            var updatedEntry = update(existing ?? new InstalledXmiSpec(version, false, false));
+
+            var xmiSpecs = manifest.XmiSpecs.Where(v => v.Version != version).Append(updatedEntry).OrderBy(v => v.Version, System.StringComparer.Ordinal).ToList();
+            return manifest with { XmiSpecs = xmiSpecs };
         }
     }
 }
