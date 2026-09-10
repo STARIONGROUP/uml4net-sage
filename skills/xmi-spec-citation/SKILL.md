@@ -1,6 +1,6 @@
 ---
 name: xmi-spec-citation
-description: Quote or cite the normative text of the OMG XMI 2.5.1 specification - the XML serialization standard itself (namespaces, xmi:id/idref/href, xmi:type, document structure) - with an exact clause number. Use when the user asks what the XMI standard requires or means, not the UML specification's own text (see spec-citation), UML metamodel structure (see metamodel-lookup), or a specific model file's conformance (see xmi-model-inspection).
+description: Quote or cite the normative text of the OMG XMI 2.5.1 specification - the XML serialization standard itself (namespaces, xmi:id/idref/href, xmi:type, document structure), independent of UML - with an exact clause number. Use when the user asks what the XMI standard requires or means, not the UML specification's own text (see uml-spec-citation), UML metamodel structure (see metamodel-lookup), or a specific UML model file's conformance (see uml-xmi-model-inspection).
 ---
 
 # XMI spec citation
@@ -9,8 +9,8 @@ Quotes the **verbatim OMG XMI 2.5.1 specification text**, with an exact clause n
 been locally extracted. XMI is an independent OMG standard from UML - it defines the XML
 serialization format UML models (and this specification's own machine-readable files) are written
 in, versioning on its own schedule even though it happens to also be at "2.5.1" today. For the UML
-specification's own text, use `spec-citation` instead; for a specific model file's conformance to
-the UML metamodel, use `xmi-model-inspection`.
+specification's own text, use `uml-spec-citation` instead; for a specific UML model file's
+conformance to the UML metamodel, use `uml-xmi-model-inspection`.
 
 ## Read order
 
@@ -34,9 +34,9 @@ If `knowledge/xmi/<version>/spec/` doesn't exist (the XMI PDF hasn't been fetche
 be provisioned to run `spec_extract` - offline on first use, or an unsupported platform; see
 `tools/spec-extract/README.md`), **never fabricate a quote**. Instead:
 - If you can still name the likely governing clause (e.g. from general XMI knowledge, or because
-  `xmi-model-inspection`'s reader-diagnostic findings point at a specific mechanism like unresolved
-  `href` references), cite the clause **number only**, tagged **DERIVED**, and say plainly that this
-  is a reference, not a verbatim quote.
+  `uml-xmi-model-inspection`'s reader-diagnostic findings point at a specific mechanism like
+  unresolved `href` references), cite the clause **number only**, tagged **DERIVED**, and say plainly
+  that this is a reference, not a verbatim quote.
 - Tell the user how to unlock verbatim citation: run `uml4net-sage fetch --version <UML version>`
   (without `--no-specs` - this also fetches the companion XMI PDF) then `uml4net-sage generate
   --version <UML version>`. Note this is independent of UML's own spec-citation availability: one
@@ -45,7 +45,7 @@ be provisioned to run `spec_extract` - offline on first use, or an unsupported p
 
 ## Known extraction limitations
 
-Beyond the general PDF-extraction caveats already documented for `spec-citation`
+Beyond the general PDF-extraction caveats already documented for `uml-spec-citation`
 (`tools/spec-extract/README.md`, "Known limitations" - garbled figure-page text, occasional mojibake
 bullets), two things specific to this corpus are worth knowing:
 

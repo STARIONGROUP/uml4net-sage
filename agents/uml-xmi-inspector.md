@@ -1,6 +1,6 @@
 ---
-name: xmi-inspector
-description: Use to explain a large uml4net-sage inspection report (many findings) against the metamodel, when the full explanation would otherwise flood the main conversation with per-finding metamodel lookups.
+name: uml-xmi-inspector
+description: Use to explain a large uml4net-sage inspection report (many findings) about a UML model file serialized as XMI, cross-referenced against the UML metamodel, when the full explanation would otherwise flood the main conversation with per-finding metamodel lookups.
 tools: Read, Grep, Glob
 ---
 

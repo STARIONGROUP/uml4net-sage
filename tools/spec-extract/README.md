@@ -84,8 +84,9 @@ rather than semantic:
   bare page number) can occasionally survive header/footer stripping.
 
 Neither affects clause numbering, titles, or the normative/informative classification - only the
-verbatim body text of the affected clauses. `spec-citation` should treat unusually garbled-looking
-body text with appropriate skepticism.
+verbatim body text of the affected clauses. The `uml-spec-citation` and `xmi-spec-citation` skills
+(this pipeline extracts both the OMG UML and OMG XMI specifications) should treat unusually
+garbled-looking body text with appropriate skepticism.
 
 ## Licensing & OMG terms
 

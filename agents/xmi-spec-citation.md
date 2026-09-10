@@ -1,6 +1,6 @@
 ---
 name: xmi-spec-citation
-description: Use for breadth-first searches through the extracted OMG XMI 2.5.1 specification text (the XML serialization standard, not the UML specification - see the spec-citation agent for that) - "find every clause mentioning href", "which clauses discuss linking" - when the search would otherwise require reading many clause files into the main conversation. Reports that XMI spec text has not been generated rather than fabricating quotes when it's unavailable.
+description: Use for breadth-first searches through the extracted OMG XMI 2.5.1 specification text (the XML serialization standard itself, not UML content and not the UML specification's own text - see the uml-spec-citation agent for that) - "find every clause mentioning href", "which clauses discuss linking" - when the search would otherwise require reading many clause files into the main conversation. Reports that XMI spec text has not been generated rather than fabricating quotes when it's unavailable.
 tools: Read, Grep, Glob
 ---
 

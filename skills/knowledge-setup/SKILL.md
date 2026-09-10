@@ -38,7 +38,7 @@ unless they've clearly already asked for this ("set up the UML knowledge base", 
 
 ```bash
 uml4net-sage fetch --version 2.5.1           # XMI + specification PDFs (UML and XMI) from omg.org
-uml4net-sage fetch --version 2.5.1 --no-specs # XMI only - faster, but spec-citation degrades to clause numbers for both
+uml4net-sage fetch --version 2.5.1 --no-specs # XMI only - faster, but spec citation (uml-spec-citation and xmi-spec-citation) degrades to clause numbers
 uml4net-sage generate --version 2.5.1         # metamodel + standard-profile + (if PDFs fetched) UML and XMI spec text + datapackage.json
 ```
 

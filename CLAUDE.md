@@ -70,7 +70,8 @@ before bumping either).
   own `base_<Metaclass>` owned attribute (the OMG Standard Profile's fixed naming convention) instead
   of walking `IClass.Extension` → `IExtension.Metaclass`. Re-check that workaround if `uml4net.xmi` is
   upgraded past 8.5.1 - the underlying bug may be fixed.
-- **`PythonSpecExtractRunner`'s `uv` fallback**: verbatim spec-citation quoting shells out to
+- **`PythonSpecExtractRunner`'s `uv` fallback**: verbatim spec citation (both `uml-spec-citation` and
+  `xmi-spec-citation`) shells out to
   `tools/spec-extract` (Python/pdfplumber). It first tries a `.venv` under that directory or a system
   `python`/`python3`; if neither is found, it provisions [`uv`](https://astral.sh/uv) on demand
   (`Uml4Net.Sage.Knowledge.Toolchain.UvProvisioner`, downloaded/checksum-verified from its GitHub

@@ -1,14 +1,16 @@
 ---
-name: xmi-model-inspection
-description: Check a user-supplied .xmi or .uml model FILE for conformance to the UML 2.5.1 metamodel - unresolved references, abstract metaclasses instantiated directly, and other reader-level diagnostics. Use when the user shares a UML model file and asks to validate it, check it for errors, or find problems in it. Does not quote the XMI specification's own normative text - see xmi-spec-citation for that.
+name: uml-xmi-model-inspection
+description: Check a user-supplied .xmi or .uml UML model FILE for conformance to the UML 2.5.1 metamodel - unresolved references, abstract metaclasses instantiated directly, and other reader-level diagnostics. Use when the user shares a UML model file (serialized as XMI) and asks to validate it, check it for errors, or find problems in it. Does not quote the XMI specification's own normative text - see xmi-spec-citation for that.
 ---
 
-# XMI model inspection
+# UML XMI model inspection
 
-Loads a user-supplied `.xmi`/`.uml` model file with `uml4net.xmi` - the same reader the knowledge
-base itself is built with - and checks it against the generated metamodel graph. This skill is about
-checking one specific file; for questions about what the XMI standard itself requires or means (not
-tied to a particular file), use `xmi-spec-citation` instead.
+Loads a user-supplied `.xmi`/`.uml` **UML model file** (content serialized in XMI form) with
+`uml4net.xmi` - the same reader the knowledge base itself is built with - and checks it against the
+generated metamodel graph. This skill is about checking one specific file's UML content; for
+questions about what the XMI standard itself requires or means, independent of any particular file
+(e.g. the meaning of `href`/`idref`, or cross-document linking rules), use `xmi-spec-citation`
+instead - that skill is about the XMI serialization standard, not UML content.
 
 ## Running the check
 

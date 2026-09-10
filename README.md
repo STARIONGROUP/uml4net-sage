@@ -34,9 +34,9 @@ only verbatim specification citation needs them.
 |---|---|
 | `metamodel-lookup` | "What features does `Classifier` own and inherit?" |
 | `standard-profile-lookup` | "What does the `«Trace»` stereotype mean?" |
-| `spec-citation` | "What does the UML spec say about generalization?" |
-| `xmi-spec-citation` | "What does XMI say about `href` vs `idref`?" |
-| `xmi-model-inspection` | "Check this XMI file against the metamodel: `path/to/model.xmi`" |
+| `uml-spec-citation` | "What does the UML spec say about generalization?" |
+| `xmi-spec-citation` | "What does the XMI standard say about `href` vs `idref`?" |
+| `uml-xmi-model-inspection` | "Check this XMI file against the metamodel: `path/to/model.xmi`" |
 | `knowledge-setup` | "Is the UML knowledge base fetched and generated?" |
 
 Answers are tagged by provenance: **NORMATIVE** (a verbatim spec quote), **MODEL** (read directly
