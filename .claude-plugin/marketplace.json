@@ -14,9 +14,9 @@
       "source": {
         "source": "github",
         "repo": "STARIONGROUP/uml4net-sage",
-        "ref": "v1.3.1"
+        "ref": "v1.4.0"
       },
-      "description": "UML 2.5.1 agent: metamodel lookup, standard-profile lookup, normative spec citation, and XMI model inspection."
+      "description": "UML 2.5.1 agent: metamodel lookup, standard-profile lookup, normative spec citation (UML and XMI), XMI schema lookup, and XMI model inspection."
     }
   ]
 }
