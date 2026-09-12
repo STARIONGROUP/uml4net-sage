@@ -94,7 +94,7 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
 
             var markdown = MetaclassFileGenerator.Render(widget, this.graph);
 
-            Assert.That(markdown, Does.Contain("**describe**"));
+            Assert.That(markdown, Does.Contain("**describe(verbosity: [Integer](Integer.md))**"));
             Assert.That(markdown, Does.Contain("result = (label)"));
         }
 

@@ -49,11 +49,21 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
 
         /// <summary>
         /// Renders one feature's signature line, e.g. <c>+ name: [Type](Type.md) [0..*] {derived, ordered}</c>.
+        /// An operation's name is followed by its parenthesized parameter list (e.g. <c>name(p: [Type](Type.md))</c>,
+        /// or <c>name()</c> for a no-argument operation) so it can never be mistaken for an attribute of the
+        /// same name.
         /// </summary>
         public static string FeatureSignature(FeatureInfo feature)
         {
             var builder = new StringBuilder();
-            builder.Append("- **").Append(feature.Name).Append("**");
+            builder.Append("- **").Append(feature.Name);
+
+            if (feature.Kind == "operation")
+            {
+                builder.Append('(').Append(ParameterList(feature.Parameters)).Append(')');
+            }
+
+            builder.Append("**");
 
             if (feature.TypeName is not null)
             {
@@ -113,6 +123,22 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         }
 
         /// <summary>
+        /// Renders an operation's parameter list, e.g. <c>n: [NamedElement](NamedElement.md), out ns: [Namespace](Namespace.md)</c>.
+        /// The <c>in</c> direction is the default and left unmarked; <c>inout</c>/<c>out</c> are called out explicitly.
+        /// </summary>
+        public static string ParameterList(IReadOnlyList<ParameterInfo> parameters)
+        {
+            return string.Join(", ", parameters.Select(FormatParameter));
+        }
+
+        private static string FormatParameter(ParameterInfo parameter)
+        {
+            var direction = parameter.Direction is "in" or "" ? string.Empty : parameter.Direction + " ";
+            var type = parameter.TypeName is null ? string.Empty : ": " + Link(parameter.TypeName, parameter.TypeQualifiedName);
+            return $"{direction}{parameter.Name}{type}";
+        }
+
+        /// <summary>
         /// Renders the "## Inherited features" table: one row per inherited feature.
         /// </summary>
         public static string InheritedFeatureTable(IReadOnlyList<FeatureInfo> features)
@@ -145,7 +171,8 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
                 }
 
                 var typeCell = feature.TypeName is null ? "" : Link(feature.TypeName, feature.TypeQualifiedName);
-                builder.Append("| ").Append(feature.Name)
+                var nameCell = feature.Kind == "operation" ? $"{feature.Name}({ParameterList(feature.Parameters)})" : feature.Name;
+                builder.Append("| ").Append(nameCell)
                     .Append(" | ").Append(typeCell)
                     .Append(" | [").Append(feature.Lower).Append("..").Append(feature.Upper).Append(']')
                     .Append(" | ").Append(Link(SimpleName(feature.OwnerQualifiedName), feature.OwnerQualifiedName))

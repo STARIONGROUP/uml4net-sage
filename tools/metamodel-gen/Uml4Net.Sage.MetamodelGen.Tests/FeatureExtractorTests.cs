@@ -58,6 +58,36 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
         }
 
         [Test]
+        public void FromOperation_captures_in_parameters_but_excludes_the_return_parameter()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+            var widget = catalog.Classes.Single(c => c.Name == "Widget");
+            var describe = widget.OwnedOperation.Single(o => o.Name == "describe");
+
+            var feature = FeatureExtractor.FromOperation(describe, widget.QualifiedName);
+
+            Assert.That(feature.Parameters, Has.Count.EqualTo(1));
+            var parameter = feature.Parameters[0];
+            Assert.That(parameter.Name, Is.EqualTo("verbosity"));
+            Assert.That(parameter.TypeName, Is.EqualTo("Integer"));
+            Assert.That(parameter.Direction, Is.EqualTo("in"));
+            Assert.That(parameter.Lower, Is.EqualTo(1));
+            Assert.That(parameter.Upper, Is.EqualTo("1"));
+        }
+
+        [Test]
+        public void FromProperty_has_no_parameters()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+            var widget = catalog.Classes.Single(c => c.Name == "Widget");
+            var label = widget.OwnedAttribute.Single(a => a.Name == "label");
+
+            var feature = FeatureExtractor.FromProperty(label, widget.QualifiedName);
+
+            Assert.That(feature.Parameters, Is.Empty);
+        }
+
+        [Test]
         public void FromOperation_captures_the_bodyCondition_ocl_specification()
         {
             var catalog = TestFixtures.BuildCatalog();

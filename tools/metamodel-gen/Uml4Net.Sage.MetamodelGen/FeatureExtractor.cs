@@ -55,6 +55,7 @@ namespace Uml4Net.Sage.MetamodelGen
                 Redefines: property.RedefinedProperty.Where(p => !string.IsNullOrEmpty(p.QualifiedName)).Select(p => p.QualifiedName).ToList(),
                 Subsets: property.SubsettedProperty.Where(p => !string.IsNullOrEmpty(p.QualifiedName)).Select(p => p.QualifiedName).ToList(),
                 OwnerQualifiedName: ownerQualifiedName,
+                Parameters: [],
                 Body: []);
         }
 
@@ -64,6 +65,22 @@ namespace Uml4Net.Sage.MetamodelGen
         public static FeatureInfo FromOperation(IOperation operation, string ownerQualifiedName)
         {
             var type = operation.Type as INamedElement;
+
+            var parameters = operation.OwnedParameter
+                .Where(parameter => parameter.Direction != ParameterDirectionKind.Return)
+                .Select(parameter =>
+                {
+                    var parameterType = parameter.Type as INamedElement;
+
+                    return new ParameterInfo(
+                        Name: parameter.Name,
+                        TypeName: parameterType?.Name,
+                        TypeQualifiedName: parameterType?.QualifiedName,
+                        Lower: parameter.Lower,
+                        Upper: parameter.Upper,
+                        Direction: parameter.Direction.ToString().ToLowerInvariant());
+                })
+                .ToList();
 
             return new FeatureInfo(
                 Name: operation.Name,
@@ -79,6 +96,7 @@ namespace Uml4Net.Sage.MetamodelGen
                 Redefines: operation.RedefinedOperation.Where(o => !string.IsNullOrEmpty(o.QualifiedName)).Select(o => o.QualifiedName).ToList(),
                 Subsets: [],
                 OwnerQualifiedName: ownerQualifiedName,
+                Parameters: parameters,
                 Body: ConstraintExtractor.FromOperationBody(operation));
         }
     }

@@ -58,5 +58,23 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             using var parsed = System.Text.Json.JsonDocument.Parse(json);
             Assert.That(parsed.RootElement.GetProperty("classes").GetArrayLength(), Is.EqualTo(3));
         }
+
+        [Test]
+        public void Build_captures_an_operations_parameters()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+            var graph = ClassGraph.Build(catalog.Classes);
+            var document = MetamodelJsonGenerator.Build(catalog, graph);
+
+            var widget = document.Classes.Single(c => c.Name == "Widget");
+            var describe = widget.OwnedOperations.Single(o => o.Name == "describe");
+
+            Assert.That(describe.Parameters, Has.Count.EqualTo(1));
+            Assert.That(describe.Parameters[0].Name, Is.EqualTo("verbosity"));
+            Assert.That(describe.Parameters[0].TypeName, Is.EqualTo("Integer"));
+
+            var json = MetamodelJsonGenerator.Serialize(document);
+            Assert.That(json, Does.Contain("\"parameters\""));
+        }
     }
 }

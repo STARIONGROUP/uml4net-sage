@@ -38,6 +38,10 @@ namespace Uml4Net.Sage.MetamodelGen.Model
     /// <param name="Redefines">The qualified names of features this one redefines.</param>
     /// <param name="Subsets">The qualified names of features this one subsets.</param>
     /// <param name="OwnerQualifiedName">The qualified name of the metaclass that owns this feature.</param>
+    /// <param name="Parameters">
+    /// For an operation, its <c>in</c>/<c>inout</c>/<c>out</c> parameters in declaration order (never sorted -
+    /// call-site order is semantically meaningful); always empty for attributes.
+    /// </param>
     /// <param name="Body">
     /// For an operation with a <c>bodyCondition</c>, the OCL specification that backs it (the formula behind
     /// a derived property's <c>Query*()</c> accessor, e.g. <c>Connector::kind()</c>); empty for attributes and
@@ -57,5 +61,6 @@ namespace Uml4Net.Sage.MetamodelGen.Model
         IReadOnlyList<string> Redefines,
         IReadOnlyList<string> Subsets,
         string OwnerQualifiedName,
+        IReadOnlyList<ParameterInfo> Parameters,
         IReadOnlyList<ConstraintInfo> Body);
 }
