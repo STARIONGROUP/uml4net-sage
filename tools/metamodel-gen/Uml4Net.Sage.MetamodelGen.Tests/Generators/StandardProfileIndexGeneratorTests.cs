@@ -34,9 +34,9 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
 
             var rows = StandardProfileIndexGenerator.BuildRows(catalog);
 
-            Assert.That(rows, Has.Count.EqualTo(1));
-            Assert.That(rows[0].QualifiedName, Is.EqualTo("FixtureProfile::Sample"));
-            Assert.That(rows[0].File, Is.EqualTo("pages/Sample.md"));
+            Assert.That(rows, Has.Count.EqualTo(2));
+            var sampleRow = rows.Single(r => r.QualifiedName == "FixtureProfile::Sample");
+            Assert.That(sampleRow.File, Is.EqualTo("pages/Sample.md"));
         }
 
         [Test]

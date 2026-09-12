@@ -17,5 +17,16 @@
 				<type xmi:type="uml:PrimitiveType" href="http://example.com/spec/Fixture/1.0/FixturePrimitiveTypes.xmi#String"/>
 			</ownedAttribute>
 		</packagedElement>
+		<packagedElement xmi:type="uml:Extension" xmi:id="Gadget_SpecialSample" name="Gadget_SpecialSample" memberEnd="Gadget_SpecialSample-extension_SpecialSample SpecialSample-base_Gadget">
+			<ownedEnd xmi:type="uml:ExtensionEnd" xmi:id="Gadget_SpecialSample-extension_SpecialSample" name="extension_SpecialSample" type="SpecialSample" aggregation="composite" association="Gadget_SpecialSample">
+				<lowerValue xmi:type="uml:LiteralInteger" xmi:id="Gadget_SpecialSample-extension_SpecialSample-lv" value="0"/>
+			</ownedEnd>
+		</packagedElement>
+		<packagedElement xmi:type="uml:Stereotype" xmi:id="SpecialSample" name="SpecialSample">
+			<generalization xmi:type="uml:Generalization" xmi:id="SpecialSample-gen" general="Sample"/>
+			<ownedAttribute xmi:type="uml:Property" xmi:id="SpecialSample-base_Gadget" name="base_Gadget" association="Gadget_SpecialSample">
+				<type xmi:type="uml:Class" href="http://example.com/spec/Fixture/1.0/Fixture.xmi#Gadget"/>
+			</ownedAttribute>
+		</packagedElement>
 	</uml:Profile>
 </xmi:XMI>

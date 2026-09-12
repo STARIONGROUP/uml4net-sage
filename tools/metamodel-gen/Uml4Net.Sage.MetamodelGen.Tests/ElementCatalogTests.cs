@@ -33,7 +33,7 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(catalog.Classes.Select(c => c.Name), Is.EquivalentTo(new[] { "Widget", "Gadget", "SuperGadget" }));
             Assert.That(catalog.Enumerations.Select(e => e.Name), Is.EquivalentTo(new[] { "Kind" }));
             Assert.That(catalog.PrimitiveTypes.Select(p => p.Name), Is.EquivalentTo(new[] { "String", "Integer" }));
-            Assert.That(catalog.Stereotypes.Select(s => s.Name), Is.EquivalentTo(new[] { "Sample" }));
+            Assert.That(catalog.Stereotypes.Select(s => s.Name), Is.EquivalentTo(new[] { "Sample", "SpecialSample" }));
         }
 
         [Test]
