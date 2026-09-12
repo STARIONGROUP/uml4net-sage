@@ -14,7 +14,7 @@
   "definitions": {
     "feature": {
       "type": "object",
-      "required": ["name", "kind", "lower", "upper", "isDerived", "isOrdered", "isUnique", "isComposite", "redefines", "subsets", "ownerQualifiedName"],
+      "required": ["name", "kind", "lower", "upper", "isDerived", "isOrdered", "isUnique", "isComposite", "redefines", "subsets", "ownerQualifiedName", "parameters"],
       "properties": {
         "name": { "type": "string" },
         "kind": { "enum": ["attribute", "operation"] },
@@ -28,7 +28,24 @@
         "isComposite": { "type": "boolean" },
         "redefines": { "type": "array", "items": { "type": "string" } },
         "subsets": { "type": "array", "items": { "type": "string" } },
-        "ownerQualifiedName": { "type": "string" }
+        "ownerQualifiedName": { "type": "string" },
+        "parameters": {
+          "type": "array",
+          "description": "An operation's in/inout/out parameters in declaration order (the return parameter is instead represented by this feature's own typeName/lower/upper); always empty for an attribute.",
+          "items": { "$ref": "#/definitions/parameter" }
+        }
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "required": ["name", "lower", "upper", "direction"],
+      "properties": {
+        "name": { "type": "string" },
+        "typeName": { "type": ["string", "null"] },
+        "typeQualifiedName": { "type": ["string", "null"] },
+        "lower": { "type": "integer" },
+        "upper": { "type": "string", "description": "\"*\" for unbounded, otherwise a non-negative integer as a string" },
+        "direction": { "enum": ["in", "inout", "out"] }
       }
     },
     "constraint": {
