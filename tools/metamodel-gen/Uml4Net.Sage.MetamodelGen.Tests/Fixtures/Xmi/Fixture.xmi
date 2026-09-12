@@ -48,7 +48,14 @@
 			<generalization xmi:type="uml:Generalization" xmi:id="SuperGadget-gen" general="Gadget"/>
 		</packagedElement>
 		<packagedElement xmi:type="uml:Enumeration" xmi:id="Kind" name="Kind">
-			<ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="Kind-A" name="A"/>
+			<ownedComment xmi:type="uml:Comment" xmi:id="Kind-_ownedComment.0" annotatedElement="Kind">
+				<body>Kind is an Enumeration for classifying a Widget.</body>
+			</ownedComment>
+			<ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="Kind-A" name="A">
+				<ownedComment xmi:type="uml:Comment" xmi:id="Kind-A-_ownedComment.0" annotatedElement="Kind-A">
+					<body>Indicates the first kind.</body>
+				</ownedComment>
+			</ownedLiteral>
 			<ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="Kind-B" name="B"/>
 		</packagedElement>
 	</uml:Package>
