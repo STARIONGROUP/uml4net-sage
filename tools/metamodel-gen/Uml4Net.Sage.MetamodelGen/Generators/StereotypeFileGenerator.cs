@@ -26,6 +26,8 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
     using uml4net.CommonStructure;
     using uml4net.Packages;
 
+    using Uml4Net.Sage.MetamodelGen.Markdown;
+
     /// <summary>
     /// Renders one <see cref="IStereotype"/> to a markdown page. Written under <c>standard-profile/pages/</c>,
     /// never <c>metamodel/elements/</c> - a stereotype is not a metaclass, even though <see cref="IStereotype"/>
@@ -38,6 +40,12 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Renders the markdown page for <paramref name="stereotype"/>.
         /// </summary>
+        /// <param name="stereotype">The stereotype to render.</param>
+        /// <param name="graph">
+        /// A <see cref="ClassGraph"/> built over the Standard Profile's own stereotypes (every <see cref="IStereotype"/>
+        /// is also an <see cref="IClass"/>), used to resolve the stereotype's own generalizations/specializations
+        /// (e.g. <c>Document</c> extends <c>File</c>) the same way <see cref="MetaclassFileGenerator"/> does for metaclasses.
+        /// </param>
         /// <remarks>
         /// Base metaclasses are derived from the stereotype's own "base_&lt;Metaclass&gt;" owned attributes
         /// (the OMG Standard Profile's fixed naming convention for the implicit extension-end property),
@@ -47,8 +55,12 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <see cref="System.NotSupportedException"/>, so the naming-convention approach remains necessary
         /// (and is simpler besides - no need to resolve which extension-end is the stereotype's own).
         /// </remarks>
-        public static string Render(IStereotype stereotype)
+        public static string Render(IStereotype stereotype, ClassGraph graph)
         {
+            var qualifiedName = stereotype.QualifiedName;
+            var generalizations = graph.DirectSuperClassesOf(qualifiedName);
+            var specializations = graph.DirectSubclassesOf(qualifiedName);
+
             var ownedAttributes = stereotype.OwnedAttribute.ToList();
 
             var baseMetaclasses = ownedAttributes
@@ -74,6 +86,9 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
             builder.Append("---\n\n");
 
             builder.Append("# «").Append(stereotype.Name).Append("»\n\n");
+
+            builder.Append("## Generalizations\n\n").Append(MarkdownHelpers.LinkList(generalizations)).Append("\n\n");
+            builder.Append("## Specializations\n\n").Append(MarkdownHelpers.LinkList(specializations)).Append("\n\n");
 
             builder.Append("## Base metaclasses\n\n");
             builder.Append(baseMetaclasses.Count == 0 ? "_None._" : string.Join("\n", baseMetaclasses.Select(name => $"- `{name}`"))).Append("\n\n");

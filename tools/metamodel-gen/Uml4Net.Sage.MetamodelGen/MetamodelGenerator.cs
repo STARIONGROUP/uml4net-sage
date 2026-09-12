@@ -113,6 +113,10 @@ namespace Uml4Net.Sage.MetamodelGen
             var pagesDirectory = Path.Combine(standardProfileDirectory, "pages");
             Directory.CreateDirectory(pagesDirectory);
 
+            // Every IStereotype is also an IClass, so ClassGraph - already used for the metamodel's own
+            // generalization/specialization closures - resolves a stereotype's Generalizations the same way.
+            var stereotypeGraph = ClassGraph.Build(catalog.Stereotypes);
+
             foreach (var stereotype in catalog.Stereotypes)
             {
                 if (string.IsNullOrEmpty(stereotype.QualifiedName))
@@ -120,7 +124,7 @@ namespace Uml4Net.Sage.MetamodelGen
                     continue;
                 }
 
-                WriteText(Path.Combine(pagesDirectory, $"{stereotype.Name}.md"), StereotypeFileGenerator.Render(stereotype));
+                WriteText(Path.Combine(pagesDirectory, $"{stereotype.Name}.md"), StereotypeFileGenerator.Render(stereotype, stereotypeGraph));
             }
 
             var indexRows = StandardProfileIndexGenerator.BuildRows(catalog);
