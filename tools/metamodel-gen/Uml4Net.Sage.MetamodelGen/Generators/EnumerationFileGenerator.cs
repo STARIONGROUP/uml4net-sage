@@ -81,15 +81,10 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
 
         private static string? FirstNonBlankCommentBody(IEnumerable<IComment> comments)
         {
-            foreach (var comment in comments)
-            {
-                if (!string.IsNullOrWhiteSpace(comment.Body))
-                {
-                    return comment.Body.Trim();
-                }
-            }
-
-            return null;
+            return comments
+                .Select(comment => comment.Body)
+                .FirstOrDefault(body => !string.IsNullOrWhiteSpace(body))
+                ?.Trim();
         }
     }
 }
