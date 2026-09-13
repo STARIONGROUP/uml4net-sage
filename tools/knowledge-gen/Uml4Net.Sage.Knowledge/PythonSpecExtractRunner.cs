@@ -96,15 +96,30 @@ namespace Uml4Net.Sage.Knowledge
 
             var extractArguments = new[] { "-m", "spec_extract", "extract", "--pdf", pdfPath, "--out", outputDirectory, "--document", document, "--version", version };
 
+            var missingDependencies = false;
+
             foreach (var pythonExecutable in PythonCandidates(specExtractProjectDirectory))
             {
                 try
                 {
                     var result = await this.processRunner.RunAsync(pythonExecutable, extractArguments, workingDirectory: srcDirectory, cancellationToken);
 
-                    return result.ExitCode == 0
-                        ? ValidateExtractedIndex(outputDirectory)
-                        : SpecExtractionOutcome.Skipped($"spec_extract exited with code {result.ExitCode}: {result.StandardError}");
+                    if (result.ExitCode == 0)
+                    {
+                        return ValidateExtractedIndex(outputDirectory);
+                    }
+
+                    if (IsMissingDependencyFailure(result.StandardError))
+                    {
+                        // This interpreter is missing spec_extract's own dependencies (pdfplumber) or the
+                        // spec_extract package itself - not installed system-wide, and not what this
+                        // candidate was for. Don't give up: uv provisions its own managed venv with these
+                        // dependencies installed automatically, so try that before reporting failure.
+                        missingDependencies = true;
+                        continue;
+                    }
+
+                    return SpecExtractionOutcome.Skipped($"spec_extract exited with code {result.ExitCode}: {result.StandardError}{NetEffectSuffix}");
                 }
                 catch (Win32Exception)
                 {
@@ -115,10 +130,16 @@ namespace Uml4Net.Sage.Knowledge
             var uvExecutable = await this.uvProvisioner.EnsureAsync(cancellationToken);
             if (uvExecutable is null)
             {
-                return SpecExtractionOutcome.Skipped(
-                    "No Python interpreter was found and uv could not be provisioned (offline, or an " +
-                    "unsupported platform). Verbatim spec citation is unavailable until one of them is - " +
-                    "see tools/spec-extract/README.md.");
+                return missingDependencies
+                    ? SpecExtractionOutcome.Skipped(
+                        "pdfplumber (spec_extract's Python dependency) is not installed for the Python " +
+                        "interpreter found, and uv could not be provisioned to install it automatically " +
+                        "(offline, or an unsupported platform). Install it yourself with 'pip install -e " +
+                        "tools/spec-extract' from the repository root, then re-run 'generate'." + NetEffectSuffix)
+                    : SpecExtractionOutcome.Skipped(
+                        "No Python interpreter was found and uv could not be provisioned (offline, or an " +
+                        "unsupported platform). Install Python 3.12+, or ensure uv can be provisioned - " +
+                        "see tools/spec-extract/README.md." + NetEffectSuffix);
             }
 
             try
@@ -126,16 +147,45 @@ namespace Uml4Net.Sage.Knowledge
                 var uvArguments = new[] { "run", "--project", specExtractProjectDirectory, "python" }.Concat(extractArguments).ToArray();
                 var uvResult = await this.processRunner.RunAsync(uvExecutable.FullName, uvArguments, workingDirectory: specExtractProjectDirectory, cancellationToken);
 
-                return uvResult.ExitCode == 0
-                    ? ValidateExtractedIndex(outputDirectory)
-                    : SpecExtractionOutcome.Skipped($"spec_extract (via uv) exited with code {uvResult.ExitCode}: {uvResult.StandardError}");
+                if (uvResult.ExitCode == 0)
+                {
+                    return ValidateExtractedIndex(outputDirectory);
+                }
+
+                return missingDependencies
+                    ? SpecExtractionOutcome.Skipped(
+                        $"pdfplumber (spec_extract's Python dependency) is not installed for the Python " +
+                        $"interpreter found, and the uv-provisioned run also failed (exit code " +
+                        $"{uvResult.ExitCode}: {uvResult.StandardError}). Install it yourself with 'pip " +
+                        $"install -e tools/spec-extract' from the repository root, then re-run 'generate'." + NetEffectSuffix)
+                    : SpecExtractionOutcome.Skipped($"spec_extract (via uv) exited with code {uvResult.ExitCode}: {uvResult.StandardError}{NetEffectSuffix}");
             }
             catch (Win32Exception)
             {
                 return SpecExtractionOutcome.Skipped(
-                    $"The provisioned uv executable at {uvExecutable.FullName} could not be started.");
+                    $"The provisioned uv executable at {uvExecutable.FullName} could not be started.{NetEffectSuffix}");
             }
         }
+
+        /// <summary>
+        /// True when <paramref name="standardError"/> looks like a Python "ModuleNotFoundError" - the
+        /// signature of an interpreter that simply doesn't have <c>spec_extract</c> (or its own
+        /// <c>pdfplumber</c> dependency) installed, as opposed to a genuine extraction failure (a malformed
+        /// PDF, an unexpected document layout) that retrying under a different interpreter wouldn't fix.
+        /// </summary>
+        private static bool IsMissingDependencyFailure(string standardError)
+        {
+            return standardError.Contains("ModuleNotFoundError", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Appended to every skipped reason so it's never ambiguous what still works: spec extraction is
+        /// wholly independent of metamodel/Standard Profile generation (see
+        /// <see cref="KnowledgeGenerationService.GenerateAsync"/>, which always runs those first).
+        /// </summary>
+        private const string NetEffectSuffix =
+            " Metamodel and Standard Profile lookups are unaffected; only verbatim UML/XMI specification " +
+            "citation is unavailable until this is resolved.";
 
         /// <summary>
         /// Confirms <c>spec_extract</c> actually produced usable clauses rather than merely exiting 0 -

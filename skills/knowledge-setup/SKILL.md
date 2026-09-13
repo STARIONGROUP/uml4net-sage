@@ -48,6 +48,22 @@ a fully usable metamodel-lookup and standard-profile-lookup knowledge base. This
 independently to the UML and XMI spec text: one can be available while the other isn't (e.g. if the
 XMI PDF failed to download, `fetch` prints a warning but UML setup still completes).
 
+Every skipped-spec-extraction reason `generate` prints already states the net effect explicitly
+("Metamodel and Standard Profile lookups are unaffected; only verbatim UML/XMI specification
+citation is unavailable until this is resolved.") - relay that to the user rather than only saying
+"spec extraction was skipped."
+
+If the printed reason specifically names **pdfplumber** as missing (`generate` first tries a plain
+Python interpreter if one is found, and only falls back to auto-provisioning `uv` - which installs
+dependencies into its own managed venv with no action needed - when that interpreter can't even be
+started; a *found* interpreter that's simply missing `pdfplumber`/`spec_extract` also triggers the
+`uv` fallback automatically, so this message only surfaces once `uv` itself is unavailable or also
+failed): tell the user plainly that `pdfplumber` isn't installed, and ask whether they'd like you to
+install it now with `pip install -e tools/spec-extract` (from the repository root) before re-running
+`generate` - don't run it unasked, this modifies their Python environment. If they decline or it
+isn't feasible (no `pip`/Python at all), tell them the knowledge base is otherwise complete and usable
+today, and that verbatim spec citation can be added later once Python/`pdfplumber` is available.
+
 ## Switching or removing versions
 
 Only relevant once more than one UML version is ever installed (there's no reason to today, but the

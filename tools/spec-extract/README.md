@@ -60,13 +60,21 @@ python -m spec_extract extract --pdf <path-to-pdf> --out <output-dir> [--documen
 
 1. A `.venv` under this directory (`.venv/Scripts/python.exe` / `.venv/bin/python`) if present, else a
    bare `python`/`python3` on `PATH` - the maintainer dev workflow above.
-2. If neither is found, it provisions [`uv`](https://astral.sh/uv) on demand (downloaded and
-   checksum-verified from its GitHub releases, cached under the same local app-data folder the CLI's
-   own self-fetch hook uses) and runs `uv run --project tools/spec-extract python -m spec_extract ...`.
-   `uv` resolves or fetches a matching Python itself and installs this project's dependencies into a
-   managed venv, so verbatim spec citation works for an installed plugin too - no pre-existing Python
-   or provisioned `.venv` needed, just network access the first time. `uv.lock` (committed) pins that
-   resolution, the same way `Directory.Packages.props` pins exact versions on the C# side.
+2. If neither is found (the interpreter itself can't be started), **or** one is found but exits with a
+   Python `ModuleNotFoundError` (i.e. `pdfplumber` or `spec_extract` itself isn't installed into it -
+   e.g. a bare system Python with nothing `pip install`ed), it provisions [`uv`](https://astral.sh/uv)
+   on demand (downloaded and checksum-verified from its GitHub releases, cached under the same local
+   app-data folder the CLI's own self-fetch hook uses) and runs `uv run --project tools/spec-extract
+   python -m spec_extract ...`. `uv` resolves or fetches a matching Python itself and installs this
+   project's dependencies into a managed venv, so verbatim spec citation works for an installed plugin
+   too - no pre-existing Python or provisioned `.venv` needed, just network access the first time.
+   `uv.lock` (committed) pins that resolution, the same way `Directory.Packages.props` pins exact
+   versions on the C# side.
+3. If `uv` itself can't be provisioned (offline, or an unsupported platform) or its run also fails,
+   `generate` reports the skip with an explicit reason - naming `pdfplumber` specifically when that
+   was the cause, with the exact `pip install -e tools/spec-extract` command to fix it - and states
+   plainly that metamodel/Standard Profile lookups are unaffected either way; only verbatim spec
+   citation stays unavailable until it's resolved.
 
 ## Known limitations
 
