@@ -100,6 +100,16 @@ namespace Uml4Net.Sage.MetamodelGen
                 WriteText(Path.Combine(elementsDirectory, $"{primitiveType.Name}.md"), PrimitiveTypeFileGenerator.Render(primitiveType));
             }
 
+            foreach (var association in catalog.Associations)
+            {
+                if (string.IsNullOrEmpty(association.QualifiedName))
+                {
+                    continue;
+                }
+
+                WriteText(Path.Combine(elementsDirectory, $"{association.Name}.md"), AssociationFileGenerator.Render(association));
+            }
+
             var indexRows = MetamodelIndexGenerator.BuildRows(catalog);
             WriteText(Path.Combine(metamodelDirectory, "index.json"), MetamodelIndexGenerator.SerializeJson(indexRows));
             WriteText(Path.Combine(metamodelDirectory, "index.md"), MetamodelIndexGenerator.RenderMarkdown(indexRows));

@@ -44,6 +44,18 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
         }
 
         [Test]
+        public void BuildRows_includes_associations()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+
+            var rows = MetamodelIndexGenerator.BuildRows(catalog);
+
+            var associationRow = rows.Single(r => r.Name == "A_container_gadgets");
+            Assert.That(associationRow.Kind, Is.EqualTo("association"));
+            Assert.That(associationRow.File, Is.EqualTo("elements/A_container_gadgets.md"));
+        }
+
+        [Test]
         public void BuildRows_never_includes_stereotypes()
         {
             var catalog = TestFixtures.BuildCatalog();

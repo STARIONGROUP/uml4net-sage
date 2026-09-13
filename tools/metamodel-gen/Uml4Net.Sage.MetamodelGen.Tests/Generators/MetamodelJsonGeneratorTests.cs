@@ -40,7 +40,7 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
 
             var superGadget = document.Classes.Single(c => c.Name == "SuperGadget");
             Assert.That(superGadget.AllAncestors, Is.EquivalentTo(new[] { "Fixture::Gadget", "Fixture::Widget" }));
-            Assert.That(superGadget.InheritedAttributes.Select(a => a.Name), Is.EquivalentTo(new[] { "label", "count" }));
+            Assert.That(superGadget.InheritedAttributes.Select(a => a.Name), Is.EquivalentTo(new[] { "label", "count", "container" }));
         }
 
         [Test]
@@ -75,6 +75,24 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
 
             var json = MetamodelJsonGenerator.Serialize(document);
             Assert.That(json, Does.Contain("\"parameters\""));
+        }
+
+        [Test]
+        public void Build_captures_associations_and_their_member_ends()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+            var graph = ClassGraph.Build(catalog.Classes);
+            var document = MetamodelJsonGenerator.Build(catalog, graph);
+
+            Assert.That(document.Associations, Has.Count.EqualTo(1));
+            var association = document.Associations[0];
+            Assert.That(association.Name, Is.EqualTo("A_container_gadgets"));
+            Assert.That(association.MemberEnds.Select(e => e.Name), Is.EquivalentTo(new[] { "container", "gadgets" }));
+            Assert.That(association.MemberEnds.Single(e => e.Name == "gadgets").IsOwnedByAssociation, Is.True);
+            Assert.That(association.MemberEnds.Single(e => e.Name == "container").IsOwnedByAssociation, Is.False);
+
+            var json = MetamodelJsonGenerator.Serialize(document);
+            Assert.That(json, Does.Contain("\"associations\""));
         }
     }
 }

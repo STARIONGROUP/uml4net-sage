@@ -35,11 +35,17 @@ namespace Uml4Net.Sage.MetamodelGen
     /// <param name="Classes">Every <see cref="IClass"/> found in the UML metamodel (excludes Stereotypes).</param>
     /// <param name="Enumerations">Every <see cref="IEnumeration"/> found in the UML metamodel.</param>
     /// <param name="PrimitiveTypes">Every <see cref="IPrimitiveType"/> found in the UML metamodel or PrimitiveTypes library.</param>
+    /// <param name="Associations">
+    /// Every <see cref="IAssociation"/> found in the UML metamodel - the metamodel's own association
+    /// *links* between metaclasses (e.g. the association behind <c>Class::ownedAttribute</c>), distinct
+    /// from <see cref="IClass"/> metaclasses like the <c>Association</c> metaclass itself.
+    /// </param>
     /// <param name="Stereotypes">Every <see cref="IStereotype"/> found in the Standard Profile.</param>
     public sealed record ElementCatalog(
         IReadOnlyList<IClass> Classes,
         IReadOnlyList<IEnumeration> Enumerations,
         IReadOnlyList<IPrimitiveType> PrimitiveTypes,
+        IReadOnlyList<IAssociation> Associations,
         IReadOnlyList<IStereotype> Stereotypes)
     {
         /// <summary>
@@ -60,10 +66,11 @@ namespace Uml4Net.Sage.MetamodelGen
             var classes = new List<IClass>();
             var enumerations = new List<IEnumeration>();
             var primitiveTypes = new List<IPrimitiveType>();
+            var associations = new List<IAssociation>();
 
             foreach (var package in umlModel.Packages)
             {
-                WalkMetamodel(package, classes, enumerations, primitiveTypes);
+                WalkMetamodel(package, classes, enumerations, primitiveTypes, associations);
             }
 
             var stereotypes = new List<IStereotype>();
@@ -72,17 +79,17 @@ namespace Uml4Net.Sage.MetamodelGen
                 WalkStereotypes(package, stereotypes);
             }
 
-            return new ElementCatalog(classes, enumerations, primitiveTypes, stereotypes);
+            return new ElementCatalog(classes, enumerations, primitiveTypes, associations, stereotypes);
         }
 
-        private static void WalkMetamodel(IPackage package, List<IClass> classes, List<IEnumeration> enumerations, List<IPrimitiveType> primitiveTypes)
+        private static void WalkMetamodel(IPackage package, List<IClass> classes, List<IEnumeration> enumerations, List<IPrimitiveType> primitiveTypes, List<IAssociation> associations)
         {
             foreach (var element in package.PackagedElement)
             {
                 switch (element)
                 {
                     case IPackage nested:
-                        WalkMetamodel(nested, classes, enumerations, primitiveTypes);
+                        WalkMetamodel(nested, classes, enumerations, primitiveTypes, associations);
                         break;
                     case IStereotype:
                         // Stereotypes are catalogued separately from the Standard Profile package, even
@@ -93,6 +100,9 @@ namespace Uml4Net.Sage.MetamodelGen
                         break;
                     case IPrimitiveType primitiveType:
                         primitiveTypes.Add(primitiveType);
+                        break;
+                    case IAssociation association:
+                        associations.Add(association);
                         break;
                     case IClass @class:
                         classes.Add(@class);

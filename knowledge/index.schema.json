@@ -6,13 +6,13 @@
   "definitions": {
     "metamodelIndex": {
       "type": "array",
-      "description": "knowledge/<version>/metamodel/index.json - one row per class, enumeration, or primitive type.",
+      "description": "knowledge/<version>/metamodel/index.json - one row per class, enumeration, primitive type, or association.",
       "items": {
         "type": "object",
         "required": ["name", "kind", "package", "qualifiedName", "isAbstract", "file"],
         "properties": {
           "name": { "type": "string" },
-          "kind": { "enum": ["class", "enumeration", "primitiveType"] },
+          "kind": { "enum": ["class", "enumeration", "primitiveType", "association"] },
           "package": { "type": "string" },
           "qualifiedName": { "type": "string" },
           "isAbstract": { "type": "boolean" },

@@ -55,6 +55,10 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
                 .Where(p => !string.IsNullOrEmpty(p.QualifiedName))
                 .Select(p => new MetamodelIndexRow(p.Name, "primitiveType", (p.Namespace as INamedElement)?.QualifiedName ?? string.Empty, p.QualifiedName, false, $"elements/{p.Name}.md")));
 
+            rows.AddRange(catalog.Associations
+                .Where(a => !string.IsNullOrEmpty(a.QualifiedName))
+                .Select(a => new MetamodelIndexRow(a.Name, "association", (a.Namespace as INamedElement)?.QualifiedName ?? string.Empty, a.QualifiedName, a.IsAbstract, $"elements/{a.Name}.md")));
+
             return rows.OrderBy(row => row.QualifiedName, System.StringComparer.Ordinal).ToList();
         }
 

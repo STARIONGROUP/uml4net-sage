@@ -21,9 +21,9 @@ git-ignored", and `NOTICE`).
 knowledge/<version>/
 ├── datapackage.json                    # OKF Frictionless Data Package, scoped to the 3 tabular indexes below
 ├── metamodel/
-│   ├── index.json / index.md           # every class/enumeration/primitiveType: {name, kind, package, qualifiedName, isAbstract, file}
+│   ├── index.json / index.md           # every class/enumeration/primitiveType/association: {name, kind, package, qualifiedName, isAbstract, file}
 │   ├── metamodel.json                  # full graph with precomputed inheritance closures
-│   └── elements/<Name>.md              # one page per class/enumeration/primitiveType
+│   └── elements/<Name>.md              # one page per class/enumeration/primitiveType/association
 ├── standard-profile/
 │   ├── index.json / index.md           # every stereotype: {qualifiedName, kind, file, source}
 │   └── pages/<Name>.md                 # one page per stereotype
