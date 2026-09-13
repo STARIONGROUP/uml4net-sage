@@ -33,16 +33,18 @@ namespace Uml4Net.Sage.Knowledge.Tests
         private readonly ProcessRunResult? result;
         private readonly bool throwNotFound;
         private readonly string? onlyRespondsToFileName;
+        private readonly ProcessRunResult? resultForOnlyRespondsToFileName;
 
         public IReadOnlyList<string>? LastArguments { get; private set; }
 
         public string? LastFileName { get; private set; }
 
-        private FakeProcessRunner(ProcessRunResult? result, bool throwNotFound, string? onlyRespondsToFileName = null)
+        private FakeProcessRunner(ProcessRunResult? result, bool throwNotFound, string? onlyRespondsToFileName = null, ProcessRunResult? resultForOnlyRespondsToFileName = null)
         {
             this.result = result;
             this.throwNotFound = throwNotFound;
             this.onlyRespondsToFileName = onlyRespondsToFileName;
+            this.resultForOnlyRespondsToFileName = resultForOnlyRespondsToFileName;
         }
 
         public static FakeProcessRunner Returning(ProcessRunResult result) => new(result, false);
@@ -56,6 +58,15 @@ namespace Uml4Net.Sage.Knowledge.Tests
         /// </summary>
         public static FakeProcessRunner NotFoundExceptFor(string respondingFileName, ProcessRunResult result) => new(result, true, respondingFileName);
 
+        /// <summary>
+        /// Returns <paramref name="defaultResult"/> for every <paramref name="fileName"/> except
+        /// <paramref name="specialFileName"/>, which returns <paramref name="specialResult"/> - simulates a
+        /// plain Python candidate failing one way (e.g. a missing dependency) while a provisioned <c>uv</c>
+        /// succeeds (or fails differently).
+        /// </summary>
+        public static FakeProcessRunner RespondingDifferentlyFor(string specialFileName, ProcessRunResult specialResult, ProcessRunResult defaultResult) =>
+            new(defaultResult, false, specialFileName, specialResult);
+
         public Task<ProcessRunResult> RunAsync(string fileName, IReadOnlyList<string> arguments, string? workingDirectory = null, CancellationToken cancellationToken = default)
         {
             this.LastFileName = fileName;
@@ -64,6 +75,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             if (this.throwNotFound && fileName != this.onlyRespondsToFileName)
             {
                 throw new Win32Exception("The system cannot find the file specified.");
+            }
+
+            if (fileName == this.onlyRespondsToFileName && this.resultForOnlyRespondsToFileName is not null)
+            {
+                return Task.FromResult(this.resultForOnlyRespondsToFileName);
             }
 
             return Task.FromResult(this.result!);

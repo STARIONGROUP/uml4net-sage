@@ -206,6 +206,77 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("uv boom"));
         }
 
+        [Test]
+        public async Task ExtractAsync_states_the_net_effect_whenever_it_skips()
+        {
+            var pdfPath = Path.Combine(this.tempDirectory, "UML-2.5.1.pdf");
+            File.WriteAllText(pdfPath, "not a real pdf");
+
+            var runner = new PythonSpecExtractRunner(FakeProcessRunner.Returning(new ProcessRunResult(1, string.Empty, "boom")), FakeUvProvisioner.Unavailable());
+
+            var outcome = await runner.ExtractAsync(pdfPath, Path.Combine(this.tempDirectory, "spec"), this.tempDirectory, "2.5.1", "UML");
+
+            Assert.That(outcome.Succeeded, Is.False);
+            Assert.That(outcome.SkippedReason, Does.Contain("Metamodel and Standard Profile lookups are unaffected"));
+        }
+
+        [Test]
+        public async Task ExtractAsync_falls_back_to_uv_when_a_python_candidate_is_missing_its_dependencies()
+        {
+            var pdfPath = Path.Combine(this.tempDirectory, "UML-2.5.1.pdf");
+            File.WriteAllText(pdfPath, "not a real pdf");
+            var outputDirectory = Path.Combine(this.tempDirectory, "spec");
+            WriteFakeIndex(outputDirectory, clauseCount: 42);
+
+            var uvExecutable = new FileInfo(Path.Combine(this.tempDirectory, "uv.exe"));
+            var moduleNotFound = new ProcessRunResult(1, string.Empty, "ModuleNotFoundError: No module named 'pdfplumber'");
+            var uvSuccess = new ProcessRunResult(0, "Extracted 42 clauses", string.Empty);
+            var processRunner = FakeProcessRunner.RespondingDifferentlyFor(uvExecutable.FullName, uvSuccess, moduleNotFound);
+            var runner = new PythonSpecExtractRunner(processRunner, FakeUvProvisioner.Returning(uvExecutable));
+
+            var outcome = await runner.ExtractAsync(pdfPath, outputDirectory, this.tempDirectory, "2.5.1", "UML");
+
+            Assert.That(outcome.Succeeded, Is.True, "a missing dependency on a plain python candidate should not stop the uv fallback from being tried");
+        }
+
+        [Test]
+        public async Task ExtractAsync_names_pdfplumber_and_gives_an_install_command_when_dependencies_are_missing_and_uv_is_unavailable()
+        {
+            var pdfPath = Path.Combine(this.tempDirectory, "UML-2.5.1.pdf");
+            File.WriteAllText(pdfPath, "not a real pdf");
+
+            var moduleNotFound = new ProcessRunResult(1, string.Empty, "ModuleNotFoundError: No module named 'spec_extract'");
+            var runner = new PythonSpecExtractRunner(FakeProcessRunner.Returning(moduleNotFound), FakeUvProvisioner.Unavailable());
+
+            var outcome = await runner.ExtractAsync(pdfPath, Path.Combine(this.tempDirectory, "spec"), this.tempDirectory, "2.5.1", "UML");
+
+            Assert.That(outcome.Succeeded, Is.False);
+            Assert.That(outcome.SkippedReason, Does.Contain("pdfplumber"));
+            Assert.That(outcome.SkippedReason, Does.Contain("pip install -e tools/spec-extract"));
+            Assert.That(outcome.SkippedReason, Does.Contain("Metamodel and Standard Profile lookups are unaffected"));
+        }
+
+        [Test]
+        public async Task ExtractAsync_names_pdfplumber_and_gives_an_install_command_when_dependencies_are_missing_and_the_uv_fallback_also_fails()
+        {
+            var pdfPath = Path.Combine(this.tempDirectory, "UML-2.5.1.pdf");
+            File.WriteAllText(pdfPath, "not a real pdf");
+
+            var uvExecutable = new FileInfo(Path.Combine(this.tempDirectory, "uv.exe"));
+            var moduleNotFound = new ProcessRunResult(1, string.Empty, "ModuleNotFoundError: No module named 'pdfplumber'");
+            var uvFailure = new ProcessRunResult(1, string.Empty, "uv: network error");
+            var processRunner = FakeProcessRunner.RespondingDifferentlyFor(uvExecutable.FullName, uvFailure, moduleNotFound);
+            var runner = new PythonSpecExtractRunner(processRunner, FakeUvProvisioner.Returning(uvExecutable));
+
+            var outcome = await runner.ExtractAsync(pdfPath, Path.Combine(this.tempDirectory, "spec"), this.tempDirectory, "2.5.1", "UML");
+
+            Assert.That(outcome.Succeeded, Is.False);
+            Assert.That(outcome.SkippedReason, Does.Contain("pdfplumber"));
+            Assert.That(outcome.SkippedReason, Does.Contain("pip install -e tools/spec-extract"));
+            Assert.That(outcome.SkippedReason, Does.Contain("uv: network error"));
+            Assert.That(outcome.SkippedReason, Does.Contain("Metamodel and Standard Profile lookups are unaffected"));
+        }
+
         private static void WriteFakeIndex(string outputDirectory, int clauseCount)
         {
             Directory.CreateDirectory(outputDirectory);
