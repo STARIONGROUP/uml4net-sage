@@ -72,7 +72,19 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
                 .OrderBy(node => node.QualifiedName, System.StringComparer.Ordinal)
                 .ToList();
 
-            return new MetamodelJsonDocument(classNodes, enumerationNodes, primitiveTypeNodes);
+            var associationNodes = catalog.Associations
+                .Where(a => !string.IsNullOrEmpty(a.QualifiedName))
+                .Select(a => new AssociationJsonNode(
+                    a.Name,
+                    a.QualifiedName,
+                    (a.Namespace as INamedElement)?.QualifiedName ?? string.Empty,
+                    a.IsAbstract,
+                    a.IsDerived,
+                    AssociationExtractor.MemberEndsOf(a)))
+                .OrderBy(node => node.QualifiedName, System.StringComparer.Ordinal)
+                .ToList();
+
+            return new MetamodelJsonDocument(classNodes, enumerationNodes, primitiveTypeNodes, associationNodes);
         }
 
         /// <summary>

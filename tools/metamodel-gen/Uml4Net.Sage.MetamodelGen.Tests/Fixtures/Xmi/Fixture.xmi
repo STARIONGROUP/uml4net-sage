@@ -43,9 +43,21 @@
 				<lowerValue xmi:type="uml:LiteralInteger" xmi:id="Gadget-count-lv" value="1"/>
 				<upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="Gadget-count-uv" value="1"/>
 			</ownedAttribute>
+			<ownedAttribute xmi:type="uml:Property" xmi:id="Gadget-container" name="container" type="Widget" association="A_container_gadgets">
+				<lowerValue xmi:type="uml:LiteralInteger" xmi:id="Gadget-container-lv" value="0"/>
+				<upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="Gadget-container-uv" value="1"/>
+			</ownedAttribute>
 		</packagedElement>
 		<packagedElement xmi:type="uml:Class" xmi:id="SuperGadget" name="SuperGadget" isAbstract="false">
 			<generalization xmi:type="uml:Generalization" xmi:id="SuperGadget-gen" general="Gadget"/>
+		</packagedElement>
+		<packagedElement xmi:type="uml:Association" xmi:id="A_container_gadgets" name="A_container_gadgets">
+			<memberEnd xmi:idref="Gadget-container"/>
+			<memberEnd xmi:idref="A_container_gadgets-gadgets"/>
+			<ownedEnd xmi:type="uml:Property" xmi:id="A_container_gadgets-gadgets" name="gadgets" isOrdered="true" type="Gadget" association="A_container_gadgets">
+				<lowerValue xmi:type="uml:LiteralInteger" xmi:id="A_container_gadgets-gadgets-lv" value="0"/>
+				<upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="A_container_gadgets-gadgets-uv" value="*"/>
+			</ownedEnd>
 		</packagedElement>
 		<packagedElement xmi:type="uml:Enumeration" xmi:id="Kind" name="Kind">
 			<ownedComment xmi:type="uml:Comment" xmi:id="Kind-_ownedComment.0" annotatedElement="Kind">

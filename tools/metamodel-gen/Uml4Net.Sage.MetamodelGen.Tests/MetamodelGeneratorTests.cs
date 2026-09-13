@@ -54,6 +54,7 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(File.Exists(Path.Combine(this.outputRoot, "metamodel", "elements", "Widget.md")));
             Assert.That(File.Exists(Path.Combine(this.outputRoot, "metamodel", "elements", "Kind.md")));
             Assert.That(File.Exists(Path.Combine(this.outputRoot, "metamodel", "elements", "String.md")));
+            Assert.That(File.Exists(Path.Combine(this.outputRoot, "metamodel", "elements", "A_container_gadgets.md")));
             Assert.That(File.Exists(Path.Combine(this.outputRoot, "standard-profile", "index.json")));
             Assert.That(File.Exists(Path.Combine(this.outputRoot, "standard-profile", "pages", "Sample.md")));
         }
