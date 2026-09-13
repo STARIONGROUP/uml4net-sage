@@ -75,7 +75,7 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
                 .OrderBy(name => name, System.StringComparer.Ordinal)
                 .ToList();
 
-            var documentation = stereotype.OwnedComment.Select(comment => comment.Body).FirstOrDefault(body => !string.IsNullOrWhiteSpace(body));
+            var documentation = MarkdownHelpers.FirstNonBlankCommentBody(stereotype.OwnedComment);
 
             var builder = new StringBuilder();
             builder.Append("---\n");

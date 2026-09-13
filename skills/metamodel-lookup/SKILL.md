@@ -24,7 +24,9 @@ primitive types (Integer, String, ...). Not for Standard Profile stereotypes (`Â
    per-element markdown page: front matter, `## Generalizations`, `## Specializations`,
    `## Owned features`, `## Inherited features` (a full precomputed table - never re-derive this by
    hand-walking generalizations), `## Constraints` (OCL, tagged MODEL tier since it's read directly
-   from the metamodel XMI).
+   from the metamodel XMI), `## Description` (the element's own defining comment from the XMI, also
+   MODEL tier - not a verbatim spec quote, even where the wording is close; for that, see
+   `uml-spec-citation`).
 
 ## Set/closure questions
 

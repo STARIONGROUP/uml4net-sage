@@ -24,6 +24,8 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
     using System.Linq;
     using System.Text;
 
+    using uml4net.CommonStructure;
+
     using Uml4Net.Sage.MetamodelGen.Model;
 
     /// <summary>
@@ -204,6 +206,19 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         {
             var index = qualifiedName.LastIndexOf("::", System.StringComparison.Ordinal);
             return index < 0 ? qualifiedName : qualifiedName[(index + 2)..];
+        }
+
+        /// <summary>
+        /// Finds the first non-blank <c>ownedComment</c> body among <paramref name="comments"/> (an element's
+        /// documentation is conventionally its first <see cref="IComment"/>, but XMI never guarantees exactly
+        /// one), trimmed of the trailing CR/LF the OMG XMI often encodes at the end of a comment body.
+        /// </summary>
+        public static string? FirstNonBlankCommentBody(IEnumerable<IComment> comments)
+        {
+            return comments
+                .Select(comment => comment.Body)
+                .FirstOrDefault(body => !string.IsNullOrWhiteSpace(body))
+                ?.Trim();
         }
     }
 }
