@@ -20,6 +20,7 @@
 
 namespace Uml4Net.Sage.MetamodelGen.Generators
 {
+    using System.Collections.Generic;
     using System.Linq;
     using System.Text;
 
@@ -27,7 +28,9 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
     using uml4net.SimpleClassifiers;
 
     /// <summary>
-    /// Renders one <see cref="IEnumeration"/> to a markdown page: front matter and its owned literals.
+    /// Renders one <see cref="IEnumeration"/> to a markdown page: front matter, its owned literals (each
+    /// with its own description when the XMI's <c>ownedComment</c> provides one), and the enumeration's
+    /// own description.
     /// </summary>
     public static class EnumerationFileGenerator
     {
@@ -49,7 +52,7 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
             builder.Append("# ").Append(enumeration.Name).Append("\n\n");
             builder.Append("## Literals\n\n");
 
-            var literals = enumeration.OwnedLiteral.Select(literal => literal.Name).OrderBy(name => name, System.StringComparer.Ordinal).ToList();
+            var literals = enumeration.OwnedLiteral.OrderBy(literal => literal.Name, System.StringComparer.Ordinal).ToList();
             if (literals.Count == 0)
             {
                 builder.Append("_None._\n");
@@ -58,11 +61,30 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
             {
                 foreach (var literal in literals)
                 {
-                    builder.Append("- `").Append(literal).Append("`\n");
+                    builder.Append("- `").Append(literal.Name).Append('`');
+
+                    var literalDescription = FirstNonBlankCommentBody(literal.OwnedComment);
+                    if (literalDescription is not null)
+                    {
+                        builder.Append(" - ").Append(literalDescription);
+                    }
+
+                    builder.Append('\n');
                 }
             }
 
+            builder.Append("\n## Description\n\n");
+            builder.Append(FirstNonBlankCommentBody(enumeration.OwnedComment) ?? "_No description available._").Append('\n');
+
             return builder.ToString();
+        }
+
+        private static string? FirstNonBlankCommentBody(IEnumerable<IComment> comments)
+        {
+            return comments
+                .Select(comment => comment.Body)
+                .FirstOrDefault(body => !string.IsNullOrWhiteSpace(body))
+                ?.Trim();
         }
     }
 }

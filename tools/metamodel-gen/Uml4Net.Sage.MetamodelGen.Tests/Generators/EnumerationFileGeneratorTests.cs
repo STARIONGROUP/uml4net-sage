@@ -37,8 +37,32 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
 
             Assert.That(markdown, Does.Contain("kind: \"enumeration\""));
             Assert.That(markdown, Does.Contain("qualifiedName: \"Fixture::Kind\""));
-            Assert.That(markdown, Does.Contain("- `A`"));
+            Assert.That(markdown, Does.Contain("- `A` - Indicates the first kind."));
             Assert.That(markdown, Does.Contain("- `B`"));
+        }
+
+        [Test]
+        public void Render_says_none_for_a_literal_with_no_ownedComment()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+            var kind = catalog.Enumerations.Single(e => e.Name == "Kind");
+
+            var markdown = EnumerationFileGenerator.Render(kind);
+
+            var literalsSection = markdown[markdown.IndexOf("## Literals")..markdown.IndexOf("## Description")];
+            Assert.That(literalsSection, Does.Contain("- `B`\n"));
+            Assert.That(literalsSection, Does.Not.Contain("- `B` -"));
+        }
+
+        [Test]
+        public void Render_includes_the_enumerations_own_description()
+        {
+            var catalog = TestFixtures.BuildCatalog();
+            var kind = catalog.Enumerations.Single(e => e.Name == "Kind");
+
+            var markdown = EnumerationFileGenerator.Render(kind);
+
+            Assert.That(markdown, Does.Contain("## Description\n\nKind is an Enumeration for classifying a Widget."));
         }
     }
 }
