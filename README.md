@@ -32,7 +32,7 @@ only verbatim specification citation needs them.
 
 | Skill | Example prompt |
 |---|---|
-| `metamodel-lookup` | "What features does `Classifier` own and inherit?" |
+| `metamodel-lookup` | "What features does `Classifier` own and inherit?" / "What's the opposite end of `Class::nestedClassifier`?" |
 | `standard-profile-lookup` | "What does the `«Trace»` stereotype mean?" |
 | `uml-spec-citation` | "What does the UML spec say about generalization?" |
 | `xmi-spec-citation` | "What does the XMI standard say about `href` vs `idref`?" |
