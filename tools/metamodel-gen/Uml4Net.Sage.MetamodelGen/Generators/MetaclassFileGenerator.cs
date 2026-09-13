@@ -80,6 +80,9 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
             builder.Append("## Constraints\n\n");
             AppendConstraints(builder, constraints);
 
+            builder.Append("\n## Description\n\n");
+            builder.Append(MarkdownHelpers.FirstNonBlankCommentBody(@class.OwnedComment) ?? "_No description available._").Append('\n');
+
             return builder.ToString();
         }
 

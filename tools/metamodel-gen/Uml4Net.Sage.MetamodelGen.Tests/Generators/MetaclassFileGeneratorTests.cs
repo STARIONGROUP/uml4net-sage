@@ -108,5 +108,26 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             var constraintsSection = markdown[markdown.IndexOf("## Constraints")..];
             Assert.That(constraintsSection, Does.Contain("_None._"));
         }
+
+        [Test]
+        public void Render_includes_the_classs_own_description()
+        {
+            var widget = this.catalog.Classes.Single(c => c.Name == "Widget");
+
+            var markdown = MetaclassFileGenerator.Render(widget, this.graph);
+
+            Assert.That(markdown, Does.Contain("## Description\n\nA Widget is the abstract root of the fixture's tiny class hierarchy."));
+        }
+
+        [Test]
+        public void Render_says_no_description_available_for_a_class_with_no_ownedComment()
+        {
+            var gadget = this.catalog.Classes.Single(c => c.Name == "Gadget");
+
+            var markdown = MetaclassFileGenerator.Render(gadget, this.graph);
+
+            var descriptionSection = markdown[markdown.IndexOf("## Description")..];
+            Assert.That(descriptionSection, Does.Contain("_No description available._"));
+        }
     }
 }

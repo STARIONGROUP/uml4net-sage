@@ -20,12 +20,13 @@
 
 namespace Uml4Net.Sage.MetamodelGen.Generators
 {
-    using System.Collections.Generic;
     using System.Linq;
     using System.Text;
 
     using uml4net.CommonStructure;
     using uml4net.SimpleClassifiers;
+
+    using Uml4Net.Sage.MetamodelGen.Markdown;
 
     /// <summary>
     /// Renders one <see cref="IEnumeration"/> to a markdown page: front matter, its owned literals (each
@@ -63,7 +64,7 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
                 {
                     builder.Append("- `").Append(literal.Name).Append('`');
 
-                    var literalDescription = FirstNonBlankCommentBody(literal.OwnedComment);
+                    var literalDescription = MarkdownHelpers.FirstNonBlankCommentBody(literal.OwnedComment);
                     if (literalDescription is not null)
                     {
                         builder.Append(" - ").Append(literalDescription);
@@ -74,17 +75,9 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
             }
 
             builder.Append("\n## Description\n\n");
-            builder.Append(FirstNonBlankCommentBody(enumeration.OwnedComment) ?? "_No description available._").Append('\n');
+            builder.Append(MarkdownHelpers.FirstNonBlankCommentBody(enumeration.OwnedComment) ?? "_No description available._").Append('\n');
 
             return builder.ToString();
-        }
-
-        private static string? FirstNonBlankCommentBody(IEnumerable<IComment> comments)
-        {
-            return comments
-                .Select(comment => comment.Body)
-                .FirstOrDefault(body => !string.IsNullOrWhiteSpace(body))
-                ?.Trim();
         }
     }
 }
