@@ -68,6 +68,23 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
         }
 
         /// <summary>
+        /// Verifies that <c>inspect</c> fails only on error-severity findings: a model whose only finding is a
+        /// warning (an unresolvable stereotype) exits with 0, and a model with an error exits with 1.
+        /// </summary>
+        /// <param name="fixture">The fixture model to inspect.</param>
+        /// <param name="expectedExitCode">The exit code <c>inspect</c> should return.</param>
+        [TestCase("model-stereotype-unresolved.xmi", 0)]
+        [TestCase("model-abstract-type.xmi", 1)]
+        public void Invoke_fails_only_on_error_findings(string fixture, int expectedExitCode)
+        {
+            this.InstallMetamodel();
+
+            var exitCode = this.Invoke(Path.Combine(FixturesDirectory, fixture));
+
+            Assert.That(exitCode, Is.EqualTo(expectedExitCode));
+        }
+
+        /// <summary>
         /// Verifies that <c>inspect</c> returns exit code 0 for the valid fixture model once the metamodel is installed.
         /// </summary>
         [Test]

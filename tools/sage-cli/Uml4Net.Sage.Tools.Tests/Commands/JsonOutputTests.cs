@@ -79,6 +79,7 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
         [TestCase("versions", 0)]
         [TestCase("inspect model-valid.xmi", 0)]
         [TestCase("inspect model-abstract-type.xmi", 1)]
+        [TestCase("inspect model-stereotype-unresolved.xmi", 0)]
         public async Task Json_output_is_one_line_holding_one_document_and_nothing_else(string verb, int expectedExitCode)
         {
             this.InstallGeneratedVersion();
@@ -589,6 +590,56 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
                 Assert.That(exitCode, Is.EqualTo(1));
                 AssertIsError(console.Lines, "--no-such-option");
                 AssertIsError(console.Lines, "--other-bad-option");
+            });
+        }
+
+        /// <summary>
+        /// Verifies that asking for help together with <c>--json</c> gives one error document that says how to get the
+        /// help text, with exit code 1 and nothing else on either stream, instead of System.CommandLine's help text.
+        /// </summary>
+        /// <param name="commandLine">A command line that asks for help, separated by single spaces.</param>
+        /// <returns>A task that completes when the test has run.</returns>
+        [TestCase("check --json --help")]
+        [TestCase("inspect model.xmi --json -h")]
+        [TestCase("versions --json -?")]
+        public async Task Help_with_json_is_a_json_error_and_nothing_else(string commandLine)
+        {
+            using var console = new RecordedConsole();
+
+            var exitCode = await Program.Main(commandLine.Split(' '));
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(1));
+                AssertIsError(console.Lines, "cannot be combined with --json");
+                Assert.That(console.StandardOutput, Is.Empty);
+                Assert.That(console.StandardError, Is.Empty);
+            });
+        }
+
+        /// <summary>
+        /// Verifies that <c>--json</c> on a verb that does not offer it, or without a verb, gives one error document
+        /// that names the verbs that do offer it, with exit code 1.
+        /// </summary>
+        /// <param name="commandLine">The command line, separated by single spaces.</param>
+        /// <param name="target">How the error names what was asked for.</param>
+        /// <returns>A task that completes when the test has run.</returns>
+        [TestCase("fetch --json", "not by 'fetch'")]
+        [TestCase("remove --json --version 2.5.1", "not by 'remove'")]
+        [TestCase("--json", "not by a command line without a verb")]
+        public async Task Json_on_a_verb_that_does_not_offer_it_names_the_verbs_that_do(string commandLine, string target)
+        {
+            using var console = new RecordedConsole();
+
+            var exitCode = await Program.Main(commandLine.Split(' '));
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(1));
+                AssertIsError(console.Lines, "--json is only supported by versions, check, inspect");
+                AssertIsError(console.Lines, target);
+                Assert.That(console.StandardOutput, Is.Empty);
+                Assert.That(console.StandardError, Is.Empty);
             });
         }
 

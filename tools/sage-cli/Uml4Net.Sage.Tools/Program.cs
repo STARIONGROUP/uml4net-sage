@@ -21,6 +21,7 @@
 namespace Uml4Net.Sage.Tools
 {
     using System.CommandLine;
+    using System.CommandLine.Help;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -36,24 +37,63 @@ namespace Uml4Net.Sage.Tools
         /// </summary>
         /// <param name="args">The verb and its options.</param>
         /// <returns>
-        /// The verb's exit code; 1 when a command line with <c>--json</c> does not parse, after writing the
-        /// parse errors as one <c>{"error": "..."}</c> document.
+        /// The verb's exit code; 1 when a command line with <c>--json</c> cannot produce a JSON document (it
+        /// does not parse, names a verb without <c>--json</c>, or asks for help), after writing why as one
+        /// <c>{"error": "..."}</c> document.
         /// </returns>
         public static async Task<int> Main(string[] args)
         {
-            var parseResult = BuildRootCommand().Parse(args);
+            var root = BuildRootCommand();
+            var parseResult = root.Parse(args);
 
-            // A command line that does not parse never reaches a verb, and System.CommandLine would print
-            // its errors and help as text. A --json caller gets one error document instead. The raw
-            // arguments are all there is to go on, so any spelling of the option counts, whatever its
-            // value: 'check --json false --bogus' also gets a JSON error.
-            if (parseResult.Errors.Count > 0 && args.Any(JsonOutput.IsJsonArgument))
+            // The raw arguments decide whether the caller wants JSON: a command line that does not parse
+            // has no reliable option values. So any spelling of the option counts, whatever its value:
+            // 'check --json false --bogus' also gets a JSON error.
+            if (args.Any(JsonOutput.IsJsonArgument))
             {
-                JsonOutput.WriteError(string.Join(" ", parseResult.Errors.Select(error => error.Message)));
-                return 1;
+                var error = JsonCommandLineError(root, parseResult);
+                if (error is not null)
+                {
+                    JsonOutput.WriteError(error);
+                    return 1;
+                }
             }
 
             return await parseResult.InvokeAsync();
+        }
+
+        /// <summary>
+        /// Gets why a command line that asks for <c>--json</c> cannot run as a JSON verb, so the caller gets
+        /// one error document instead of System.CommandLine's text.
+        /// </summary>
+        /// <param name="root">The root command, which lists the verbs.</param>
+        /// <param name="parseResult">The parsed command line.</param>
+        /// <returns>
+        /// The error message, or <c>null</c> when the command line can run: a verb that offers <c>--json</c>,
+        /// no parse errors, and not a request for help.
+        /// </returns>
+        internal static string? JsonCommandLineError(RootCommand root, ParseResult parseResult)
+        {
+            var command = parseResult.CommandResult.Command;
+
+            if (!command.Options.Contains(GlobalOptions.Json))
+            {
+                var supported = string.Join(", ", root.Subcommands.Where(verb => verb.Options.Contains(GlobalOptions.Json)).Select(verb => verb.Name));
+                var target = command == root ? "a command line without a verb" : $"'{command.Name}'";
+                return $"--json is only supported by {supported}, not by {target}.";
+            }
+
+            if (parseResult.Errors.Count > 0)
+            {
+                return string.Join(" ", parseResult.Errors.Select(error => error.Message));
+            }
+
+            if (parseResult.Action is HelpAction)
+            {
+                return $"--help prints text and cannot be combined with --json; run 'uml4net-sage {command.Name} --help' to read it.";
+            }
+
+            return null;
         }
 
         /// <summary>

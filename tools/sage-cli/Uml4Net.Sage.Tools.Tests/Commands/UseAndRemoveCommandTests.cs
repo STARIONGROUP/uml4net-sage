@@ -178,26 +178,96 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
         }
 
         /// <summary>
-        /// Verifies that <c>remove --force</c> refuses a version that the manifest lists but that is not a registered
-        /// UML version: exit code 1, its folders kept and its manifest entry kept.
+        /// Verifies that <c>remove</c> removes a version that the manifest lists but that is no longer a registered
+        /// UML version, so such an install is not stranded: exit code 0, its folders deleted and its manifest entry
+        /// dropped, with the other version left in place.
         /// </summary>
         [Test]
-        public void Remove_with_force_refuses_a_version_listed_in_the_manifest_but_not_known()
+        public void Remove_removes_an_installed_version_that_is_no_longer_registered()
         {
             var store = new InstalledVersionsStore(this.layout.KnowledgeRoot);
             store.MarkFetched("2.5.1", setAsDefault: true);
             store.MarkFetched("9.9.9", setAsDefault: false);
             Directory.CreateDirectory(this.layout.SourcesDirectoryFor("9.9.9"));
             Directory.CreateDirectory(this.layout.KnowledgeDirectoryFor("9.9.9"));
+            Directory.CreateDirectory(this.layout.KnowledgeDirectoryFor("2.5.1"));
 
-            var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", "9.9.9", "--force"]).Invoke();
+            var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", "9.9.9"]).Invoke();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(0));
+                Assert.That(Directory.Exists(this.layout.SourcesDirectoryFor("9.9.9")), Is.False);
+                Assert.That(Directory.Exists(this.layout.KnowledgeDirectoryFor("9.9.9")), Is.False);
+                Assert.That(Directory.Exists(this.layout.KnowledgeDirectoryFor("2.5.1")), Is.True);
+                Assert.That(store.Load().Versions.Select(v => v.Version), Is.EqualTo(new[] { "2.5.1" }));
+            });
+        }
+
+        /// <summary>
+        /// Verifies that a hand-edited manifest listing <paramref name="version"/> does not make it removable: a
+        /// version that is not registered must also look like a version number. <c>remove --force</c> returns 1 and
+        /// leaves the repository root, the 2.5.1 folders, the shared <c>xmi</c> folders and the manifest as they were.
+        /// </summary>
+        /// <param name="version">A value that names a folder outside a single version folder.</param>
+        [TestCase("..")]
+        [TestCase("xmi")]
+        [TestCase("../escape")]
+        [TestCase("2.5.1/..")]
+        [TestCase("2.5.1\n")]
+        public void Remove_with_force_refuses_a_listed_version_that_is_not_a_version_number(string version)
+        {
+            var store = new InstalledVersionsStore(this.layout.KnowledgeRoot);
+            store.MarkFetched("2.5.1", setAsDefault: true);
+            store.MarkFetched(version, setAsDefault: false);
+            Directory.CreateDirectory(this.layout.SourcesDirectoryFor("2.5.1"));
+            Directory.CreateDirectory(this.layout.KnowledgeDirectoryFor("2.5.1"));
+            Directory.CreateDirectory(this.layout.XmiKnowledgeDirectoryFor("2.5.1"));
+            var sentinel = Path.Combine(this.repositoryRoot, "sentinel.txt");
+            File.WriteAllText(sentinel, "keep");
+
+            var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", version, "--force"]).Invoke();
 
             Assert.Multiple(() =>
             {
                 Assert.That(exitCode, Is.EqualTo(1));
-                Assert.That(Directory.Exists(this.layout.SourcesDirectoryFor("9.9.9")), Is.True);
-                Assert.That(Directory.Exists(this.layout.KnowledgeDirectoryFor("9.9.9")), Is.True);
-                Assert.That(store.Load().Versions.Select(v => v.Version), Does.Contain("9.9.9"));
+                Assert.That(File.Exists(sentinel), Is.True);
+                Assert.That(Directory.Exists(this.layout.SourcesDirectoryFor("2.5.1")), Is.True);
+                Assert.That(Directory.Exists(this.layout.KnowledgeDirectoryFor("2.5.1")), Is.True);
+                Assert.That(Directory.Exists(this.layout.XmiKnowledgeDirectoryFor("2.5.1")), Is.True);
+                Assert.That(store.Load().Versions.Select(v => v.Version), Does.Contain(version));
+            });
+        }
+
+        /// <summary>
+        /// Verifies that <c>remove</c> refuses a registered version that has nothing installed (no manifest entry and
+        /// no folders) with exit code 1, rather than reporting it as removed.
+        /// </summary>
+        [Test]
+        public void Remove_refuses_a_version_with_nothing_installed()
+        {
+            var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", "2.5.1", "--force"]).Invoke();
+
+            Assert.That(exitCode, Is.EqualTo(1));
+        }
+
+        /// <summary>
+        /// Verifies that <c>remove</c> still deletes a registered version's folders when the manifest has no entry for
+        /// it (for example after <c>installed.json</c> was deleted), with exit code 0.
+        /// </summary>
+        [Test]
+        public void Remove_deletes_the_folders_of_a_version_the_manifest_does_not_list()
+        {
+            Directory.CreateDirectory(this.layout.SourcesDirectoryFor("2.5.1"));
+            Directory.CreateDirectory(this.layout.KnowledgeDirectoryFor("2.5.1"));
+
+            var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", "2.5.1"]).Invoke();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(0));
+                Assert.That(Directory.Exists(this.layout.SourcesDirectoryFor("2.5.1")), Is.False);
+                Assert.That(Directory.Exists(this.layout.KnowledgeDirectoryFor("2.5.1")), Is.False);
             });
         }
 

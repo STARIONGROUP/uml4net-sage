@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.omg.org/spec/UML/20161101" xmlns:OtherProfile="http://example.com/OtherProfile">
+	<uml:Package xmi:type="uml:Package" xmi:id="_0" name="SampleModel">
+		<packagedElement xmi:type="uml:Class" xmi:id="Car" name="Car"/>
+	</uml:Package>
+	<OtherProfile:Entity xmi:id="Car-Entity" base_Class="Car"/>
+</xmi:XMI>

@@ -79,7 +79,9 @@ uml4net-sage remove --version <version> [--force] # delete a version's sources +
 ```
 
 `remove` never deletes `knowledge/xmi/` or `sources/xmi/` - the XMI specification is a shared,
-version-independent corpus, not owned by any one UML version.
+version-independent corpus, not owned by any one UML version. It accepts a registered UML version,
+or one that `knowledge/installed.json` lists even if this CLI no longer knows it, and refuses a
+version that has nothing installed.
 
 ## Answering
 

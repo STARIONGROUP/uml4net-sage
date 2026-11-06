@@ -25,6 +25,7 @@ namespace Uml4Net.Sage.Tools.Commands
     using System.CommandLine;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
 
     using Spectre.Console;
 
@@ -33,7 +34,8 @@ namespace Uml4Net.Sage.Tools.Commands
 
     /// <summary>
     /// <c>uml4net-sage inspect &lt;path&gt;</c>: loads a user-supplied <c>.xmi</c>/<c>.uml</c> file via
-    /// <c>uml4net.xmi</c> and checks it against the generated metamodel graph.
+    /// <c>uml4net.xmi</c> and checks it against the generated metamodel graph. Exits with 0 when the
+    /// report has no error-severity finding (warnings alone do not fail it), and with 1 otherwise.
     /// </summary>
     public static class InspectCommand
     {
@@ -93,7 +95,7 @@ namespace Uml4Net.Sage.Tools.Commands
                 if (JsonOutput.IsRequested(parseResult))
                 {
                     JsonOutput.Write(report);
-                    return report.Findings.Count > 0 ? 1 : 0;
+                    return ExitCodeFor(report);
                 }
 
                 if (report.Findings.Count == 0)
@@ -120,10 +122,19 @@ namespace Uml4Net.Sage.Tools.Commands
                 }
 
                 AnsiConsole.Write(table);
-                return 1;
+                return ExitCodeFor(report);
             }));
 
             return command;
         }
+
+        /// <summary>
+        /// Gets the exit code for <paramref name="report"/>: 1 when any finding is an error, 0 when there
+        /// are no findings or only warnings.
+        /// </summary>
+        /// <param name="report">The inspection report.</param>
+        /// <returns>The exit code <c>inspect</c> returns for the report.</returns>
+        internal static int ExitCodeFor(InspectionReport report) =>
+            report.Findings.Any(finding => finding.Severity == "error") ? 1 : 0;
     }
 }
