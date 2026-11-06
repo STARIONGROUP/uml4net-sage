@@ -20,8 +20,10 @@
 
 namespace Uml4Net.Sage.Tools.Commands
 {
+    using System;
     using System.CommandLine;
     using System.IO;
+    using System.Linq;
 
     using Spectre.Console;
 
@@ -47,9 +49,27 @@ namespace Uml4Net.Sage.Tools.Commands
 
             command.SetAction(parseResult =>
             {
-                var version = parseResult.GetValue(GlobalOptions.Version)!;
+                var version = parseResult.GetValue(GlobalOptions.Version) ?? string.Empty;
                 var force = parseResult.GetValue(ForceOption);
+
+                // The version becomes part of the paths that get deleted, so only accept a registered
+                // UML version. The manifest is not enough: it can be hand-edited.
+                if (!KnownUmlVersions.TryFind(version, out _))
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[red]Unknown UML version '{version}'.[/] Known versions: {string.Join(", ", KnownUmlVersions.All.Select(v => v.Version))}");
+                    return 1;
+                }
+
                 var layout = new RepositoryLayout(RepositoryRootResolver.Resolve(parseResult.GetValue(GlobalOptions.RepositoryRoot)));
+                var sourcesDirectory = layout.SourcesDirectoryFor(version);
+                var knowledgeDirectory = layout.KnowledgeDirectoryFor(version);
+
+                if (!IsVersionDirectory(layout.SourcesRoot, sourcesDirectory) || !IsVersionDirectory(layout.KnowledgeRoot, knowledgeDirectory))
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[red]Refusing to remove '{version}':[/] it does not resolve to a version folder directly under sources/ and knowledge/.");
+                    return 1;
+                }
+
                 var store = new InstalledVersionsStore(layout.KnowledgeRoot);
                 var manifest = store.Load();
 
@@ -65,14 +85,14 @@ namespace Uml4Net.Sage.Tools.Commands
                     return 1;
                 }
 
-                if (Directory.Exists(layout.SourcesDirectoryFor(version)))
+                if (Directory.Exists(sourcesDirectory))
                 {
-                    Directory.Delete(layout.SourcesDirectoryFor(version), recursive: true);
+                    Directory.Delete(sourcesDirectory, recursive: true);
                 }
 
-                if (Directory.Exists(layout.KnowledgeDirectoryFor(version)))
+                if (Directory.Exists(knowledgeDirectory))
                 {
-                    Directory.Delete(layout.KnowledgeDirectoryFor(version), recursive: true);
+                    Directory.Delete(knowledgeDirectory, recursive: true);
                 }
 
                 store.Remove(version);
@@ -83,6 +103,26 @@ namespace Uml4Net.Sage.Tools.Commands
             });
 
             return command;
+        }
+
+        /// <summary>
+        /// Checks that <paramref name="directory"/> is a direct child of <paramref name="root"/> and is
+        /// not the shared <c>xmi</c> folder.
+        /// </summary>
+        /// <param name="root">The <c>sources/</c> or <c>knowledge/</c> folder.</param>
+        /// <param name="directory">The resolved folder that would be deleted.</param>
+        /// <returns><c>true</c> when the folder is safe to delete as a version folder.</returns>
+        internal static bool IsVersionDirectory(string root, string directory)
+        {
+            var fullRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
+            var fullDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
+            var parent = Path.GetDirectoryName(fullDirectory);
+            var name = Path.GetFileName(fullDirectory);
+
+            return parent is not null
+                && string.Equals(parent, fullRoot, StringComparison.OrdinalIgnoreCase)
+                && name.Length > 0
+                && !string.Equals(name, "xmi", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

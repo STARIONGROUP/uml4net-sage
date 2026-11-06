@@ -21,6 +21,7 @@
 namespace Uml4Net.Sage.Tools.Tests.Commands
 {
     using System.IO;
+    using System.Linq;
 
     using Uml4Net.Sage.Knowledge;
     using Uml4Net.Sage.Tools.Commands;
@@ -86,12 +87,102 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             new InstalledVersionsStore(this.layout.KnowledgeRoot).MarkFetched("2.5.1", setAsDefault: true);
             Directory.CreateDirectory(this.layout.SourcesDirectoryFor("2.5.1"));
             Directory.CreateDirectory(this.layout.KnowledgeDirectoryFor("2.5.1"));
+            Directory.CreateDirectory(this.layout.XmiSourcesDirectoryFor("2.5.1"));
+            Directory.CreateDirectory(this.layout.XmiKnowledgeDirectoryFor("2.5.1"));
 
             var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", "2.5.1", "--force"]).Invoke();
 
-            Assert.That(exitCode, Is.EqualTo(0));
-            Assert.That(Directory.Exists(this.layout.SourcesDirectoryFor("2.5.1")), Is.False);
-            Assert.That(Directory.Exists(this.layout.KnowledgeDirectoryFor("2.5.1")), Is.False);
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(0));
+                Assert.That(Directory.Exists(this.layout.SourcesDirectoryFor("2.5.1")), Is.False);
+                Assert.That(Directory.Exists(this.layout.KnowledgeDirectoryFor("2.5.1")), Is.False);
+                Assert.That(Directory.Exists(this.layout.XmiSourcesDirectoryFor("2.5.1")), Is.True);
+                Assert.That(Directory.Exists(this.layout.XmiKnowledgeDirectoryFor("2.5.1")), Is.True);
+                Assert.That(new InstalledVersionsStore(this.layout.KnowledgeRoot).Load().Versions, Is.Empty);
+            });
+        }
+
+        [TestCase("..")]
+        [TestCase("xmi")]
+        [TestCase("")]
+        [TestCase("9.9.9")]
+        [TestCase("2.5.1/..")]
+        public void Remove_with_force_refuses_a_version_that_is_not_a_known_uml_version(string version)
+        {
+            var store = new InstalledVersionsStore(this.layout.KnowledgeRoot);
+            store.MarkFetched("2.5.1", setAsDefault: true);
+            Directory.CreateDirectory(this.layout.SourcesDirectoryFor("2.5.1"));
+            Directory.CreateDirectory(this.layout.KnowledgeDirectoryFor("2.5.1"));
+            Directory.CreateDirectory(this.layout.XmiSourcesDirectoryFor("2.5.1"));
+            Directory.CreateDirectory(this.layout.XmiKnowledgeDirectoryFor("2.5.1"));
+            var sentinel = Path.Combine(this.repositoryRoot, "sentinel.txt");
+            File.WriteAllText(sentinel, "keep");
+
+            var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", version, "--force"]).Invoke();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(1));
+                Assert.That(File.Exists(sentinel), Is.True);
+                Assert.That(Directory.Exists(this.layout.SourcesDirectoryFor("2.5.1")), Is.True);
+                Assert.That(Directory.Exists(this.layout.KnowledgeDirectoryFor("2.5.1")), Is.True);
+                Assert.That(Directory.Exists(this.layout.XmiSourcesDirectoryFor("2.5.1")), Is.True);
+                Assert.That(Directory.Exists(this.layout.XmiKnowledgeDirectoryFor("2.5.1")), Is.True);
+                Assert.That(store.Load().Versions, Has.Count.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public void Remove_with_force_refuses_an_absolute_path()
+        {
+            new InstalledVersionsStore(this.layout.KnowledgeRoot).MarkFetched("2.5.1", setAsDefault: true);
+            var outside = Path.Combine(this.repositoryRoot, "outside");
+            Directory.CreateDirectory(outside);
+
+            var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", outside, "--force"]).Invoke();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(1));
+                Assert.That(Directory.Exists(outside), Is.True);
+            });
+        }
+
+        [Test]
+        public void Remove_with_force_refuses_a_version_listed_in_the_manifest_but_not_known()
+        {
+            var store = new InstalledVersionsStore(this.layout.KnowledgeRoot);
+            store.MarkFetched("2.5.1", setAsDefault: true);
+            store.MarkFetched("9.9.9", setAsDefault: false);
+            Directory.CreateDirectory(this.layout.SourcesDirectoryFor("9.9.9"));
+            Directory.CreateDirectory(this.layout.KnowledgeDirectoryFor("9.9.9"));
+
+            var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", "9.9.9", "--force"]).Invoke();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(1));
+                Assert.That(Directory.Exists(this.layout.SourcesDirectoryFor("9.9.9")), Is.True);
+                Assert.That(Directory.Exists(this.layout.KnowledgeDirectoryFor("9.9.9")), Is.True);
+                Assert.That(store.Load().Versions.Select(v => v.Version), Does.Contain("9.9.9"));
+            });
+        }
+
+        [Test]
+        public void Remove_without_force_refuses_a_parent_directory_version()
+        {
+            new InstalledVersionsStore(this.layout.KnowledgeRoot).MarkFetched("2.5.1", setAsDefault: false);
+            var sentinel = Path.Combine(this.repositoryRoot, "sentinel.txt");
+            File.WriteAllText(sentinel, "keep");
+
+            var exitCode = RemoveCommand.Build().Parse(["--repository-root", this.repositoryRoot, "--version", ".."]).Invoke();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(1));
+                Assert.That(File.Exists(sentinel), Is.True);
+            });
         }
     }
 }
