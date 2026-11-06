@@ -34,6 +34,8 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Renders the markdown page for <paramref name="primitiveType"/>.
         /// </summary>
+        /// <param name="primitiveType">The primitive type to render.</param>
+        /// <returns>The markdown page, with LF line endings.</returns>
         public static string Render(IPrimitiveType primitiveType)
         {
             var package = ElementNames.NamespaceOf(primitiveType);

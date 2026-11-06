@@ -39,6 +39,8 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Renders the markdown page for <paramref name="association"/>.
         /// </summary>
+        /// <param name="association">The association to render.</param>
+        /// <returns>The markdown page, with LF line endings.</returns>
         public static string Render(IAssociation association)
         {
             var package = ElementNames.NamespaceOf(association);

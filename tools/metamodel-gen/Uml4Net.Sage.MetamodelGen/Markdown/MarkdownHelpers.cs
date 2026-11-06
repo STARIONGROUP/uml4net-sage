@@ -39,6 +39,9 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         /// <summary>
         /// Renders a link to another element's markdown page, or the plain name if no qualified name is known.
         /// </summary>
+        /// <param name="name">The link text.</param>
+        /// <param name="qualifiedName">The target element's qualified name, whose last segment names the target page.</param>
+        /// <returns>A markdown link such as <c>[Type](Type.md)</c>, or <paramref name="name"/> itself.</returns>
         public static string Link(string name, string? qualifiedName)
         {
             if (string.IsNullOrEmpty(qualifiedName))
@@ -56,6 +59,11 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         /// or <c>name()</c> for a no-argument operation) so it can never be mistaken for an attribute of the
         /// same name.
         /// </summary>
+        /// <param name="feature">The feature to render.</param>
+        /// <returns>
+        /// The signature line, followed by indented sub-items for the default value, opposite, redefined and
+        /// subsetted properties, and fenced code blocks for any body condition.
+        /// </returns>
         public static string FeatureSignature(FeatureInfo feature)
         {
             var builder = new StringBuilder();
@@ -119,11 +127,18 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         /// Renders an operation's parameter list, e.g. <c>n: [NamedElement](NamedElement.md), out ns: [Namespace](Namespace.md)</c>.
         /// The <c>in</c> direction is the default and left unmarked; <c>inout</c>/<c>out</c> are called out explicitly.
         /// </summary>
+        /// <param name="parameters">The parameters to render, in order.</param>
+        /// <returns>The comma-separated parameter list, or an empty string when there are no parameters.</returns>
         public static string ParameterList(IReadOnlyList<ParameterInfo> parameters)
         {
             return string.Join(", ", parameters.Select(FormatParameter));
         }
 
+        /// <summary>
+        /// Renders one parameter as <c>[direction ]name[: type link]</c>, omitting the direction when it is <c>in</c>.
+        /// </summary>
+        /// <param name="parameter">The parameter to render.</param>
+        /// <returns>The rendered parameter.</returns>
         private static string FormatParameter(ParameterInfo parameter)
         {
             var direction = parameter.Direction is "in" or "" ? string.Empty : parameter.Direction + " ";
@@ -134,6 +149,8 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         /// <summary>
         /// Renders the "## Inherited features" table: one row per inherited feature.
         /// </summary>
+        /// <param name="features">The inherited features, ordered in the table by name and then owner (ordinal).</param>
+        /// <returns>The markdown table without a trailing newline, or <c>_None._</c> when there are no features.</returns>
         public static string InheritedFeatureTable(IReadOnlyList<FeatureInfo> features)
         {
             if (features.Count == 0)
@@ -165,6 +182,8 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         /// Lists the UML property/operation modifiers that apply to <paramref name="feature"/>, in a fixed order
         /// (e.g. <c>derived, union, readOnly, ordered</c>).
         /// </summary>
+        /// <param name="feature">The feature whose modifiers are listed.</param>
+        /// <returns>The applicable modifier names; empty when none apply.</returns>
         public static IReadOnlyList<string> Modifiers(FeatureInfo feature)
         {
             var modifiers = new List<string>();
@@ -194,6 +213,8 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         /// <summary>
         /// Renders a bullet list of links, or "_None._" when empty.
         /// </summary>
+        /// <param name="qualifiedNames">The qualified names of the elements to link to, listed in ordinal order.</param>
+        /// <returns>One <c>- [Name](Name.md)</c> line per element, joined with LF, or <c>_None._</c>.</returns>
         public static string LinkList(IEnumerable<string> qualifiedNames)
         {
             var ordered = qualifiedNames.OrderBy(name => name, System.StringComparer.Ordinal).ToList();
@@ -208,6 +229,8 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         /// <summary>
         /// Extracts the simple (unqualified) name from a "::"-separated qualified name.
         /// </summary>
+        /// <param name="qualifiedName">The qualified name.</param>
+        /// <returns>The text after the last <c>::</c>, or <paramref name="qualifiedName"/> when it has none.</returns>
         public static string SimpleName(string qualifiedName)
         {
             var index = qualifiedName.LastIndexOf("::", System.StringComparison.Ordinal);
@@ -220,6 +243,8 @@ namespace Uml4Net.Sage.MetamodelGen.Markdown
         /// <see cref="uml4net.Extensions.ElementExtensions.QueryRawDocumentation"/>), or <see langword="null"/>
         /// when the element has no documentation.
         /// </summary>
+        /// <param name="element">The element whose documentation is read.</param>
+        /// <returns>The documentation text, or <see langword="null"/> when it is empty or whitespace.</returns>
         public static string? Documentation(IElement element)
         {
             var documentation = element.QueryRawDocumentation();

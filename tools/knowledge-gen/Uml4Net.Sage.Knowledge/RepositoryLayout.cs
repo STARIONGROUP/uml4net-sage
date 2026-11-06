@@ -31,6 +31,7 @@ namespace Uml4Net.Sage.Knowledge
         /// <summary>
         /// Initializes a new instance of the <see cref="RepositoryLayout"/> class.
         /// </summary>
+        /// <param name="repositoryRoot">The plugin repository's root directory.</param>
         public RepositoryLayout(string repositoryRoot)
         {
             this.RepositoryRoot = repositoryRoot;
@@ -60,22 +61,30 @@ namespace Uml4Net.Sage.Knowledge
         /// <summary>
         /// Gets <c>sources/&lt;version&gt;</c>.
         /// </summary>
+        /// <param name="version">The UML version, e.g. "2.5.1".</param>
+        /// <returns>The full path of the version's sources directory.</returns>
         public string SourcesDirectoryFor(string version) => Path.Combine(this.SourcesRoot, version);
 
         /// <summary>
         /// Gets <c>knowledge/&lt;version&gt;</c>.
         /// </summary>
+        /// <param name="version">The UML version, e.g. "2.5.1".</param>
+        /// <returns>The full path of the version's knowledge directory.</returns>
         public string KnowledgeDirectoryFor(string version) => Path.Combine(this.KnowledgeRoot, version);
 
         /// <summary>
         /// Gets <c>sources/xmi/&lt;version&gt;</c> - the companion OMG XMI specification's sources, kept as
         /// a top-level sibling of the per-UML-version directories since XMI versions independently of UML.
         /// </summary>
+        /// <param name="version">The XMI specification version, e.g. "2.5.1".</param>
+        /// <returns>The full path of the XMI specification's sources directory.</returns>
         public string XmiSourcesDirectoryFor(string version) => Path.Combine(this.SourcesRoot, "xmi", version);
 
         /// <summary>
         /// Gets <c>knowledge/xmi/&lt;version&gt;</c>.
         /// </summary>
+        /// <param name="version">The XMI specification version, e.g. "2.5.1".</param>
+        /// <returns>The full path of the XMI specification's knowledge directory.</returns>
         public string XmiKnowledgeDirectoryFor(string version) => Path.Combine(this.KnowledgeRoot, "xmi", version);
     }
 }

@@ -62,8 +62,11 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         private readonly DirectoryInfo cacheRoot;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UvProvisioner"/> class.
+        /// Initializes a new instance of the <see cref="UvProvisioner"/> class that caches under
+        /// <see cref="ResolveCacheRoot"/>.
         /// </summary>
+        /// <param name="client">The <see cref="HttpClient"/> to query GitHub and download uv with.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="client"/> is <c>null</c>.</exception>
         public UvProvisioner(HttpClient client)
             : this(client, ResolveCacheRoot())
         {
@@ -73,6 +76,9 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         /// Initializes a new instance of the <see cref="UvProvisioner"/> class with an explicit cache
         /// root, so a test never touches the real <c>%LOCALAPPDATA%</c>.
         /// </summary>
+        /// <param name="client">The <see cref="HttpClient"/> to query GitHub and download uv with.</param>
+        /// <param name="cacheRoot">The directory under which the <c>uv/</c> cache lives.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="cacheRoot"/> is <c>null</c>.</exception>
         public UvProvisioner(HttpClient client, DirectoryInfo cacheRoot)
         {
             ArgumentNullException.ThrowIfNull(client);
@@ -87,6 +93,11 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         /// the same folder the CLI's own self-fetch hook (<c>CacheLayout.CacheRoot</c>) already caches
         /// into, so this is a sibling, not a new location to document.
         /// </summary>
+        /// <param name="getFolderPath">
+        /// Resolves a special folder; <c>null</c> uses <see cref="Environment.GetFolderPath(Environment.SpecialFolder)"/>.
+        /// Injectable so tests can supply their own folder.
+        /// </param>
+        /// <returns>The <c>uml4net-sage</c> folder under the local application data folder.</returns>
         public static DirectoryInfo ResolveCacheRoot(Func<Environment.SpecialFolder, string>? getFolderPath = null)
         {
             getFolderPath ??= Environment.GetFolderPath;
@@ -96,10 +107,16 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         }
 
         /// <summary><c>uv/&lt;version&gt;/&lt;target&gt;/</c> - where one uv build is cached.</summary>
+        /// <param name="version">The uv release version.</param>
+        /// <param name="target">The uv release target triple.</param>
+        /// <returns>The cache directory for that build.</returns>
         public DirectoryInfo BinDirectory(string version, string target) =>
             new(Path.Combine(this.cacheRoot.FullName, "uv", version, target));
 
         /// <summary>The cached <c>uv</c> executable itself.</summary>
+        /// <param name="version">The uv release version.</param>
+        /// <param name="target">The uv release target triple.</param>
+        /// <returns>The path of the executable in that build's cache directory, whether or not it exists.</returns>
         public FileInfo Executable(string version, string target) =>
             new(Path.Combine(this.BinDirectory(version, target).FullName, UvPlatform.ExecutableName(target)));
 
@@ -107,10 +124,17 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         /// Written only once the cached download's checksum has been verified - its presence is what
         /// lets a later run skip the network entirely.
         /// </summary>
+        /// <param name="version">The uv release version.</param>
+        /// <param name="target">The uv release target triple.</param>
+        /// <returns>The path of the <c>.ok</c> marker file, whether or not it exists.</returns>
         public FileInfo OkMarker(string version, string target) =>
             new(Path.Combine(this.BinDirectory(version, target).FullName, ".ok"));
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Ensures <c>uv</c> is cached, downloading and verifying it if necessary.
+        /// </summary>
+        /// <param name="cancellationToken">Cancels the download.</param>
+        /// <returns>The cached executable, or <c>null</c> when it could not be provisioned.</returns>
         public async Task<FileInfo?> EnsureAsync(CancellationToken cancellationToken = default)
         {
             var target = UvPlatform.CurrentTarget;
@@ -206,6 +230,12 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
             }
         }
 
+        /// <summary>
+        /// Checks whether a build is already cached: both its executable and its <c>.ok</c> marker exist.
+        /// </summary>
+        /// <param name="version">The uv release version.</param>
+        /// <param name="target">The uv release target triple.</param>
+        /// <returns><c>true</c> when the executable and the marker both exist; otherwise <c>false</c>.</returns>
         private bool IsCached(string version, string target)
         {
             var executable = this.Executable(version, target);
@@ -218,6 +248,12 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         }
 
         /// <summary>uv publishes each asset's checksum as a separate, same-named ``.sha256`` asset.</summary>
+        /// <param name="release">The GitHub release JSON, with its <c>assets</c> array.</param>
+        /// <param name="assetName">The archive asset name to look for.</param>
+        /// <returns>
+        /// The download URLs of the archive and of its <c>.sha256</c> asset; either is <c>null</c> when
+        /// the release does not list it.
+        /// </returns>
         private static (string? DownloadUrl, string? ChecksumUrl) FindAssetUrls(
             JsonElement release, string assetName)
         {
@@ -242,6 +278,9 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         }
 
         /// <summary>Reads a `sha256sum`-format checksum file: "&lt;hex&gt; *&lt;filename&gt;".</summary>
+        /// <param name="checksumUrl">The URL of the <c>.sha256</c> asset.</param>
+        /// <param name="cancellationToken">Cancels the download.</param>
+        /// <returns>The hexadecimal hash (the first whitespace-separated token), or <c>null</c> when the file is empty.</returns>
         private async Task<string?> ReadChecksumAsync(string checksumUrl, CancellationToken cancellationToken)
         {
             var content = await this.client.GetStringAsync(checksumUrl, cancellationToken);
@@ -250,6 +289,13 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
             return string.IsNullOrWhiteSpace(hex) ? null : hex;
         }
 
+        /// <summary>
+        /// Checks whether the SHA-256 hash of the file at <paramref name="path"/> matches
+        /// <paramref name="expectedHex"/>, ignoring case.
+        /// </summary>
+        /// <param name="path">The downloaded archive.</param>
+        /// <param name="expectedHex">The expected hexadecimal hash.</param>
+        /// <returns><c>true</c> when the hashes match; otherwise <c>false</c>.</returns>
         private static bool VerifySha256(string path, string expectedHex)
         {
             using var stream = File.OpenRead(path);
@@ -258,7 +304,13 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
             return string.Equals(actual, expectedHex, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>Every uv release target's archive is flat (no wrapping folder) - verified live.</summary>
+        /// <summary>
+        /// Extracts the zip or tar.gz archive into <paramref name="destination"/>, overwriting existing
+        /// files. Every uv release target's archive is flat (no wrapping folder) - verified live.
+        /// </summary>
+        /// <param name="archivePath">The downloaded archive.</param>
+        /// <param name="destination">The directory to extract into.</param>
+        /// <param name="target">The uv release target triple, which decides the archive format.</param>
         private static void Extract(string archivePath, string destination, string target)
         {
             if (UvPlatform.IsZip(target))

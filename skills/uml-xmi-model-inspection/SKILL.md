@@ -28,7 +28,10 @@ directories with `--pathmap <uri>=<path>` (repeatable); a prefix mapped to a dir
 `pathmap://` reference is reported as an `unresolved-reference` whose message says no `--pathmap`
 was given for it.
 
-If the CLI reports the version hasn't been generated yet, run the `knowledge-setup` skill's fetch +
+The exit code is 0 when no finding has `Severity` `"error"` (warnings alone do not fail the check)
+and 1 otherwise. If the CLI fails, the `--json` output is `{"error": "..."}` instead of a report
+(exit code 1). If
+that error says the version hasn't been generated yet, run the `knowledge-setup` skill's fetch +
 generate steps first.
 
 The `--json` output is an `InspectionReport`: `{ModelPath, UmlVersion, Findings: [{Severity,

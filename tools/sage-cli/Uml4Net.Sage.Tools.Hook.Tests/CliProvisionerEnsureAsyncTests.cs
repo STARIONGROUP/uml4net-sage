@@ -54,6 +54,12 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             }
         }
 
+        /// <summary>
+        /// Builds an in-memory zip archive that holds one entry.
+        /// </summary>
+        /// <param name="entryName">The name of the entry.</param>
+        /// <param name="entryContent">The bytes of the entry.</param>
+        /// <returns>The bytes of the zip archive.</returns>
         private static byte[] BuildZipContaining(string entryName, byte[] entryContent)
         {
             using var memoryStream = new MemoryStream();

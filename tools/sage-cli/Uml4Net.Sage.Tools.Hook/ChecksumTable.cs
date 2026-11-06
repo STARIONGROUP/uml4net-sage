@@ -32,6 +32,11 @@ namespace Uml4Net.Sage.Tools.Hook
         /// <summary>
         /// Parses <paramref name="releaseBody"/> into a map of asset file name to its expected SHA-256 hash.
         /// </summary>
+        /// <param name="releaseBody">The GitHub Release body text.</param>
+        /// <returns>
+        /// A map of each <c>.zip</c> asset name to its lower-case SHA-256 hash; empty when the body has no
+        /// checksum lines. If a name appears more than once, the last line wins.
+        /// </returns>
         public static Dictionary<string, string> Parse(string releaseBody)
         {
             var result = new Dictionary<string, string>();
@@ -44,6 +49,11 @@ namespace Uml4Net.Sage.Tools.Hook
             return result;
         }
 
+        /// <summary>
+        /// The source-generated regular expression that matches one <c>&lt;file&gt;.zip sha256:&lt;hash&gt;</c>
+        /// entry, capturing the groups <c>file</c> and <c>sha256</c>.
+        /// </summary>
+        /// <returns>The compiled <see cref="Regex"/>.</returns>
         [GeneratedRegex(@"(?<file>[\w.\-]+\.zip)\s+sha256:(?<sha256>[0-9a-fA-F]{64})", RegexOptions.None)]
         private static partial Regex ChecksumLine();
     }

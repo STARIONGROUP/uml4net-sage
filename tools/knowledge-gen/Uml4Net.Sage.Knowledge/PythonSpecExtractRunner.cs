@@ -81,6 +81,11 @@ namespace Uml4Net.Sage.Knowledge
         /// (e.g. <c>"UML"</c> or <c>"XMI"</c>) - distinguishes which OMG specification's clauses these are,
         /// since more than one may be extracted into sibling knowledge trees.
         /// </param>
+        /// <param name="cancellationToken">Cancels provisioning <c>uv</c> and waiting for the subprocess.</param>
+        /// <returns>
+        /// <see cref="SpecExtractionOutcome.Ok"/> when the extraction wrote a non-empty clause index;
+        /// otherwise a skipped outcome with the reason.
+        /// </returns>
         public async Task<SpecExtractionOutcome> ExtractAsync(string pdfPath, string outputDirectory, string specExtractProjectDirectory, string version, string document, CancellationToken cancellationToken = default)
         {
             if (!File.Exists(pdfPath))
@@ -173,6 +178,8 @@ namespace Uml4Net.Sage.Knowledge
         /// <c>pdfplumber</c> dependency) installed, as opposed to a genuine extraction failure (a malformed
         /// PDF, an unexpected document layout) that retrying under a different interpreter wouldn't fix.
         /// </summary>
+        /// <param name="standardError">The interpreter's standard error output.</param>
+        /// <returns><c>true</c> when the output contains <c>ModuleNotFoundError</c>; otherwise <c>false</c>.</returns>
         private static bool IsMissingDependencyFailure(string standardError)
         {
             return standardError.Contains("ModuleNotFoundError", StringComparison.Ordinal);
@@ -193,6 +200,11 @@ namespace Uml4Net.Sage.Knowledge
         /// of the PDF, or a heuristic misfired on an unfamiliar document layout) would otherwise be recorded
         /// as a success, and every downstream reader would trust an empty index.
         /// </summary>
+        /// <param name="outputDirectory">The directory <c>spec_extract</c> wrote into.</param>
+        /// <returns>
+        /// <see cref="SpecExtractionOutcome.Ok"/> when <c>index.json</c> holds at least one clause;
+        /// otherwise a skipped outcome saying whether it is missing, unparsable or empty.
+        /// </returns>
         private static SpecExtractionOutcome ValidateExtractedIndex(string outputDirectory)
         {
             var indexPath = Path.Combine(outputDirectory, "index.json");
@@ -217,6 +229,13 @@ namespace Uml4Net.Sage.Knowledge
                 : SpecExtractionOutcome.Skipped($"spec_extract exited successfully but extracted 0 clauses from {indexPath} - the PDF may be malformed or the extraction heuristics may not fit this document's layout.");
         }
 
+        /// <summary>
+        /// Lists the Python interpreters to try, in order: the project's <c>.venv</c> interpreter alone
+        /// when it exists, otherwise <c>python</c> and <c>python3</c> from the path, in the order that is
+        /// more reliable on the current operating system.
+        /// </summary>
+        /// <param name="specExtractProjectDirectory">The <c>tools/spec-extract</c> directory.</param>
+        /// <returns>The interpreter paths or command names to try.</returns>
         private static string[] PythonCandidates(string specExtractProjectDirectory)
         {
             var venvPython = OperatingSystem.IsWindows()

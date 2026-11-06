@@ -25,7 +25,7 @@ namespace Uml4Net.Sage.Tools.Commands
     using System.CommandLine;
     using System.Globalization;
     using System.IO;
-    using System.Text.Json;
+    using System.Linq;
 
     using Spectre.Console;
 
@@ -34,7 +34,8 @@ namespace Uml4Net.Sage.Tools.Commands
 
     /// <summary>
     /// <c>uml4net-sage inspect &lt;path&gt;</c>: loads a user-supplied <c>.xmi</c>/<c>.uml</c> file via
-    /// <c>uml4net.xmi</c> and checks it against the generated metamodel graph.
+    /// <c>uml4net.xmi</c> and checks it against the generated metamodel graph. Exits with 0 when the
+    /// report has no error-severity finding (warnings alone do not fail it), and with 1 otherwise.
     /// </summary>
     public static class InspectCommand
     {
@@ -50,6 +51,7 @@ namespace Uml4Net.Sage.Tools.Commands
         /// <summary>
         /// Builds the command.
         /// </summary>
+        /// <returns>The <c>inspect</c> command with its argument, options and action.</returns>
         public static Command Build()
         {
             var command = new Command("inspect", "Check a UML model file against the generated metamodel.");
@@ -59,7 +61,7 @@ namespace Uml4Net.Sage.Tools.Commands
             command.Add(GlobalOptions.Version);
             command.Add(GlobalOptions.Json);
 
-            command.SetAction(parseResult =>
+            command.SetAction((parseResult, cancellationToken) => JsonOutput.RunAsync(parseResult, cancellationToken, () =>
             {
                 var version = parseResult.GetValue(GlobalOptions.Version)!;
                 var modelPath = parseResult.GetValue(PathArgument)!;
@@ -68,14 +70,12 @@ namespace Uml4Net.Sage.Tools.Commands
 
                 if (!File.Exists(metamodelJsonPath))
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[red]UML {version} has not been generated yet.[/] Run 'uml4net-sage generate --version {version}' first.");
-                    return 1;
+                    return JsonOutput.Fail(parseResult, $"UML {version} has not been generated yet. Run 'uml4net-sage generate --version {version}' first.");
                 }
 
                 if (!File.Exists(modelPath))
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[red]File not found:[/] {modelPath}");
-                    return 1;
+                    return JsonOutput.Fail(parseResult, $"File not found: {modelPath}");
                 }
 
                 var pathMaps = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -84,8 +84,7 @@ namespace Uml4Net.Sage.Tools.Commands
                     var separator = mapping.IndexOf('=');
                     if (separator <= 0 || separator == mapping.Length - 1)
                     {
-                        AnsiConsole.MarkupLineInterpolated($"[red]Invalid --pathmap '{mapping}':[/] expected <uri>=<path>, e.g. pathmap://UML_LIBRARIES=./libraries");
-                        return 1;
+                        return JsonOutput.Fail(parseResult, $"Invalid --pathmap '{mapping}': expected <uri>=<path>, e.g. pathmap://UML_LIBRARIES=./libraries");
                     }
 
                     pathMaps[mapping[..separator]] = mapping[(separator + 1)..];
@@ -93,10 +92,10 @@ namespace Uml4Net.Sage.Tools.Commands
 
                 var report = XmiInspector.Inspect(modelPath, metamodelJsonPath, version, pathMaps);
 
-                if (parseResult.GetValue(GlobalOptions.Json))
+                if (JsonOutput.IsRequested(parseResult))
                 {
-                    AnsiConsole.Profile.Out.Writer.WriteLine(JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
-                    return report.Findings.Count > 0 ? 1 : 0;
+                    JsonOutput.Write(report);
+                    return ExitCodeFor(report);
                 }
 
                 if (report.Findings.Count == 0)
@@ -123,10 +122,19 @@ namespace Uml4Net.Sage.Tools.Commands
                 }
 
                 AnsiConsole.Write(table);
-                return 1;
-            });
+                return ExitCodeFor(report);
+            }));
 
             return command;
         }
+
+        /// <summary>
+        /// Gets the exit code for <paramref name="report"/>: 1 when any finding is an error, 0 when there
+        /// are no findings or only warnings.
+        /// </summary>
+        /// <param name="report">The inspection report.</param>
+        /// <returns>The exit code <c>inspect</c> returns for the report.</returns>
+        internal static int ExitCodeFor(InspectionReport report) =>
+            report.Findings.Any(finding => finding.Severity == "error") ? 1 : 0;
     }
 }

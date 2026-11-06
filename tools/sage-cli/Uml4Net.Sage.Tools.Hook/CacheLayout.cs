@@ -42,6 +42,10 @@ namespace Uml4Net.Sage.Tools.Hook
         /// extracted into. Keyed by an install-key hash of the plugin root path so a maintainer checkout
         /// and a marketplace install of the same version never collide.
         /// </summary>
+        /// <param name="pluginRoot">The plugin root directory, hashed into the install key.</param>
+        /// <param name="version">The CLI version.</param>
+        /// <param name="runtimeIdentifier">The .NET runtime identifier, for example <c>win-x64</c>.</param>
+        /// <returns>The full path of the cache directory for that combination.</returns>
         public static string CliDirectoryFor(string pluginRoot, string version, string runtimeIdentifier)
         {
             return Path.Combine(CacheRoot, "bin", version, runtimeIdentifier, InstallKey(pluginRoot));
@@ -50,6 +54,8 @@ namespace Uml4Net.Sage.Tools.Hook
         /// <summary>
         /// A short, stable hash of the plugin root path, used to key the cache per-checkout.
         /// </summary>
+        /// <param name="pluginRoot">The plugin root directory. It is made absolute and lower-cased before hashing.</param>
+        /// <returns>The first 12 lower-case hex characters of the SHA-256 hash of the path.</returns>
         public static string InstallKey(string pluginRoot)
         {
             var bytes = Encoding.UTF8.GetBytes(Path.GetFullPath(pluginRoot).ToLowerInvariant());
@@ -60,6 +66,8 @@ namespace Uml4Net.Sage.Tools.Hook
         /// The marker file written once an extracted CLI has been checksum-verified - its presence means
         /// the cached CLI can be trusted without re-verifying on every session start.
         /// </summary>
+        /// <param name="cliDirectory">The directory the CLI is extracted into.</param>
+        /// <returns>The path of the <c>.verified</c> file in <paramref name="cliDirectory"/>.</returns>
         public static string VerifiedMarkerPath(string cliDirectory) => Path.Combine(cliDirectory, ".verified");
     }
 }

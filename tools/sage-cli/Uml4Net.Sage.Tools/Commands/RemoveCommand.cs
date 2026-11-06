@@ -24,6 +24,7 @@ namespace Uml4Net.Sage.Tools.Commands
     using System.CommandLine;
     using System.IO;
     using System.Linq;
+    using System.Text.RegularExpressions;
 
     using Spectre.Console;
 
@@ -33,13 +34,21 @@ namespace Uml4Net.Sage.Tools.Commands
     /// <c>uml4net-sage remove --version &lt;version&gt;</c>: deletes a version's fetched sources and
     /// generated knowledge, refusing on the current default or the last remaining version without <c>--force</c>.
     /// </summary>
-    public static class RemoveCommand
+    /// <remarks>
+    /// The version becomes part of the folders that are deleted recursively, so it has to be either a
+    /// registered UML version or one that <c>knowledge/installed.json</c> lists and that looks like a
+    /// version number (so an install whose version was later dropped from the registry can still be
+    /// removed). Either way the folders must sit directly under <c>sources/</c> and <c>knowledge/</c>.
+    /// A version with nothing installed is refused rather than reported as removed.
+    /// </remarks>
+    public static partial class RemoveCommand
     {
         private static readonly Option<bool> ForceOption = new("--force") { Description = "Allow removing the current default version, or the only installed version." };
 
         /// <summary>
         /// Builds the command.
         /// </summary>
+        /// <returns>The <c>remove</c> command with its options and action.</returns>
         public static Command Build()
         {
             var command = new Command("remove", "Delete a UML version's fetched sources and generated knowledge base.");
@@ -51,16 +60,19 @@ namespace Uml4Net.Sage.Tools.Commands
             {
                 var version = parseResult.GetValue(GlobalOptions.Version) ?? string.Empty;
                 var force = parseResult.GetValue(ForceOption);
+                var layout = new RepositoryLayout(RepositoryRootResolver.Resolve(parseResult.GetValue(GlobalOptions.RepositoryRoot)));
+                var store = new InstalledVersionsStore(layout.KnowledgeRoot);
+                var manifest = store.Load();
+                var listed = manifest.Versions.Any(v => v.Version == version);
 
-                // The version becomes part of the paths that get deleted, so only accept a registered
-                // UML version. The manifest is not enough: it can be hand-edited.
-                if (!KnownUmlVersions.TryFind(version, out _))
+                // The version becomes part of the paths that get deleted. A hand-edited manifest may list
+                // anything, so a version that is not registered also has to look like a version number.
+                if (!KnownUmlVersions.TryFind(version, out _) && !(listed && VersionNumber().IsMatch(version)))
                 {
                     AnsiConsole.MarkupLineInterpolated($"[red]Unknown UML version '{version}'.[/] Known versions: {string.Join(", ", KnownUmlVersions.All.Select(v => v.Version))}");
                     return 1;
                 }
 
-                var layout = new RepositoryLayout(RepositoryRootResolver.Resolve(parseResult.GetValue(GlobalOptions.RepositoryRoot)));
                 var sourcesDirectory = layout.SourcesDirectoryFor(version);
                 var knowledgeDirectory = layout.KnowledgeDirectoryFor(version);
 
@@ -70,8 +82,11 @@ namespace Uml4Net.Sage.Tools.Commands
                     return 1;
                 }
 
-                var store = new InstalledVersionsStore(layout.KnowledgeRoot);
-                var manifest = store.Load();
+                if (!listed && !Directory.Exists(sourcesDirectory) && !Directory.Exists(knowledgeDirectory))
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[red]UML {version} is not installed;[/] there is nothing to remove.");
+                    return 1;
+                }
 
                 if (!force && manifest.Default == version)
                 {
@@ -124,5 +139,12 @@ namespace Uml4Net.Sage.Tools.Commands
                 && name.Length > 0
                 && !string.Equals(name, "xmi", StringComparison.OrdinalIgnoreCase);
         }
+
+        /// <summary>
+        /// Matches a version number such as <c>2.5.1</c>: two to four dot-separated numbers.
+        /// </summary>
+        /// <returns>The compiled expression.</returns>
+        [GeneratedRegex(@"^[0-9]+(\.[0-9]+){1,3}\z", RegexOptions.CultureInvariant)]
+        private static partial Regex VersionNumber();
     }
 }

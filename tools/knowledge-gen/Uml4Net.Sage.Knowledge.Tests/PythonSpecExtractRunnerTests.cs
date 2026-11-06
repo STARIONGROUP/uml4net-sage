@@ -277,6 +277,12 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("Metamodel and Standard Profile lookups are unaffected"));
         }
 
+        /// <summary>
+        /// Writes an <c>index.json</c> holding a JSON array of <paramref name="clauseCount"/> empty
+        /// objects, as if <c>spec_extract</c> had produced it.
+        /// </summary>
+        /// <param name="outputDirectory">The directory to write into; it is created if needed.</param>
+        /// <param name="clauseCount">The number of clause entries to write.</param>
         private static void WriteFakeIndex(string outputDirectory, int clauseCount)
         {
             Directory.CreateDirectory(outputDirectory);

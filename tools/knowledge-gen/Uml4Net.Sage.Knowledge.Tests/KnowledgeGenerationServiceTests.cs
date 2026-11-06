@@ -69,6 +69,10 @@ namespace Uml4Net.Sage.Knowledge.Tests
             }
         }
 
+        /// <summary>
+        /// Gets the directory that holds the hand-authored fixture XMI files.
+        /// </summary>
+        /// <returns>The <c>Fixtures/Xmi</c> directory under the test output directory.</returns>
         private static string TestFixturesDirectory() => Path.Combine(NUnit.Framework.TestContext.CurrentContext.TestDirectory, "Fixtures", "Xmi");
 
         [Test]
@@ -167,6 +171,22 @@ namespace Uml4Net.Sage.Knowledge.Tests
 
             Assert.That(outcome.Succeeded, Is.False);
             Assert.That(outcome.Warning, Does.Contain("XMI"));
+        }
+
+        [Test]
+        public void FetchXmiSpecAsync_with_a_corrupt_manifest_throws_rather_than_reporting_a_failed_download()
+        {
+            var handler = new StubHttpMessageHandler();
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("%PDF-1.5 fake xmi spec"));
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<xsd:schema>fake XMI.xsd</xsd:schema>"));
+            handler.EnqueueSuccess(Encoding.UTF8.GetBytes("<xsd:schema>fake XMI-Canonical.xsd</xsd:schema>"));
+            var service = new KnowledgeGenerationService(new SourceFetcher(new HttpClient(handler)), new PythonSpecExtractRunner(FakeProcessRunner.NotFound(), FakeUvProvisioner.Unavailable()));
+            Directory.CreateDirectory(this.layout.KnowledgeRoot);
+            File.WriteAllText(Path.Combine(this.layout.KnowledgeRoot, "installed.json"), "{ not json");
+
+            Assert.That(
+                () => service.FetchXmiSpecAsync(this.layout, XmiDescriptor),
+                Throws.InstanceOf<InvalidDataException>().With.Message.Contains("installed.json"));
         }
     }
 }

@@ -64,6 +64,13 @@ namespace Uml4Net.Sage.Knowledge
         /// <paramref name="descriptor"/> into <paramref name="sourcesRootDirectory"/>/&lt;version&gt;/, and
         /// records their SHA-256 and fetch time in <c>fetch-manifest.json</c>.
         /// </summary>
+        /// <param name="descriptor">The UML version whose files to download.</param>
+        /// <param name="sourcesRootDirectory">The <c>sources/</c> root directory.</param>
+        /// <param name="includeSpecs">Whether to download the specification and changebar PDFs as well as the XMI files.</param>
+        /// <param name="cancellationToken">Cancels the downloads.</param>
+        /// <returns>One manifest entry per downloaded file, in download order.</returns>
+        /// <exception cref="HttpRequestException">A download still fails after the retries.</exception>
+        /// <exception cref="InvalidDataException">A <c>.pdf</c> download does not start with the PDF magic bytes.</exception>
         public async Task<IReadOnlyList<FetchManifestEntry>> FetchAsync(UmlVersionDescriptor descriptor, string sourcesRootDirectory, bool includeSpecs, CancellationToken cancellationToken = default)
         {
             var versionDirectory = Path.Combine(sourcesRootDirectory, descriptor.Version);
@@ -103,6 +110,14 @@ namespace Uml4Net.Sage.Knowledge
         /// it: the XMI spec is a top-level sibling corpus (see <c>knowledge/xmi/&lt;version&gt;/</c>), not
         /// tied to any one UML version's directory.
         /// </summary>
+        /// <param name="descriptor">The XMI specification version whose files to download.</param>
+        /// <param name="sourcesRootDirectory">The <c>sources/</c> root directory.</param>
+        /// <param name="cancellationToken">Cancels the downloads.</param>
+        /// <returns>One manifest entry per downloaded file, in download order.</returns>
+        /// <exception cref="HttpRequestException">A download still fails after the retries.</exception>
+        /// <exception cref="InvalidDataException">
+        /// The PDF does not start with the PDF magic bytes, or a schema file does not look like XML.
+        /// </exception>
         public async Task<IReadOnlyList<FetchManifestEntry>> FetchXmiSpecAsync(XmiSpecDescriptor descriptor, string sourcesRootDirectory, CancellationToken cancellationToken = default)
         {
             var versionDirectory = Path.Combine(sourcesRootDirectory, "xmi", descriptor.Version);
@@ -127,6 +142,16 @@ namespace Uml4Net.Sage.Knowledge
             return entries;
         }
 
+        /// <summary>
+        /// Downloads one file with retry, checks that a <c>.pdf</c> or <c>.xsd</c> response has the
+        /// expected content, writes it to <paramref name="destinationPath"/> and hashes it.
+        /// </summary>
+        /// <param name="url">The URL to download.</param>
+        /// <param name="destinationPath">The file to write; its directory is created if needed.</param>
+        /// <param name="cancellationToken">Cancels the download and the write.</param>
+        /// <returns>The file's manifest entry, with its SHA-256 and the current UTC time.</returns>
+        /// <exception cref="HttpRequestException">The download still fails after the retries.</exception>
+        /// <exception cref="InvalidDataException">The response is not a PDF or not XML, as the file extension requires.</exception>
         private async Task<FetchManifestEntry> DownloadOneAsync(string url, string destinationPath, CancellationToken cancellationToken)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
@@ -157,6 +182,11 @@ namespace Uml4Net.Sage.Knowledge
             return new FetchManifestEntry(url, Path.GetFileName(destinationPath), sha256, DateTimeOffset.UtcNow);
         }
 
+        /// <summary>
+        /// Checks whether <paramref name="bytes"/> starts with <c>%PDF</c>, the header every PDF file opens with.
+        /// </summary>
+        /// <param name="bytes">The downloaded content.</param>
+        /// <returns><c>true</c> when the content starts with <c>%PDF</c>; otherwise <c>false</c>.</returns>
         private static bool HasPdfMagicBytes(byte[] bytes)
         {
             ReadOnlySpan<byte> pdfMagic = "%PDF"u8;
@@ -172,6 +202,8 @@ namespace Uml4Net.Sage.Knowledge
         /// <c>&lt;!DOCTYPE html&gt;</c>), so this only reliably catches responses that aren't even
         /// XML-shaped at all (empty, plain text, JSON) - not a mistaken HTML response.
         /// </summary>
+        /// <param name="bytes">The downloaded content.</param>
+        /// <returns><c>true</c> when the first non-whitespace byte is "&lt;"; otherwise <c>false</c>.</returns>
         private static bool LooksLikeXml(byte[] bytes)
         {
             var span = bytes.AsSpan();

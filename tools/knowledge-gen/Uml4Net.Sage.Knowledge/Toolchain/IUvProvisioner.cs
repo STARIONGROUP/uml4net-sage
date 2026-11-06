@@ -37,6 +37,7 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
     public interface IUvProvisioner
     {
         /// <summary>Ensures <c>uv</c> is cached, downloading and verifying it if necessary.</summary>
+        /// <param name="cancellationToken">Cancels the download.</param>
         /// <returns>The cached executable, or <c>null</c> when it could not be provisioned.</returns>
         Task<FileInfo?> EnsureAsync(CancellationToken cancellationToken = default);
     }

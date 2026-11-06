@@ -58,6 +58,17 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(1));
         }
 
+        [TestCase("model-stereotype-unresolved.xmi", 0)]
+        [TestCase("model-abstract-type.xmi", 1)]
+        public void Invoke_fails_only_on_error_findings(string fixture, int expectedExitCode)
+        {
+            this.InstallMetamodel();
+
+            var exitCode = this.Invoke(Path.Combine(FixturesDirectory, fixture));
+
+            Assert.That(exitCode, Is.EqualTo(expectedExitCode));
+        }
+
         [Test]
         public void Invoke_returns_0_for_a_valid_model()
         {
@@ -115,6 +126,9 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
         /// Invokes <c>inspect</c> on <paramref name="modelPath"/> with <paramref name="options"/>, against this test's
         /// repository root and <see cref="UmlVersion"/>.
         /// </summary>
+        /// <param name="modelPath">The model file to inspect.</param>
+        /// <param name="options">Further command-line arguments, placed after the model path.</param>
+        /// <returns>The command's exit code.</returns>
         private int Invoke(string modelPath, params string[] options)
         {
             return InspectCommand.Build().Parse(

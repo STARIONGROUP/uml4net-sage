@@ -82,6 +82,15 @@ namespace Uml4Net.Sage.MetamodelGen
             return new ElementCatalog(classes, enumerations, primitiveTypes, associations, stereotypes);
         }
 
+        /// <summary>
+        /// Walks <paramref name="package"/> and its nested packages, adding each packaged enumeration,
+        /// primitive type, association and class to the matching list. Stereotypes are skipped.
+        /// </summary>
+        /// <param name="package">The package to walk.</param>
+        /// <param name="classes">Receives the classes found.</param>
+        /// <param name="enumerations">Receives the enumerations found.</param>
+        /// <param name="primitiveTypes">Receives the primitive types found.</param>
+        /// <param name="associations">Receives the associations found.</param>
         private static void WalkMetamodel(IPackage package, List<IClass> classes, List<IEnumeration> enumerations, List<IPrimitiveType> primitiveTypes, List<IAssociation> associations)
         {
             foreach (var element in package.PackagedElement)
@@ -111,6 +120,12 @@ namespace Uml4Net.Sage.MetamodelGen
             }
         }
 
+        /// <summary>
+        /// Walks <paramref name="package"/> and its nested packages, adding each packaged stereotype to
+        /// <paramref name="stereotypes"/>.
+        /// </summary>
+        /// <param name="package">The package to walk.</param>
+        /// <param name="stereotypes">Receives the stereotypes found.</param>
         private static void WalkStereotypes(IPackage package, List<IStereotype> stereotypes)
         {
             foreach (var element in package.PackagedElement)

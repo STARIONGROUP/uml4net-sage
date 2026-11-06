@@ -24,10 +24,8 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
 
     using Uml4Net.Sage.Tools.Commands;
 
-    /// <summary>
-    /// Tests <see cref="RemoveCommand.IsVersionDirectory"/> directly. Through the command it is only
-    /// reached with a registered UML version, which always passes, so its rejections need these tests.
-    /// </summary>
+    // Tests RemoveCommand.IsVersionDirectory directly. Through the command it is only reached with a
+    // registered version or a listed version number, which always pass, so its rejections need these tests.
     [TestFixture]
     public class RemoveCommandTests
     {

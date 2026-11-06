@@ -35,6 +35,12 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
 
         private static string MetamodelJsonPath => Path.Combine(FixturesDirectory, "metamodel-uml-subset.json");
 
+        /// <summary>
+        /// Inspects a fixture model against the fixture metamodel as UML 2.5.1.
+        /// </summary>
+        /// <param name="modelFileName">The file name of the model under the fixtures folder.</param>
+        /// <param name="pathMaps">The <c>pathmap://</c> mappings to pass, or <c>null</c> for none.</param>
+        /// <returns>The inspection report.</returns>
         private static InspectionReport Inspect(string modelFileName, IReadOnlyDictionary<string, string>? pathMaps = null)
         {
             return XmiInspector.Inspect(Path.Combine(FixturesDirectory, modelFileName), MetamodelJsonPath, "2.5.1", pathMaps);

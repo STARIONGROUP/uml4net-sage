@@ -42,6 +42,10 @@ namespace Uml4Net.Sage.Knowledge
         /// generators actually wrote under <paramref name="knowledgeVersionDirectory"/> - the
         /// <c>spec-clause-index</c> resource is included only when <c>spec/index.json</c> exists.
         /// </summary>
+        /// <param name="knowledgeVersionDirectory">The <c>knowledge/&lt;version&gt;</c> directory to inventory.</param>
+        /// <param name="version">The UML version, e.g. "2.5.1".</param>
+        /// <param name="omgDocumentId">The OMG document identifier of the normative specification, e.g. "formal/17-12-05".</param>
+        /// <returns>The indented <c>datapackage.json</c> content.</returns>
         public static string Generate(string knowledgeVersionDirectory, string version, string omgDocumentId)
         {
             var hasSpecIndex = File.Exists(Path.Combine(knowledgeVersionDirectory, "spec", "index.json"));
@@ -78,6 +82,12 @@ namespace Uml4Net.Sage.Knowledge
             return document.ToJsonString(SerializerOptions);
         }
 
+        /// <summary>
+        /// Builds the <c>resources</c> array: the metamodel and standard-profile indexes, plus the spec
+        /// clause index when it exists.
+        /// </summary>
+        /// <param name="hasSpecIndex">Whether <c>spec/index.json</c> exists and should be described.</param>
+        /// <returns>The tabular data resources.</returns>
         private static JsonArray BuildResources(bool hasSpecIndex)
         {
             var resources = new JsonArray
@@ -123,6 +133,14 @@ namespace Uml4Net.Sage.Knowledge
             return resources;
         }
 
+        /// <summary>
+        /// Builds one <c>tabular-data-resource</c> entry, setting the schema's primary key.
+        /// </summary>
+        /// <param name="name">The resource name.</param>
+        /// <param name="path">The resource file path, relative to the knowledge version directory.</param>
+        /// <param name="schema">The table schema; its <c>primaryKey</c> is set by this method.</param>
+        /// <param name="primaryKey">The name of the field that identifies each row.</param>
+        /// <returns>The resource object.</returns>
         private static JsonObject TabularResource(string name, string path, JsonObject schema, string primaryKey)
         {
             schema["primaryKey"] = primaryKey;
@@ -136,6 +154,12 @@ namespace Uml4Net.Sage.Knowledge
             };
         }
 
+        /// <summary>
+        /// Builds a table schema with one field per entry of <paramref name="fields"/>. Required fields get
+        /// a <c>required</c> constraint.
+        /// </summary>
+        /// <param name="fields">The name, Frictionless type and required flag of each field.</param>
+        /// <returns>A schema object holding the <c>fields</c> array.</returns>
         private static JsonObject PrimaryKeySchema(params (string Name, string Type, bool Required)[] fields)
         {
             var fieldsArray = new JsonArray();

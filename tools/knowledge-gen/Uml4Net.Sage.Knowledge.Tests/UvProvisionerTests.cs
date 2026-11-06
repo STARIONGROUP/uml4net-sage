@@ -54,6 +54,14 @@ namespace Uml4Net.Sage.Knowledge.Tests
             }
         }
 
+        /// <summary>
+        /// Builds an in-memory zip archive with one entry. The archive is always a zip, whatever
+        /// <paramref name="target"/> is.
+        /// </summary>
+        /// <param name="target">The uv release target triple; not used.</param>
+        /// <param name="entryName">The name of the single entry.</param>
+        /// <param name="entryContent">The content of the single entry.</param>
+        /// <returns>The zip archive's bytes.</returns>
         private static byte[] BuildArchiveContaining(string target, string entryName, byte[] entryContent)
         {
             using var memoryStream = new MemoryStream();

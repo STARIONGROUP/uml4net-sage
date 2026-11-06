@@ -32,6 +32,7 @@ namespace Uml4Net.Sage.Tools.Hook
         /// <summary>
         /// The current platform's runtime identifier, or <c>null</c> if it isn't one of the four published.
         /// </summary>
+        /// <returns><c>win-x64</c>, <c>linux-x64</c>, <c>osx-x64</c> or <c>osx-arm64</c>, or <c>null</c>.</returns>
         public static string? Current()
         {
             var architecture = RuntimeInformation.ProcessArchitecture switch
@@ -67,6 +68,8 @@ namespace Uml4Net.Sage.Tools.Hook
         /// <summary>
         /// The executable file name for a given runtime identifier (adds ".exe" on Windows).
         /// </summary>
+        /// <param name="runtimeIdentifier">The runtime identifier; one starting with <c>win-</c> means Windows.</param>
+        /// <returns><c>uml4net-sage.exe</c> for Windows identifiers, otherwise <c>uml4net-sage</c>.</returns>
         public static string ExecutableName(string runtimeIdentifier) => runtimeIdentifier.StartsWith("win-", StringComparison.Ordinal) ? "uml4net-sage.exe" : "uml4net-sage";
     }
 }

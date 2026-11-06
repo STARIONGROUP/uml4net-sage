@@ -30,7 +30,17 @@ namespace Uml4Net.Sage.Knowledge
     /// </summary>
     public sealed class ProcessRunner : IProcessRunner
     {
-        /// <inheritdoc/>
+        /// <summary>
+        /// Runs <paramref name="fileName"/> with <paramref name="arguments"/> and returns its result.
+        /// </summary>
+        /// <param name="fileName">The executable to run.</param>
+        /// <param name="arguments">The arguments, passed one by one without shell quoting.</param>
+        /// <param name="workingDirectory">The working directory; <c>null</c> keeps the current one.</param>
+        /// <param name="cancellationToken">Cancels waiting for the process.</param>
+        /// <returns>The exit code and everything the process wrote to standard output and standard error.</returns>
+        /// <exception cref="System.ComponentModel.Win32Exception">
+        /// Thrown when <paramref name="fileName"/> cannot be found/started.
+        /// </exception>
         public async Task<ProcessRunResult> RunAsync(string fileName, IReadOnlyList<string> arguments, string? workingDirectory = null, CancellationToken cancellationToken = default)
         {
             var startInfo = new ProcessStartInfo(fileName)

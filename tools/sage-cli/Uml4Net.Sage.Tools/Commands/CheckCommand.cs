@@ -21,7 +21,6 @@
 namespace Uml4Net.Sage.Tools.Commands
 {
     using System.CommandLine;
-    using System.Text.Json;
 
     using Spectre.Console;
 
@@ -37,13 +36,14 @@ namespace Uml4Net.Sage.Tools.Commands
         /// <summary>
         /// Builds the command.
         /// </summary>
+        /// <returns>The <c>check</c> command with its options and action.</returns>
         public static Command Build()
         {
             var command = new Command("check", "Report local fetch/generate status - offline, no network call.");
             command.Add(GlobalOptions.RepositoryRoot);
             command.Add(GlobalOptions.Json);
 
-            command.SetAction(parseResult =>
+            command.SetAction((parseResult, cancellationToken) => JsonOutput.RunAsync(parseResult, cancellationToken, () =>
             {
                 var layout = new RepositoryLayout(RepositoryRootResolver.Resolve(parseResult.GetValue(GlobalOptions.RepositoryRoot)));
                 var manifest = new InstalledVersionsStore(layout.KnowledgeRoot).Load();
@@ -56,9 +56,9 @@ namespace Uml4Net.Sage.Tools.Commands
                     XmiSpecs = manifest.XmiSpecs,
                 };
 
-                if (parseResult.GetValue(GlobalOptions.Json))
+                if (JsonOutput.IsRequested(parseResult))
                 {
-                    AnsiConsole.Profile.Out.Writer.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+                    JsonOutput.Write(result);
                     return 0;
                 }
 
@@ -95,7 +95,7 @@ namespace Uml4Net.Sage.Tools.Commands
                 }
 
                 return 0;
-            });
+            }));
 
             return command;
         }

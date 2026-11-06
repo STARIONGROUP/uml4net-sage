@@ -32,7 +32,7 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
     /// <summary>
     /// Renders one <see cref="IStereotype"/> to a markdown page. Written under <c>standard-profile/pages/</c>,
     /// never <c>metamodel/elements/</c> - a stereotype is not a metaclass, even though <see cref="IStereotype"/>
-    /// happens to extend <see cref="IClass"/> in the UML metamodel itself.
+    /// happens to extend <see cref="uml4net.StructuredClassifiers.IClass"/> in the UML metamodel itself.
     /// </summary>
     public static class StereotypeFileGenerator
     {
@@ -42,16 +42,17 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <param name="stereotype">The stereotype to render.</param>
         /// <param name="graph">
         /// A <see cref="ClassGraph"/> built over the Standard Profile's own stereotypes (every <see cref="IStereotype"/>
-        /// is also an <see cref="IClass"/>), used to resolve the stereotype's own generalizations/specializations
+        /// is also an <see cref="uml4net.StructuredClassifiers.IClass"/>), used to resolve the stereotype's own generalizations/specializations
         /// (e.g. <c>Document</c> extends <c>File</c>) the same way <see cref="MetaclassFileGenerator"/> does for metaclasses.
         /// </param>
         /// <remarks>
         /// Base metaclasses are read from the stereotype's own <see cref="IExtension"/>s via
-        /// <see cref="IExtension.Metaclass"/>. <see cref="IClass.Extension"/> also returns the extensions of the
+        /// <see cref="IExtension.Metaclass"/>. <see cref="uml4net.StructuredClassifiers.IClass.Extension"/> also returns the extensions of the
         /// stereotype's specializations (its OCL includes <c>endTypes.allParents()</c>), so only extensions whose
         /// <see cref="IExtensionEnd"/> is typed by this very stereotype are kept - an inherited extension is reported
         /// on the specializing stereotype, not repeated on its general.
         /// </remarks>
+        /// <returns>The markdown page, with LF line endings.</returns>
         public static string Render(IStereotype stereotype, ClassGraph graph)
         {
             var qualifiedName = stereotype.QualifiedName;
