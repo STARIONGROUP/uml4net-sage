@@ -151,8 +151,7 @@ Pulled from the sibling `uml4net` repository's own `CLAUDE.md` for ecosystem con
 - `using` statements go inside the namespace; `System.*` first, then alphabetical.
 - All public members require XML documentation (`///`).
 - Never use `<inheritdoc/>`: write each member's documentation out where it is declared, including
-  interface implementations and `Dispose`. The `ForbidInheritdoc` target in `Directory.Build.props`
-  fails the build (`SAGE001`) on any compiled file that contains it.
+  interface implementations and `Dispose`.
 - Apache 2.0 copyright header on every `.cs` file (see any existing file for the exact template).
 - Default branch: `development` (never work directly on `master`). Create feature branches from
   `development`; rebase before submitting PRs.
