@@ -25,9 +25,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
     [TestFixture]
     public class ConstraintExtractorTests
     {
-        /// <summary>
-        /// Verifies that <c>Widget</c>'s one owned rule is read with its name, its <c>OCL</c> language and its body.
-        /// </summary>
         [Test]
         public void FromNamespace_reads_the_ocl_body_and_language_of_an_owned_rule()
         {
@@ -42,9 +39,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(constraints[0].Body, Is.EqualTo(new[] { "label->notEmpty()" }));
         }
 
-        /// <summary>
-        /// Verifies that no constraints are returned for <c>Gadget</c>, which has no owned rules.
-        /// </summary>
         [Test]
         public void FromNamespace_is_empty_for_a_class_with_no_owned_rules()
         {
@@ -54,10 +48,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(ConstraintExtractor.FromNamespace(gadget), Is.Empty);
         }
 
-        /// <summary>
-        /// Verifies that the <c>bodyCondition</c> of <c>Widget::describe</c> is read with its name, its
-        /// <c>OCL</c> language and its body.
-        /// </summary>
         [Test]
         public void FromOperationBody_reads_the_ocl_body_of_an_operation_bodyCondition()
         {

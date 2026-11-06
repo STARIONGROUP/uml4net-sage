@@ -28,9 +28,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
     {
         private string tempDirectory = null!;
 
-        /// <summary>
-        /// Creates an empty temporary directory to act as the knowledge version directory.
-        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -38,19 +35,12 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Directory.CreateDirectory(this.tempDirectory);
         }
 
-        /// <summary>
-        /// Deletes the temporary directory and everything in it.
-        /// </summary>
         [TearDown]
         public void TearDown()
         {
             Directory.Delete(this.tempDirectory, recursive: true);
         }
 
-        /// <summary>
-        /// Verifies that, without <c>spec/index.json</c>, the package lists only two resources and none
-        /// of them is <c>spec-clause-index</c>.
-        /// </summary>
         [Test]
         public void Generate_without_a_spec_index_omits_the_spec_clause_index_resource()
         {
@@ -66,9 +56,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             }
         }
 
-        /// <summary>
-        /// Verifies that, when <c>spec/index.json</c> exists, the package lists three resources.
-        /// </summary>
         [Test]
         public void Generate_with_a_spec_index_present_includes_all_three_tabular_resources()
         {
@@ -83,10 +70,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(resources.GetArrayLength(), Is.EqualTo(3));
         }
 
-        /// <summary>
-        /// Verifies that every resource has the <c>tabular-data-resource</c> profile and a schema with a
-        /// non-empty primary key.
-        /// </summary>
         [Test]
         public void Generate_gives_every_tabular_resource_a_table_schema_with_a_primary_key()
         {
@@ -100,10 +83,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             }
         }
 
-        /// <summary>
-        /// Verifies that the generated JSON contains the version field, the OMG document ID and the
-        /// "Not redistributed" source note.
-        /// </summary>
         [Test]
         public void Generate_records_the_omg_document_id_and_version_in_sources_and_top_level_fields()
         {

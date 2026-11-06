@@ -32,9 +32,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
         private string repositoryRoot = null!;
         private RepositoryLayout layout = null!;
 
-        /// <summary>
-        /// Picks a fresh repository root under the temp folder for each test, without creating it, and its layout.
-        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -42,9 +39,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             this.layout = new RepositoryLayout(this.repositoryRoot);
         }
 
-        /// <summary>
-        /// Deletes the test's repository root if the test created it.
-        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -54,9 +48,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             }
         }
 
-        /// <summary>
-        /// Verifies that <c>use</c> returns exit code 1 for a version that is fetched but not generated.
-        /// </summary>
         [Test]
         public void Use_returns_1_when_the_version_has_not_been_generated()
         {
@@ -67,9 +58,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(1));
         }
 
-        /// <summary>
-        /// Verifies that <c>use</c> returns exit code 0 for a generated version and records it as the default in the manifest.
-        /// </summary>
         [Test]
         public void Use_returns_0_and_updates_the_default_once_generated()
         {
@@ -83,9 +71,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(store.Load().Default, Is.EqualTo("2.5.1"));
         }
 
-        /// <summary>
-        /// Verifies that <c>remove</c> without <c>--force</c> returns exit code 1 for the current default version.
-        /// </summary>
         [Test]
         public void Remove_returns_1_on_the_current_default_without_force()
         {
@@ -96,10 +81,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(1));
         }
 
-        /// <summary>
-        /// Verifies that <c>remove --force</c> on the default version deletes its sources and knowledge folders,
-        /// keeps the shared XMI specification folders, removes the version from the manifest and returns exit code 0.
-        /// </summary>
         [Test]
         public void Remove_with_force_deletes_the_sources_and_knowledge_directories()
         {
@@ -122,11 +103,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that <c>remove --force</c> with a version that is not a registered UML version (a path escape,
-        /// the shared <c>xmi</c> folder, an empty or unknown version) returns exit code 1 and deletes nothing.
-        /// </summary>
-        /// <param name="version">The <c>--version</c> value to pass.</param>
         [TestCase("..")]
         [TestCase("xmi")]
         [TestCase("")]
@@ -157,10 +133,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that <c>remove --force</c> with an absolute folder path as the version returns exit code 1 and
-        /// leaves that folder in place.
-        /// </summary>
         [Test]
         public void Remove_with_force_refuses_an_absolute_path()
         {
@@ -177,11 +149,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that <c>remove</c> removes a version that the manifest lists but that is no longer a registered
-        /// UML version, so such an install is not stranded: exit code 0, its folders deleted and its manifest entry
-        /// dropped, with the other version left in place.
-        /// </summary>
         [Test]
         public void Remove_removes_an_installed_version_that_is_no_longer_registered()
         {
@@ -204,12 +171,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that a hand-edited manifest listing <paramref name="version"/> does not make it removable: a
-        /// version that is not registered must also look like a version number. <c>remove --force</c> returns 1 and
-        /// leaves the repository root, the 2.5.1 folders, the shared <c>xmi</c> folders and the manifest as they were.
-        /// </summary>
-        /// <param name="version">A value that names a folder outside a single version folder.</param>
         [TestCase("..")]
         [TestCase("xmi")]
         [TestCase("../escape")]
@@ -239,10 +200,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that <c>remove</c> refuses a registered version that has nothing installed (no manifest entry and
-        /// no folders) with exit code 1, rather than reporting it as removed.
-        /// </summary>
         [Test]
         public void Remove_refuses_a_version_with_nothing_installed()
         {
@@ -251,10 +208,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(1));
         }
 
-        /// <summary>
-        /// Verifies that <c>remove</c> still deletes a registered version's folders when the manifest has no entry for
-        /// it (for example after <c>installed.json</c> was deleted), with exit code 0.
-        /// </summary>
         [Test]
         public void Remove_deletes_the_folders_of_a_version_the_manifest_does_not_list()
         {
@@ -271,10 +224,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that <c>remove</c> without <c>--force</c> refuses the version <c>..</c> with exit code 1 and leaves
-        /// a file in the repository root in place.
-        /// </summary>
         [Test]
         public void Remove_without_force_refuses_a_parent_directory_version()
         {

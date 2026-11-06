@@ -152,6 +152,9 @@ Pulled from the sibling `uml4net` repository's own `CLAUDE.md` for ecosystem con
 - All public members require XML documentation (`///`).
 - Never use `<inheritdoc/>`: write each member's documentation out where it is declared, including
   interface implementations and `Dispose`.
+- Test methods (`[Test]`, `[TestCase]`, `[SetUp]`, `[TearDown]`) and test fixture classes carry no XML
+  documentation; the test name says what it checks. Use a `//` comment where the reason for a test is
+  not obvious. Test helpers (fakes, stubs, `RecordedConsole`, private helper methods) keep theirs.
 - Apache 2.0 copyright header on every `.cs` file (see any existing file for the exact template).
 - Default branch: `development` (never work directly on `master`). Create feature branches from
   `development`; rebase before submitting PRs.

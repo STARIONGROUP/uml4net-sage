@@ -25,10 +25,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
     [TestFixture]
     public class FeatureExtractorTests
     {
-        /// <summary>
-        /// Verifies that <c>Widget::label</c> is converted to an attribute with its name, its type
-        /// <c>String</c>, its multiplicity <c>[0..1]</c> and its owner <c>Fixture::Widget</c>.
-        /// </summary>
         [Test]
         public void FromProperty_captures_name_type_and_multiplicity()
         {
@@ -46,10 +42,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(feature.OwnerQualifiedName, Is.EqualTo("Fixture::Widget"));
         }
 
-        /// <summary>
-        /// Verifies that <c>Widget::describe</c> is converted to an operation whose type <c>String</c> and
-        /// multiplicity <c>[1..1]</c> come from its return parameter.
-        /// </summary>
         [Test]
         public void FromOperation_reads_type_and_multiplicity_from_the_return_parameter()
         {
@@ -65,10 +57,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(feature.Upper, Is.EqualTo("1"));
         }
 
-        /// <summary>
-        /// Verifies that the parameter list of <c>Widget::describe</c> holds only its <c>in</c> parameter
-        /// <c>verbosity</c>, with its type, direction and multiplicity, and not the return parameter.
-        /// </summary>
         [Test]
         public void FromOperation_captures_in_parameters_but_excludes_the_return_parameter()
         {
@@ -87,9 +75,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(parameter.Upper, Is.EqualTo("1"));
         }
 
-        /// <summary>
-        /// Verifies that an attribute converted from a property has an empty parameter list.
-        /// </summary>
         [Test]
         public void FromProperty_has_no_parameters()
         {
@@ -102,10 +87,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(feature.Parameters, Is.Empty);
         }
 
-        /// <summary>
-        /// Verifies that the converted <c>Widget::describe</c> operation carries its one <c>bodyCondition</c>,
-        /// with the constraint's name and OCL body.
-        /// </summary>
         [Test]
         public void FromOperation_captures_the_bodyCondition_ocl_specification()
         {
@@ -120,9 +101,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(feature.Body[0].Body, Is.EqualTo(new[] { "result = (label)" }));
         }
 
-        /// <summary>
-        /// Verifies that an attribute converted from a property has no body constraints.
-        /// </summary>
         [Test]
         public void FromProperty_has_no_body()
         {
@@ -135,10 +113,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(feature.Body, Is.Empty);
         }
 
-        /// <summary>
-        /// Verifies that <c>Gadget::count</c> is converted as read-only, with default value <c>0</c>, aggregation
-        /// <c>none</c> and no opposite, since it is not an association end.
-        /// </summary>
         [Test]
         public void FromProperty_captures_read_only_default_value_and_aggregation()
         {
@@ -154,10 +128,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(feature.Opposite, Is.Null, "count is not an association end");
         }
 
-        /// <summary>
-        /// Verifies that <c>Gadget::container</c>, an end of a binary association, records the other end
-        /// <c>Fixture::A_container_gadgets::gadgets</c> as its opposite and has no default value.
-        /// </summary>
         [Test]
         public void FromProperty_captures_the_opposite_end_of_a_binary_association()
         {
@@ -171,10 +141,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(feature.DefaultValue, Is.Null);
         }
 
-        /// <summary>
-        /// Verifies that the converted <c>Widget::describe</c> operation is marked as a query, is not abstract,
-        /// and leaves the attribute-only aggregation and opposite fields <see langword="null"/>.
-        /// </summary>
         [Test]
         public void FromOperation_captures_is_query_and_leaves_attribute_only_fields_empty()
         {

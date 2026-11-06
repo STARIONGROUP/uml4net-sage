@@ -28,18 +28,12 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
     {
         private string outputRoot = null!;
 
-        /// <summary>
-        /// Picks a new, not yet created output directory under the system temporary folder before each test.
-        /// </summary>
         [SetUp]
         public void SetUp()
         {
             this.outputRoot = Path.Combine(Path.GetTempPath(), "uml4net-sage-tests", Path.GetRandomFileName());
         }
 
-        /// <summary>
-        /// Deletes the test's output directory and everything in it, if it was created.
-        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -49,10 +43,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             }
         }
 
-        /// <summary>
-        /// Verifies that generating from the fixtures writes the metamodel indexes, <c>metamodel.json</c>, a page
-        /// for each kind of metamodel element, and the Standard Profile index and stereotype page.
-        /// </summary>
         [Test]
         public void Generate_writes_the_expected_metamodel_and_standard_profile_tree()
         {
@@ -69,9 +59,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(File.Exists(Path.Combine(this.outputRoot, "standard-profile", "pages", "Sample.md")));
         }
 
-        /// <summary>
-        /// Verifies that no page for the <c>Sample</c> stereotype is written under <c>metamodel/elements/</c>.
-        /// </summary>
         [Test]
         public void Generate_never_writes_a_stereotype_under_metamodel_elements()
         {
@@ -80,9 +67,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(File.Exists(Path.Combine(this.outputRoot, "metamodel", "elements", "Sample.md")), Is.False);
         }
 
-        /// <summary>
-        /// Verifies that no generated file starts with a UTF-8 byte-order mark.
-        /// </summary>
         [Test]
         public void Generate_writes_utf8_without_a_byte_order_mark()
         {
@@ -95,10 +79,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             }
         }
 
-        /// <summary>
-        /// Verifies that two generation runs into separate directories write the same set of files with
-        /// identical bytes.
-        /// </summary>
         [Test]
         public void Generate_is_byte_for_byte_deterministic_across_two_independent_runs()
         {

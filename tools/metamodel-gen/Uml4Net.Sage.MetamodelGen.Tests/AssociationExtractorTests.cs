@@ -25,10 +25,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
     [TestFixture]
     public class AssociationExtractorTests
     {
-        /// <summary>
-        /// Verifies that the <c>container</c> end, owned by a classifier rather than the association, is typed by
-        /// <c>Widget</c> and is not marked as owned by the association.
-        /// </summary>
         [Test]
         public void MemberEndsOf_marks_the_end_owned_by_a_classifier_as_not_owned_by_the_association()
         {
@@ -42,10 +38,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(container.IsOwnedByAssociation, Is.False);
         }
 
-        /// <summary>
-        /// Verifies that the association's own <c>ownedEnd</c>, <c>gadgets</c>, is marked as owned by the
-        /// association and keeps its type <c>Gadget</c>, its ordering and its unlimited upper bound.
-        /// </summary>
         [Test]
         public void MemberEndsOf_marks_the_associations_own_ownedEnd_as_owned_by_the_association()
         {

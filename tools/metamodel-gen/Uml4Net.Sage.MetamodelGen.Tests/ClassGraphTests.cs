@@ -25,9 +25,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
     {
         private ClassGraph graph = null!;
 
-        /// <summary>
-        /// Builds a <see cref="ClassGraph"/> over the fixture catalog's classes before each test.
-        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -35,9 +32,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             this.graph = ClassGraph.Build(catalog.Classes);
         }
 
-        /// <summary>
-        /// Verifies that the direct superclasses of <c>Gadget</c> are exactly <c>Widget</c>.
-        /// </summary>
         [Test]
         public void DirectSuperClassesOf_returns_the_immediate_parent_only()
         {
@@ -46,10 +40,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(superClasses, Is.EqualTo(new[] { "Fixture::Widget" }));
         }
 
-        /// <summary>
-        /// Verifies that the direct subclasses of <c>Widget</c> are exactly <c>Gadget</c>, without the
-        /// grandchild <c>SuperGadget</c>.
-        /// </summary>
         [Test]
         public void DirectSubclassesOf_returns_the_immediate_child_only()
         {
@@ -58,10 +48,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(subclasses, Is.EqualTo(new[] { "Fixture::Gadget" }));
         }
 
-        /// <summary>
-        /// Verifies that the descendants of <c>Widget</c> include both its child <c>Gadget</c> and its
-        /// grandchild <c>SuperGadget</c>.
-        /// </summary>
         [Test]
         public void AllDescendantsOf_transitively_includes_grandchildren()
         {
@@ -70,10 +56,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(descendants, Is.EquivalentTo(new[] { "Fixture::Gadget", "Fixture::SuperGadget" }));
         }
 
-        /// <summary>
-        /// Verifies that the ancestors of <c>SuperGadget</c> include both its parent <c>Gadget</c> and its
-        /// grandparent <c>Widget</c>.
-        /// </summary>
         [Test]
         public void AllAncestorsOf_transitively_includes_grandparents()
         {
@@ -82,9 +64,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(ancestors, Is.EquivalentTo(new[] { "Fixture::Gadget", "Fixture::Widget" }));
         }
 
-        /// <summary>
-        /// Verifies that <c>Widget</c>, which has no generalization, has no ancestors.
-        /// </summary>
         [Test]
         public void AllAncestorsOf_a_root_class_is_empty()
         {

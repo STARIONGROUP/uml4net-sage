@@ -46,9 +46,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             return XmiInspector.Inspect(Path.Combine(FixturesDirectory, modelFileName), MetamodelJsonPath, "2.5.1", pathMaps);
         }
 
-        /// <summary>
-        /// Verifies that the valid fixture model produces no findings.
-        /// </summary>
         [Test]
         public void Inspect_of_a_valid_model_finds_nothing()
         {
@@ -57,10 +54,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(report.Findings, Is.Empty);
         }
 
-        /// <summary>
-        /// Verifies that an element typed by the abstract <c>Classifier</c> gives one abstract-instantiation error with
-        /// its id and line, and that the reader's abort is reported as a read-aborted finding rather than thrown.
-        /// </summary>
         [Test]
         public void Inspect_flags_an_abstract_xmi_type_with_its_id_and_line_and_reports_the_aborted_read_instead_of_throwing()
         {
@@ -75,10 +68,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(report.Findings, Has.Some.Matches<InspectionFinding>(f => f is { Category: "read-aborted" }));
         }
 
-        /// <summary>
-        /// Verifies that an element whose <c>xmi:type</c> is not a UML metaclass gives one unknown-metaclass finding
-        /// with its id and line.
-        /// </summary>
         [Test]
         public void Inspect_flags_an_xmi_type_that_is_not_a_uml_metaclass()
         {
@@ -89,10 +78,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(finding.Line, Is.EqualTo(5));
         }
 
-        /// <summary>
-        /// Verifies that a local reference to a missing id is reported against the referencing element, with its line
-        /// and a message naming the property and the missing id.
-        /// </summary>
         [Test]
         public void Inspect_reports_an_unresolved_idref_with_the_referencing_element_property_and_line()
         {
@@ -103,10 +88,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(finding.Message, Does.Contain("type references 'Engine'"));
         }
 
-        /// <summary>
-        /// Verifies that a reference into a missing external document gives one unresolved-reference finding naming it,
-        /// and that the reader's own log lines about it are not repeated as reader diagnostics.
-        /// </summary>
         [Test]
         public void Inspect_of_an_unresolved_external_reference_reports_it_as_a_structured_finding()
         {
@@ -118,9 +99,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(report.Findings, Has.None.Matches<InspectionFinding>(f => f is { Category: "reader-diagnostic" }), "the reader's own log lines for it are not repeated");
         }
 
-        /// <summary>
-        /// Verifies that an unresolved <c>pathmap://</c> reference with no mapping says that no <c>--pathmap</c> was given.
-        /// </summary>
         [Test]
         public void Inspect_hints_at_pathmap_when_a_pathmap_reference_is_unmapped()
         {
@@ -130,10 +108,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(finding.Message, Does.Contain("no --pathmap was given"));
         }
 
-        /// <summary>
-        /// Verifies that mapping the <c>pathmap://SAMPLE_LIBRARY</c> prefix to the fixture library folder resolves the
-        /// reference, so no finding is left for <c>Car-wheel</c>.
-        /// </summary>
         [Test]
         public void Inspect_resolves_a_pathmap_prefix_mapped_to_a_directory()
         {
@@ -144,10 +118,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(report.Findings, Has.None.Matches<InspectionFinding>(f => f is { ElementXmiId: "Car-wheel" }));
         }
 
-        /// <summary>
-        /// Verifies that a generalization without a <c>general</c> gives one multiplicity-violation finding with its id,
-        /// line and the feature's bounds.
-        /// </summary>
         [Test]
         public void Inspect_flags_a_required_feature_with_no_value()
         {
@@ -159,10 +129,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(finding.Message, Does.Contain("Generalization::general [1..1] has 0 value(s)"));
         }
 
-        /// <summary>
-        /// Verifies that an <c>xmi:id</c> declared twice gives one duplicate-xmi-id finding placed at the second
-        /// declaration, with a message listing both lines.
-        /// </summary>
         [Test]
         public void Inspect_flags_a_duplicate_xmi_id_at_its_second_declaration()
         {
@@ -174,9 +140,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(finding.Message, Does.Contain("lines 11, 12"));
         }
 
-        /// <summary>
-        /// Verifies that the findings that have a line come in ascending line order.
-        /// </summary>
         [Test]
         public void Inspect_orders_findings_by_line()
         {
@@ -186,10 +149,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(lines, Is.Ordered);
         }
 
-        /// <summary>
-        /// Verifies that a stereotype extending <c>Class</c> applied to a <c>Property</c> gives one stereotype-misapplied
-        /// finding, while its application to a <c>Class</c> gives none.
-        /// </summary>
         [Test]
         public void Inspect_flags_a_stereotype_applied_to_a_metaclass_it_does_not_extend()
         {
@@ -201,10 +160,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(report.Findings, Has.None.Matches<InspectionFinding>(f => f is { ElementXmiId: "Car-Entity" }), "applying it to a Class is fine");
         }
 
-        /// <summary>
-        /// Verifies that a stereotype application whose base element does not exist gives one
-        /// stereotype-target-unresolved finding with its id and line.
-        /// </summary>
         [Test]
         public void Inspect_flags_a_stereotype_application_whose_target_does_not_exist()
         {
@@ -215,10 +170,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(finding.Line, Is.EqualTo(13));
         }
 
-        /// <summary>
-        /// Verifies that the duplicate ids the reader logs for referenced documents are not reported, so the stereotyped
-        /// model gives only its two stereotype findings.
-        /// </summary>
         [Test]
         public void Inspect_does_not_report_problems_in_referenced_documents()
         {
@@ -230,9 +181,6 @@ namespace Uml4Net.Sage.Tools.Tests.Inspection
             Assert.That(report.Findings.Select(f => f.Category), Is.EquivalentTo(new[] { "stereotype-misapplied", "stereotype-target-unresolved" }));
         }
 
-        /// <summary>
-        /// Verifies that the report carries the model path and UML version it was given.
-        /// </summary>
         [Test]
         public void Inspect_records_the_model_path_and_uml_version_on_the_report()
         {

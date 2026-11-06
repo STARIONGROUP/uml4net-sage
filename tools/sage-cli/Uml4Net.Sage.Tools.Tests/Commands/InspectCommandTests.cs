@@ -35,18 +35,12 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
 
         private string repositoryRoot = null!;
 
-        /// <summary>
-        /// Picks a fresh repository root under the temp folder for each test, without creating it.
-        /// </summary>
         [SetUp]
         public void SetUp()
         {
             this.repositoryRoot = Path.Combine(Path.GetTempPath(), "uml4net-sage-tests", Path.GetRandomFileName());
         }
 
-        /// <summary>
-        /// Deletes the test's repository root if the test created it.
-        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -56,9 +50,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             }
         }
 
-        /// <summary>
-        /// Verifies that <c>inspect</c> returns exit code 1 when no <c>metamodel.json</c> has been generated for the version.
-        /// </summary>
         [Test]
         public void Invoke_returns_1_when_the_version_has_not_been_generated_yet()
         {
@@ -67,12 +58,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(1));
         }
 
-        /// <summary>
-        /// Verifies that <c>inspect</c> fails only on error-severity findings: a model whose only finding is a
-        /// warning (an unresolvable stereotype) exits with 0, and a model with an error exits with 1.
-        /// </summary>
-        /// <param name="fixture">The fixture model to inspect.</param>
-        /// <param name="expectedExitCode">The exit code <c>inspect</c> should return.</param>
         [TestCase("model-stereotype-unresolved.xmi", 0)]
         [TestCase("model-abstract-type.xmi", 1)]
         public void Invoke_fails_only_on_error_findings(string fixture, int expectedExitCode)
@@ -84,9 +69,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(expectedExitCode));
         }
 
-        /// <summary>
-        /// Verifies that <c>inspect</c> returns exit code 0 for the valid fixture model once the metamodel is installed.
-        /// </summary>
         [Test]
         public void Invoke_returns_0_for_a_valid_model()
         {
@@ -97,10 +79,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(0));
         }
 
-        /// <summary>
-        /// Verifies that <c>inspect</c> accepts two <c>--pathmap</c> options, one mapping a prefix to a directory and
-        /// one mapping a document to a file, and still returns exit code 0 for the valid model.
-        /// </summary>
         [Test]
         public void Invoke_accepts_repeated_pathmap_options()
         {
@@ -114,9 +92,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(0));
         }
 
-        /// <summary>
-        /// Verifies that <c>inspect</c> returns exit code 1 for a <c>--pathmap</c> value without <c>=&lt;path&gt;</c>.
-        /// </summary>
         [Test]
         public void Invoke_returns_1_for_a_pathmap_without_a_path()
         {
@@ -127,9 +102,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(1));
         }
 
-        /// <summary>
-        /// Verifies that <c>inspect</c> returns exit code 1 when the model file does not exist.
-        /// </summary>
         [Test]
         public void Invoke_returns_1_when_the_model_file_does_not_exist()
         {

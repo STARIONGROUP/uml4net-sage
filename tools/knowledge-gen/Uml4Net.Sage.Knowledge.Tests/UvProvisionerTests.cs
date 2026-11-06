@@ -38,10 +38,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
         private DirectoryInfo cacheRoot = null!;
         private string target = null!;
 
-        /// <summary>
-        /// Picks a fresh temporary cache root and the current platform's uv target.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">The current platform is not one of uv's published targets.</exception>
         [SetUp]
         public void SetUp()
         {
@@ -49,9 +45,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             this.target = UvPlatform.CurrentTarget ?? throw new InvalidOperationException("This test machine's platform is not one of uv's published targets - cannot run.");
         }
 
-        /// <summary>
-        /// Deletes the temporary cache root if a test created it.
-        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -82,11 +75,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             return memoryStream.ToArray();
         }
 
-        /// <summary>
-        /// Verifies that, with a release listing this platform's archive and a matching checksum,
-        /// provisioning returns an executable that exists and writes the <c>.ok</c> marker.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_downloads_verifies_and_caches_a_matching_release()
         {
@@ -118,11 +106,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(File.Exists(provisioner.OkMarker(UvProvisioner.PinnedVersion, this.target).FullName));
         }
 
-        /// <summary>
-        /// Verifies that, when the downloaded archive does not match the published checksum,
-        /// provisioning returns <c>null</c> and writes no <c>.ok</c> marker.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_returns_null_and_does_not_cache_on_a_checksum_mismatch()
         {
@@ -152,11 +135,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(provisioner.OkMarker(UvProvisioner.PinnedVersion, this.target).Exists, Is.False);
         }
 
-        /// <summary>
-        /// Verifies that a <c>404 Not Found</c> from the GitHub release lookup makes provisioning return
-        /// <c>null</c>.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_returns_null_when_the_release_is_not_found()
         {
@@ -170,11 +148,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(executable, Is.Null);
         }
 
-        /// <summary>
-        /// Verifies that a release without an asset for this platform makes provisioning return
-        /// <c>null</c>.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_returns_null_when_no_asset_matches_this_platform()
         {
@@ -196,11 +169,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(executable, Is.Null);
         }
 
-        /// <summary>
-        /// Verifies that an <see cref="HttpRequestException"/> from the HTTP client does not escape, and
-        /// provisioning returns <c>null</c>.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_never_throws_when_the_http_client_itself_throws()
         {
@@ -214,11 +182,6 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(executable, Is.Null);
         }
 
-        /// <summary>
-        /// Verifies that, when the cached executable and its <c>.ok</c> marker already exist, provisioning
-        /// returns that executable without any HTTP request.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_reuses_the_cache_without_a_network_call_once_verified()
         {

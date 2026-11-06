@@ -26,10 +26,8 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
     using System.Threading;
     using System.Threading.Tasks;
 
-    /// <summary>
-    /// Runs <see cref="CheckRunner"/> against small fake CLIs (a <c>.cmd</c> file on Windows, a shell
-    /// script elsewhere) to pin how it treats the CLI process itself.
-    /// </summary>
+    // Runs CheckRunner against small fake CLIs (a .cmd file on Windows, a shell script elsewhere) to pin how
+    // it treats the CLI process itself.
     [TestFixture]
     public class CheckRunnerTests
     {
@@ -37,9 +35,6 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
 
         private string workDirectory = null!;
 
-        /// <summary>
-        /// Creates an empty work directory for this test's fake CLI.
-        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -47,9 +42,6 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Directory.CreateDirectory(this.workDirectory);
         }
 
-        /// <summary>
-        /// Deletes the work directory.
-        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -59,12 +51,6 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             }
         }
 
-        /// <summary>
-        /// Verifies that a CLI that writes far more to standard error than a pipe holds still runs to the
-        /// end, and that its <c>check --json</c> document is parsed. With standard error unread, the CLI
-        /// would block on a full pipe and the run would only end when the token is cancelled.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task RunAsync_reads_standard_error_so_a_chatty_cli_does_not_block()
         {
@@ -93,12 +79,6 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             });
         }
 
-        /// <summary>
-        /// Verifies that cancelling the run while the CLI is still working returns <c>null</c> promptly
-        /// and kills the CLI and the process it started, so the CLI never gets to write the marker file
-        /// it would write after a three-second wait.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task RunAsync_kills_the_cli_when_cancelled()
         {

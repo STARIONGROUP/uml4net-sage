@@ -23,10 +23,6 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
     [TestFixture]
     public class ChecksumTableTests
     {
-        /// <summary>
-        /// Verifies that a release body with a heading and two checksum lines gives exactly two entries,
-        /// each mapping the asset name to its hash.
-        /// </summary>
         [Test]
         public void Parse_extracts_one_entry_per_asset_line()
         {
@@ -46,9 +42,6 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Assert.That(checksums["uml4net-sage-1.0.0-linux-x64.zip"], Is.EqualTo(new string('b', 64)));
         }
 
-        /// <summary>
-        /// Verifies that an upper-case hash in the release body is stored in lower case.
-        /// </summary>
         [Test]
         public void Parse_lowercases_the_hash()
         {
@@ -59,9 +52,6 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Assert.That(checksums["uml4net-sage-1.0.0-osx-arm64.zip"], Is.EqualTo(new string('a', 64)));
         }
 
-        /// <summary>
-        /// Verifies that a release body without checksum lines gives an empty map.
-        /// </summary>
         [Test]
         public void Parse_returns_empty_for_a_body_with_no_checksum_lines()
         {

@@ -30,13 +30,10 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
     using Uml4Net.Sage.Knowledge;
     using Uml4Net.Sage.Tools.Commands;
 
-    /// <summary>
-    /// Pins the <c>--json</c> contract of <c>check</c>, <c>versions</c> and <c>inspect</c>: one line on
-    /// standard output and nothing else on either stream, <c>{"error": "..."}</c> on every failure, and
-    /// the property names. A test that fails here because a name changed means a breaking change for the
-    /// SessionStart hook, the skills and any script that reads the output; update tools/README.md along
-    /// with it.
-    /// </summary>
+    // Pins the --json contract of check, versions and inspect: one line on standard output and nothing else
+    // on either stream, {"error": "..."} on every failure, and the property names. A test that fails here
+    // because a name changed means a breaking change for the SessionStart hook, the skills and any script
+    // that reads the output; update tools/README.md along with it.
     [TestFixture]
     public class JsonOutputTests
     {
@@ -47,9 +44,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
         private string repositoryRoot = null!;
         private RepositoryLayout layout = null!;
 
-        /// <summary>
-        /// Picks a fresh repository root under the temp folder for each test, without creating it, and its layout.
-        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -57,9 +51,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             this.layout = new RepositoryLayout(this.repositoryRoot);
         }
 
-        /// <summary>
-        /// Deletes the test's repository root if the test created it.
-        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -69,12 +60,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             }
         }
 
-        /// <summary>
-        /// Verifies that each <c>--json</c> verb, on success and on findings, writes exactly one line that parses as
-        /// JSON, nothing straight to standard output or standard error, and returns the expected exit code.
-        /// </summary>
-        /// <param name="verb">The verb and, for <c>inspect</c>, the fixture model to inspect.</param>
-        /// <param name="expectedExitCode">The exit code the run must return.</param>
         [TestCase("check", 0)]
         [TestCase("versions", 0)]
         [TestCase("inspect model-valid.xmi", 0)]
@@ -96,11 +81,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that the <c>check</c> document and its <c>Versions</c> and <c>XmiSpecs</c> entries carry exactly the
-        /// pinned property names, with 2.5.1 as the default and <c>HasAnyVersion</c> true.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Check_json_has_the_pinned_property_names()
         {
@@ -120,11 +100,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that on an empty repository the <c>check</c> document has <c>Default</c> as <c>null</c>,
-        /// <c>HasAnyVersion</c> false and an empty <c>Versions</c> array.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Check_json_writes_an_absent_default_as_null_rather_than_leaving_it_out()
         {
@@ -139,11 +114,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that the <c>versions</c> document is an array whose first row carries exactly the pinned property
-        /// names and describes 2.5.1 as the default.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Versions_json_has_the_pinned_property_names()
         {
@@ -163,11 +133,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that the <c>inspect</c> report and its findings carry exactly the pinned property names, and that the
-        /// abstract-instantiation finding for the fixture names element <c>Vehicle</c> on line 4 as an error.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Inspect_json_has_the_pinned_property_names()
         {
@@ -188,11 +153,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that the read-aborted finding, which has no element or line, writes <c>ElementXmiId</c> and
-        /// <c>Line</c> as <c>null</c>.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Inspect_json_writes_an_absent_element_and_line_as_null_rather_than_leaving_them_out()
         {
@@ -208,14 +168,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that the failures <c>inspect</c> reports itself (version not generated, model file missing,
-        /// malformed <c>--pathmap</c>) are a single error document with the expected message and exit code 1.
-        /// </summary>
-        /// <param name="verb">The <c>inspect</c> command line, without <c>--json</c> and the repository root.</param>
-        /// <param name="generated">Whether to install a generated version first.</param>
-        /// <param name="expectedMessage">Text the error message must contain.</param>
-        /// <returns>A task that completes when the test has run.</returns>
         [TestCase("inspect model-valid.xmi", false, "has not been generated yet")]
         [TestCase("inspect no-such-model.xmi", true, "File not found")]
         [TestCase("inspect model-valid.xmi --pathmap pathmap://SAMPLE_LIBRARY", true, "Invalid --pathmap")]
@@ -235,11 +187,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that inspecting a file that is not XML gives a single "A file could not be read" error document
-        /// with exit code 1.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task An_inspect_of_a_file_that_is_not_xml_is_a_json_error()
         {
@@ -256,11 +203,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that a corrupt <c>installed.json</c> gives a single error document naming the file, with exit code 1.
-        /// </summary>
-        /// <param name="verb">The verb to run.</param>
-        /// <returns>A task that completes when the test has run.</returns>
         [TestCase("check")]
         [TestCase("versions")]
         public async Task A_corrupt_installed_manifest_is_a_json_error_naming_the_file(string verb)
@@ -276,12 +218,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that a <c>metamodel.json</c> that is not JSON, or lacks the expected shape (missing properties, a
-        /// value of the wrong kind, a non-integer bound), gives a single error document naming the file, with exit code 1.
-        /// </summary>
-        /// <param name="content">The content written as <c>metamodel.json</c>.</param>
-        /// <returns>A task that completes when the test has run.</returns>
         [TestCase("{ not json")]
         [TestCase("{}")]
         [TestCase("[]")]
@@ -303,11 +239,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that running <c>check --json</c> with an already cancelled token gives a single "Cancelled." error
-        /// document with exit code 130.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task A_token_cancelled_before_the_verb_starts_is_a_json_error_with_exit_code_130()
         {
@@ -323,11 +254,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that an <see cref="OperationCanceledException"/> thrown from inside the action is turned by
-        /// <see cref="JsonOutput.RunAsync"/> into a single "Cancelled." error document with exit code 130.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Cancellation_thrown_by_the_action_is_a_json_error_with_exit_code_130()
         {
@@ -348,11 +274,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that with <c>--json</c> an unexpected exception from the action becomes a single error document
-        /// naming the exception type and message, with exit code 1.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task An_unexpected_exception_is_a_json_error()
         {
@@ -370,10 +291,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that without <c>--json</c> an unexpected exception from the action propagates out of
-        /// <see cref="JsonOutput.RunAsync"/>.
-        /// </summary>
         [Test]
         public void Without_json_an_unexpected_exception_is_not_caught()
         {
@@ -387,13 +304,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
                 Throws.ArgumentException);
         }
 
-        /// <summary>
-        /// Verifies that <see cref="Program.Main"/> turns a command line with <c>--json</c> (in any spelling) that does not
-        /// parse into a single error document with exit code 1, and that System.CommandLine prints nothing else.
-        /// </summary>
-        /// <param name="commandLine">The command line, split on spaces.</param>
-        /// <param name="expectedMessage">Text the error message must contain.</param>
-        /// <returns>A task that completes when the test has run.</returns>
         [TestCase("inspect --json", "Required argument missing")]
         [TestCase("check --json --no-such-option", "--no-such-option")]
         [TestCase("versions --json unexpected-argument", "unexpected-argument")]
@@ -414,11 +324,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that without <c>--json</c> a command line that does not parse is reported as text naming the bad
-        /// option, not as a JSON document, with exit code 1.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Without_json_a_command_line_that_does_not_parse_is_reported_as_text()
         {
@@ -436,11 +341,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that without <c>--json</c> inspecting against a version that is not generated prints the plain
-        /// sentence "UML 2.5.1 has not been generated yet." and returns exit code 1.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Without_json_a_failure_is_a_sentence_not_a_document()
         {
@@ -457,11 +357,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that without <c>--json</c> a missing model path containing square brackets is printed as is,
-        /// not read as Spectre markup, with exit code 1.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Without_json_a_failure_message_with_brackets_is_printed_literally()
         {
@@ -480,11 +375,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that without <c>--json</c> a corrupt <c>installed.json</c> is reported as a "A file could not be
-        /// read:" sentence naming the file, with exit code 1.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Without_json_a_corrupt_installed_manifest_is_a_sentence_naming_the_file()
         {
@@ -503,12 +393,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that an error document holding a path with an apostrophe or non-ASCII characters is pure ASCII and
-        /// still decodes to the original path.
-        /// </summary>
-        /// <param name="fileName">The name of the missing model file.</param>
-        /// <returns>A task that completes when the test has run.</returns>
         [TestCase("it's-missing.xmi")]
         [TestCase("café-模型.xmi")]
         public async Task Json_output_is_pure_ascii_and_decodes_to_the_original_text(string fileName)
@@ -529,10 +413,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that without <c>--json</c> an already cancelled token prints only "Cancelled." and returns exit code 130.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Without_json_a_token_cancelled_before_the_verb_starts_is_a_sentence_with_exit_code_130()
         {
@@ -551,11 +431,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that <see cref="Program.Main"/> runs <c>check --json</c> when the command line parses: exit code 0
-        /// and one line holding the check document, not an error document.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task Main_with_json_and_a_command_line_that_parses_runs_the_verb()
         {
@@ -574,10 +449,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that with two unknown options the single error document names both of them.
-        /// </summary>
-        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task A_command_line_with_several_parse_errors_names_them_all()
         {
@@ -593,12 +464,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that asking for help together with <c>--json</c> gives one error document that says how to get the
-        /// help text, with exit code 1 and nothing else on either stream, instead of System.CommandLine's help text.
-        /// </summary>
-        /// <param name="commandLine">A command line that asks for help, separated by single spaces.</param>
-        /// <returns>A task that completes when the test has run.</returns>
         [TestCase("check --json --help")]
         [TestCase("inspect model.xmi --json -h")]
         [TestCase("versions --json -?")]
@@ -617,13 +482,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that <c>--json</c> on a verb that does not offer it, or without a verb, gives one error document
-        /// that names the verbs that do offer it, with exit code 1.
-        /// </summary>
-        /// <param name="commandLine">The command line, separated by single spaces.</param>
-        /// <param name="target">How the error names what was asked for.</param>
-        /// <returns>A task that completes when the test has run.</returns>
         [TestCase("fetch --json", "not by 'fetch'")]
         [TestCase("remove --json --version 2.5.1", "not by 'remove'")]
         [TestCase("--json", "not by a command line without a verb")]
@@ -643,12 +501,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
-        /// <summary>
-        /// Verifies that <see cref="JsonOutput.IsRequested"/> is true for <c>check</c>, <c>versions</c> and <c>inspect</c>
-        /// with <c>--json</c>, and false without it and for <c>fetch</c>, which does not offer it.
-        /// </summary>
-        /// <param name="commandLine">The command line to parse.</param>
-        /// <param name="expected">Whether JSON is expected to be requested.</param>
         [TestCase("check --json", true)]
         [TestCase("versions --json", true)]
         [TestCase("inspect model.xmi --json", true)]
@@ -660,12 +512,6 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(JsonOutput.IsRequested(Program.BuildRootCommand().Parse(commandLine)), Is.EqualTo(expected));
         }
 
-        /// <summary>
-        /// Verifies that <see cref="JsonOutput.IsJsonArgument"/> accepts <c>--json</c>, <c>--json:value</c> and
-        /// <c>--json=value</c>, and rejects similar-looking or other arguments.
-        /// </summary>
-        /// <param name="argument">The raw argument.</param>
-        /// <param name="expected">Whether the argument is expected to be recognised.</param>
         [TestCase("--json", true)]
         [TestCase("--json:true", true)]
         [TestCase("--json=false", true)]

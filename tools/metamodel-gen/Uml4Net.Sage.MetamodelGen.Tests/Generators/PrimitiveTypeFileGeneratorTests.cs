@@ -27,10 +27,6 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
     [TestFixture]
     public class PrimitiveTypeFileGeneratorTests
     {
-        /// <summary>
-        /// Verifies that the page for <c>String</c> has <c>primitiveType</c> front matter with its qualified name
-        /// and shows its <c>ownedComment</c> text as the description.
-        /// </summary>
         [Test]
         public void Render_includes_front_matter_and_the_owned_comment_as_the_description()
         {
