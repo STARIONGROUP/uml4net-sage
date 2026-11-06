@@ -20,4 +20,8 @@
     <AssemblyName>uml4net-sage</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Uml4Net.Sage.Tools.Tests" />
+  </ItemGroup>
+
 </Project>
