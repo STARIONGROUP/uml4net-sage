@@ -33,8 +33,19 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
     {
         private readonly Queue<Func<HttpRequestMessage, HttpResponseMessage>> responses = new();
 
+        /// <summary>
+        /// Adds a response factory to the queue. Each request uses the next factory in order.
+        /// </summary>
+        /// <param name="respond">Builds the response for a request, or throws to simulate a failure.</param>
         public void Enqueue(Func<HttpRequestMessage, HttpResponseMessage> respond) => this.responses.Enqueue(respond);
 
+        /// <summary>
+        /// Answers <paramref name="request"/> with the next queued response factory, without any network call.
+        /// </summary>
+        /// <param name="request">The HTTP request to answer.</param>
+        /// <param name="cancellationToken">Not used.</param>
+        /// <returns>A completed task holding the response built by the dequeued factory.</returns>
+        /// <exception cref="InvalidOperationException">No response factory is left in the queue.</exception>
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             if (this.responses.Count == 0)

@@ -30,6 +30,11 @@ namespace Uml4Net.Sage.Tools.Hook
         /// <summary>
         /// Summarizes <paramref name="result"/>, or returns <c>null</c> if nothing needs saying.
         /// </summary>
+        /// <param name="result">The parsed <c>check --json</c> output, or <c>null</c> if the check could not run.</param>
+        /// <returns>
+        /// A message for Claude when no knowledge base is fetched, the default version is not generated, or
+        /// its spec text is not generated; otherwise <c>null</c>.
+        /// </returns>
         public static string? Summarize(CheckResult? result)
         {
             if (result is null)

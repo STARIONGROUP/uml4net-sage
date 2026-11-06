@@ -33,6 +33,8 @@ namespace Uml4Net.Sage.Tools
         /// <summary>
         /// Resolves the repository root to use.
         /// </summary>
+        /// <param name="explicitValue">The <c>--repository-root</c> value, or <c>null</c> when it was not given.</param>
+        /// <returns>The full path of the repository root.</returns>
         public static string Resolve(string? explicitValue)
         {
             if (!string.IsNullOrWhiteSpace(explicitValue))

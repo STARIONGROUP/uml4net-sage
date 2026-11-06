@@ -25,6 +25,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
     [TestFixture]
     public class ElementCatalogTests
     {
+        /// <summary>
+        /// Verifies that the fixture's classes, enumerations, primitive types, associations and stereotypes
+        /// each end up in their own list of the catalog.
+        /// </summary>
         [Test]
         public void Build_catalogs_classes_enumerations_primitive_types_and_stereotypes_separately()
         {
@@ -37,6 +41,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(catalog.Stereotypes.Select(s => s.Name), Is.EquivalentTo(new[] { "Sample", "SpecialSample" }));
         }
 
+        /// <summary>
+        /// Verifies that the <c>Sample</c> stereotype, although a stereotype is also a class, is not listed
+        /// among the catalog's classes.
+        /// </summary>
         [Test]
         public void Build_never_catalogs_a_stereotype_as_a_class()
         {
@@ -45,6 +53,9 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(catalog.Classes.Select(c => c.Name), Does.Not.Contain("Sample"));
         }
 
+        /// <summary>
+        /// Verifies that the <c>A_container_gadgets</c> association is not listed among the catalog's classes.
+        /// </summary>
         [Test]
         public void Build_never_catalogs_an_association_as_a_class()
         {

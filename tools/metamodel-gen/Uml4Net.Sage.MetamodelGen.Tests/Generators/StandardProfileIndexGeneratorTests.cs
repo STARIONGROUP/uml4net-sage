@@ -27,6 +27,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
     [TestFixture]
     public class StandardProfileIndexGeneratorTests
     {
+        /// <summary>
+        /// Verifies that there is one row for each of the fixture profile's two stereotypes, and that the row for
+        /// <c>Sample</c> points at <c>pages/Sample.md</c>.
+        /// </summary>
         [Test]
         public void BuildRows_includes_every_stereotype()
         {
@@ -39,6 +43,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(sampleRow.File, Is.EqualTo("pages/Sample.md"));
         }
 
+        /// <summary>
+        /// Verifies that each row records the owning profile and only the metaclasses the stereotype itself
+        /// extends: <c>Widget</c> for <c>Sample</c> and <c>Gadget</c> for its specialization <c>SpecialSample</c>.
+        /// </summary>
         [Test]
         public void BuildRows_records_each_stereotypes_profile_and_own_base_metaclasses()
         {
@@ -52,6 +60,9 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(specialSampleRow.BaseMetaclasses, Is.EqualTo(new[] { "Gadget" }));
         }
 
+        /// <summary>
+        /// Verifies that the rendered Standard Profile index mentions <c>FixtureProfile::Sample</c>.
+        /// </summary>
         [Test]
         public void RenderMarkdown_includes_a_row_per_stereotype()
         {

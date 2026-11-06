@@ -41,6 +41,7 @@ namespace Uml4Net.Sage.Tools.Commands
         /// <summary>
         /// Builds the command.
         /// </summary>
+        /// <returns>The <c>fetch</c> command with its options and action.</returns>
         public static Command Build()
         {
             var command = new Command("fetch", "Download a UML version's XMI and (optionally) specification PDF files from omg.org.");

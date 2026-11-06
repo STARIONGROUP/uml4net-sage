@@ -38,6 +38,7 @@ namespace Uml4Net.Sage.Tools.Commands
         /// <summary>
         /// Builds the command.
         /// </summary>
+        /// <returns>The <c>generate</c> command with its options and action.</returns>
         public static Command Build()
         {
             var command = new Command("generate", "Generate the metamodel/standard-profile/spec knowledge base from an already-fetched UML version's sources.");

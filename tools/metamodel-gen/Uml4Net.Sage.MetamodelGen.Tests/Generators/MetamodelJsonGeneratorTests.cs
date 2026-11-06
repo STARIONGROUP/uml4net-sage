@@ -27,6 +27,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
     [TestFixture]
     public class MetamodelJsonGeneratorTests
     {
+        /// <summary>
+        /// Verifies that the class nodes carry the full descendant set of <c>Widget</c>, the full ancestor set of
+        /// <c>SuperGadget</c>, and every attribute <c>SuperGadget</c> inherits.
+        /// </summary>
         [Test]
         public void Build_precomputes_ancestor_and_descendant_closures()
         {
@@ -43,6 +47,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(superGadget.InheritedAttributes.Select(a => a.Name), Is.EquivalentTo(new[] { "label", "count", "container" }));
         }
 
+        /// <summary>
+        /// Verifies that a redefined operation is not inherited: <c>Gadget</c>, which redefines
+        /// <c>Widget::describe</c>, inherits no operations, and <c>SuperGadget</c> inherits only Gadget's.
+        /// </summary>
         [Test]
         public void Build_excludes_redefined_members_from_inherited_operations()
         {
@@ -60,6 +68,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(superGadget.InheritedAttributes.All(a => a.Kind == "attribute"), Is.True);
         }
 
+        /// <summary>
+        /// Verifies that the serialized document uses camel-case property names and parses as JSON with the
+        /// three fixture classes under <c>classes</c>.
+        /// </summary>
         [Test]
         public void Serialize_produces_valid_camel_case_json()
         {
@@ -76,6 +88,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(parsed.RootElement.GetProperty("classes").GetArrayLength(), Is.EqualTo(3));
         }
 
+        /// <summary>
+        /// Verifies that the <c>describe</c> operation node carries its one parameter with name and type, and
+        /// that the serialized JSON has a <c>parameters</c> property.
+        /// </summary>
         [Test]
         public void Build_captures_an_operations_parameters()
         {
@@ -94,6 +110,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(json, Does.Contain("\"parameters\""));
         }
 
+        /// <summary>
+        /// Verifies that the document holds the one fixture association with both member ends, each flagged
+        /// correctly as owned or not owned by the association, and that the JSON has an <c>associations</c> property.
+        /// </summary>
         [Test]
         public void Build_captures_associations_and_their_member_ends()
         {
@@ -112,6 +132,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(json, Does.Contain("\"associations\""));
         }
 
+        /// <summary>
+        /// Verifies that the literals of <c>Kind</c> keep their XMI order (<c>A</c>, <c>B</c>, <c>Aa</c>) rather
+        /// than being sorted alphabetically.
+        /// </summary>
         [Test]
         public void Build_keeps_enumeration_literals_in_normative_xmi_order_not_alphabetical()
         {

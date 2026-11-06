@@ -35,8 +35,11 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
     public static class MetamodelIndexGenerator
     {
         /// <summary>
-        /// Builds the sorted index rows for every class, enumeration and primitive type in the catalog.
+        /// Builds the sorted index rows for every class, enumeration, primitive type and association in the
+        /// catalog that has a qualified name.
         /// </summary>
+        /// <param name="catalog">The catalogued metamodel elements.</param>
+        /// <returns>One row per element, sorted by qualified name (ordinal).</returns>
         public static IReadOnlyList<MetamodelIndexRow> BuildRows(ElementCatalog catalog)
         {
             var rows = new List<MetamodelIndexRow>();
@@ -63,6 +66,8 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Serializes the rows as JSON (an array, per the tabular-resource convention).
         /// </summary>
+        /// <param name="rows">The rows to serialize.</param>
+        /// <returns>The JSON array text.</returns>
         public static string SerializeJson(IReadOnlyList<MetamodelIndexRow> rows)
         {
             return JsonSerializer.Serialize(rows, MetamodelJsonGenerator.SerializerOptions);
@@ -71,6 +76,8 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Renders the human-readable markdown table, grouped by package.
         /// </summary>
+        /// <param name="rows">The rows to render.</param>
+        /// <returns>The markdown text: one table per package, ending in a single newline.</returns>
         public static string RenderMarkdown(IReadOnlyList<MetamodelIndexRow> rows)
         {
             var builder = new StringBuilder();

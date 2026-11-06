@@ -36,6 +36,7 @@ namespace Uml4Net.Sage.Tools.Commands
         /// <summary>
         /// Builds the command.
         /// </summary>
+        /// <returns>The <c>versions</c> command with its options and action.</returns>
         public static Command Build()
         {
             var command = new Command("versions", "List every known UML version and its local fetch/generate state.");

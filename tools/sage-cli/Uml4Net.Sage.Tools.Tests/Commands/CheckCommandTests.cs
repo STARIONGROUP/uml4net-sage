@@ -30,12 +30,18 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
     {
         private string repositoryRoot = null!;
 
+        /// <summary>
+        /// Picks a fresh repository root under the temp folder for each test, without creating it.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
             this.repositoryRoot = Path.Combine(Path.GetTempPath(), "uml4net-sage-tests", Path.GetRandomFileName());
         }
 
+        /// <summary>
+        /// Deletes the test's repository root if the test created it.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -45,6 +51,9 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             }
         }
 
+        /// <summary>
+        /// Verifies that <c>check</c> returns exit code 0 on an empty repository where no version has been fetched.
+        /// </summary>
         [Test]
         public void Invoke_never_makes_a_network_call_and_returns_0_when_nothing_is_fetched()
         {
@@ -53,6 +62,10 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(0));
         }
 
+        /// <summary>
+        /// Verifies that <c>check</c> returns exit code 0 when the default version 2.5.1 is fetched and generated
+        /// with spec text.
+        /// </summary>
         [Test]
         public void Invoke_returns_0_once_a_version_is_fully_generated()
         {
@@ -66,6 +79,10 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(0));
         }
 
+        /// <summary>
+        /// Verifies that <c>check</c> still returns exit code 0 when UML 2.5.1 is fully generated but the XMI
+        /// specification corpus was never generated.
+        /// </summary>
         [Test]
         public void Invoke_returns_0_when_the_uml_version_is_generated_but_the_xmi_spec_is_not()
         {

@@ -42,12 +42,18 @@ namespace Uml4Net.Sage.Knowledge.Tests
 
         private string tempDirectory = null!;
 
+        /// <summary>
+        /// Picks a fresh temporary sources root, without creating it.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
             this.tempDirectory = Path.Combine(Path.GetTempPath(), "uml4net-sage-tests", Path.GetRandomFileName());
         }
 
+        /// <summary>
+        /// Deletes the temporary sources root if a test created it.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -57,6 +63,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             }
         }
 
+        /// <summary>
+        /// Verifies that fetching without specs makes four requests, returns four entries, writes the XMI
+        /// files and writes no specification PDF.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task FetchAsync_without_specs_downloads_only_the_four_xmi_files()
         {
@@ -76,6 +87,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(File.Exists(Path.Combine(this.tempDirectory, "2.5.1", "specs", "UML-2.5.1.pdf")), Is.False);
         }
 
+        /// <summary>
+        /// Verifies that fetching with specs also writes <c>UML-2.5.1.pdf</c> and
+        /// <c>UML-2.5.1-changebar.pdf</c> under <c>specs/</c>.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task FetchAsync_with_specs_also_downloads_the_two_pdfs_with_explicit_file_names()
         {
@@ -96,6 +112,10 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(File.Exists(Path.Combine(this.tempDirectory, "2.5.1", "specs", "UML-2.5.1-changebar.pdf")));
         }
 
+        /// <summary>
+        /// Verifies that an HTML page served for the specification PDF makes the fetch throw an
+        /// <see cref="InvalidDataException"/>.
+        /// </summary>
         [Test]
         public void FetchAsync_throws_when_a_pdf_url_does_not_return_a_pdf()
         {
@@ -114,6 +134,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
                 Throws.TypeOf<InvalidDataException>());
         }
 
+        /// <summary>
+        /// Verifies that fetching writes <c>fetch-manifest.json</c> with <c>url</c> and <c>sha256</c>
+        /// properties and the downloaded URLs.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task FetchAsync_writes_a_fetch_manifest_with_sha256_and_url_per_file()
         {
@@ -136,6 +161,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(manifestJson, Does.Contain("https://example.com/UML.xmi"));
         }
 
+        /// <summary>
+        /// Verifies that a request failing once with <see cref="HttpRequestException"/> is retried, so
+        /// all four files are fetched with five requests in total.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task FetchAsync_retries_on_transient_failure_then_succeeds()
         {
@@ -163,6 +193,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             XsdUrl: "https://example.com/XMI/XMI.xsd",
             CanonicalXsdUrl: "https://example.com/XMI/XMI-Canonical.xsd");
 
+        /// <summary>
+        /// Verifies that fetching the XMI specification makes three requests and writes the PDF, both
+        /// schema files and a <c>fetch-manifest.json</c> under <c>xmi/2.5.1/</c>.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task FetchXmiSpecAsync_downloads_the_pdf_and_both_schema_files_into_its_own_top_level_sibling_tree()
         {
@@ -183,6 +218,10 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(File.Exists(Path.Combine(this.tempDirectory, "xmi", "2.5.1", "fetch-manifest.json")));
         }
 
+        /// <summary>
+        /// Verifies that an HTML page served for the XMI specification PDF makes the fetch throw an
+        /// <see cref="InvalidDataException"/>.
+        /// </summary>
         [Test]
         public void FetchXmiSpecAsync_throws_when_the_pdf_url_does_not_return_a_pdf()
         {
@@ -196,6 +235,10 @@ namespace Uml4Net.Sage.Knowledge.Tests
                 Throws.TypeOf<InvalidDataException>());
         }
 
+        /// <summary>
+        /// Verifies that a plain-text response served for a schema file makes the fetch throw an
+        /// <see cref="InvalidDataException"/>.
+        /// </summary>
         [Test]
         public void FetchXmiSpecAsync_throws_when_a_schema_url_does_not_return_xml()
         {

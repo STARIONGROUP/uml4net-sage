@@ -27,6 +27,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
     [TestFixture]
     public class EnumerationFileGeneratorTests
     {
+        /// <summary>
+        /// Verifies that the page for <c>Kind</c> has <c>enumeration</c> front matter with its qualified name and
+        /// lists its literals, with the literal's own description where it has one.
+        /// </summary>
         [Test]
         public void Render_includes_front_matter_and_literals()
         {
@@ -41,6 +45,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(markdown, Does.Contain("- `B`"));
         }
 
+        /// <summary>
+        /// Verifies that the literals are listed in XMI order (<c>A</c>, <c>B</c>, <c>Aa</c>) rather than sorted
+        /// alphabetically.
+        /// </summary>
         [Test]
         public void Render_keeps_literals_in_normative_xmi_order_not_alphabetical()
         {
@@ -54,6 +62,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(literalsSection.IndexOf("- `B`"), Is.LessThan(literalsSection.IndexOf("- `Aa`")));
         }
 
+        /// <summary>
+        /// Verifies that the literal <c>B</c>, which has no <c>ownedComment</c>, is listed by name alone, with no
+        /// description after it.
+        /// </summary>
         [Test]
         public void Render_says_none_for_a_literal_with_no_ownedComment()
         {
@@ -67,6 +79,9 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(literalsSection, Does.Not.Contain("- `B` -"));
         }
 
+        /// <summary>
+        /// Verifies that the Description section holds the enumeration's own <c>ownedComment</c> text.
+        /// </summary>
         [Test]
         public void Render_includes_the_enumerations_own_description()
         {

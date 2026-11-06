@@ -43,6 +43,10 @@ namespace Uml4Net.Sage.Knowledge.Tests
         private string repositoryRoot = null!;
         private RepositoryLayout layout = null!;
 
+        /// <summary>
+        /// Creates a temporary repository root and copies the fixture XMI files into
+        /// <c>sources/2.5.1/xmi/</c>, as a real <c>fetch</c> would.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -60,6 +64,9 @@ namespace Uml4Net.Sage.Knowledge.Tests
             }
         }
 
+        /// <summary>
+        /// Deletes the temporary repository root.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -69,8 +76,18 @@ namespace Uml4Net.Sage.Knowledge.Tests
             }
         }
 
+        /// <summary>
+        /// Gets the directory that holds the hand-authored fixture XMI files.
+        /// </summary>
+        /// <returns>The <c>Fixtures/Xmi</c> directory under the test output directory.</returns>
         private static string TestFixturesDirectory() => Path.Combine(NUnit.Framework.TestContext.CurrentContext.TestDirectory, "Fixtures", "Xmi");
 
+        /// <summary>
+        /// Verifies that generating without a spec PDF reports the spec extraction as not succeeded but
+        /// still writes the metamodel and standard-profile indexes, an element file and a
+        /// <c>datapackage.json</c> without the <c>spec-clause-index</c> resource.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task GenerateAsync_produces_the_full_knowledge_tree_and_a_scoped_datapackage_without_a_spec_pdf()
         {
@@ -90,6 +107,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(dataPackageJson, Does.Not.Contain("spec-clause-index"), "spec text was never generated in this test");
         }
 
+        /// <summary>
+        /// Verifies that generating records the version in <c>installed.json</c> as generated, with the
+        /// spec-generated flag left false when no spec text was extracted.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task GenerateAsync_records_the_generation_in_installed_json()
         {
@@ -103,6 +125,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(entry.SpecGenerated, Is.False);
         }
 
+        /// <summary>
+        /// Verifies that, without an XMI specification PDF, generating still completes and reports the
+        /// XMI extraction as skipped with a reason that mentions XMI.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task GenerateAsync_attempts_xmi_spec_extraction_and_does_not_fail_generate_when_it_is_skipped()
         {
@@ -114,6 +141,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.XmiSpecExtraction.SkippedReason, Does.Contain("XMI"));
         }
 
+        /// <summary>
+        /// Verifies that, when the XMI clause index already exists, generating reports the XMI extraction
+        /// as succeeded without needing the XMI PDF.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task GenerateAsync_does_not_re_extract_the_xmi_spec_when_it_already_exists()
         {
@@ -140,6 +172,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             XsdUrl: "https://example.com/XMI/XMI.xsd",
             CanonicalXsdUrl: "https://example.com/XMI/XMI-Canonical.xsd");
 
+        /// <summary>
+        /// Verifies that fetching valid XMI PDF and schema responses succeeds and records the XMI
+        /// specification as fetched in <c>installed.json</c>.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task FetchXmiSpecAsync_succeeds_and_records_the_fetch_in_installed_json()
         {
@@ -156,6 +193,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(manifest.XmiSpecs.Single(x => x.Version == "2.5.1").Fetched, Is.True);
         }
 
+        /// <summary>
+        /// Verifies that an HTML page served in place of the XMI PDF makes the fetch return an
+        /// unsuccessful outcome with a warning that mentions XMI, instead of throwing.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task FetchXmiSpecAsync_degrades_to_a_warning_instead_of_throwing_on_failure()
         {
@@ -169,6 +211,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.Warning, Does.Contain("XMI"));
         }
 
+        /// <summary>
+        /// Verifies that a successful XMI download followed by a corrupt <c>installed.json</c> throws an
+        /// <see cref="InvalidDataException"/> naming <c>installed.json</c>, rather than being reported as a
+        /// failed download.
+        /// </summary>
         [Test]
         public void FetchXmiSpecAsync_with_a_corrupt_manifest_throws_rather_than_reporting_a_failed_download()
         {

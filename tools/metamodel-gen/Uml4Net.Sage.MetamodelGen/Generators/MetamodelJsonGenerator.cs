@@ -45,6 +45,11 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Builds the document for the given catalog.
         /// </summary>
+        /// <param name="catalog">The catalogued metamodel elements.</param>
+        /// <param name="graph">The generalization graph over <paramref name="catalog"/>'s classes.</param>
+        /// <returns>
+        /// The document, with each kind of node sorted by qualified name; elements without a qualified name are left out.
+        /// </returns>
         public static MetamodelJsonDocument Build(ElementCatalog catalog, ClassGraph graph)
         {
             var classNodes = catalog.Classes
@@ -88,11 +93,20 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Serializes a document to its deterministic JSON text (LF line endings via the caller writing the file).
         /// </summary>
+        /// <param name="document">The document to serialize.</param>
+        /// <returns>The indented, camel-case JSON text.</returns>
         public static string Serialize(MetamodelJsonDocument document)
         {
             return JsonSerializer.Serialize(document, SerializerOptions);
         }
 
+        /// <summary>
+        /// Builds the node for one class: its generalization closures, owned and inherited features, and
+        /// owned constraints.
+        /// </summary>
+        /// <param name="class">The class to describe.</param>
+        /// <param name="graph">The generalization graph used to resolve the superclass and subclass closures.</param>
+        /// <returns>The class's node.</returns>
         private static MetamodelJsonNode BuildClassNode(uml4net.StructuredClassifiers.IClass @class, ClassGraph graph)
         {
             var qualifiedName = @class.QualifiedName;

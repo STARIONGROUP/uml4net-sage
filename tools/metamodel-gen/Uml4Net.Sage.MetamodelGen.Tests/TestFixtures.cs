@@ -30,6 +30,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
     {
         public static string XmiDirectory => Path.Combine(NUnit.Framework.TestContext.CurrentContext.TestDirectory, "Fixtures", "Xmi");
 
+        /// <summary>
+        /// Reads <c>Fixture.xmi</c> and <c>FixtureProfile.xmi</c> and catalogs their elements.
+        /// </summary>
+        /// <returns>The <see cref="ElementCatalog"/> of the fixture metamodel and profile.</returns>
         public static ElementCatalog BuildCatalog()
         {
             var umlModel = XmiModelReader.Read(Path.Combine(XmiDirectory, "Fixture.xmi"));

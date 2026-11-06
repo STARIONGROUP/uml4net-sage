@@ -23,6 +23,9 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
     [TestFixture]
     public class CacheLayoutTests
     {
+        /// <summary>
+        /// Verifies that hashing the same plugin root path twice gives the same install key.
+        /// </summary>
         [Test]
         public void InstallKey_is_stable_for_the_same_path()
         {
@@ -32,6 +35,9 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Assert.That(first, Is.EqualTo(second));
         }
 
+        /// <summary>
+        /// Verifies that two different plugin root paths get different install keys.
+        /// </summary>
         [Test]
         public void InstallKey_differs_for_different_paths()
         {
@@ -41,6 +47,10 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Assert.That(first, Is.Not.EqualTo(second));
         }
 
+        /// <summary>
+        /// Verifies that the CLI cache directory lies under <see cref="CacheLayout.CacheRoot"/> and contains
+        /// the version, the runtime identifier and the install key of the plugin root.
+        /// </summary>
         [Test]
         public void CliDirectoryFor_includes_version_rid_and_install_key()
         {

@@ -27,6 +27,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
     [TestFixture]
     public class AssociationFileGeneratorTests
     {
+        /// <summary>
+        /// Verifies that the association page has <c>association</c> front matter with its qualified name and
+        /// <c>isDerived</c> flag, and a bullet for each member end with its type link, multiplicity and modifiers.
+        /// </summary>
         [Test]
         public void Render_includes_front_matter_and_both_member_ends()
         {
@@ -42,6 +46,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(markdown, Does.Contain("- **gadgets**: [Gadget](Gadget.md) [0..*] *(ordered, non-navigable)*"));
         }
 
+        /// <summary>
+        /// Verifies that only the <c>gadgets</c> end, owned by the association, carries the "owned by this
+        /// association" note, and the classifier-owned <c>container</c> end does not.
+        /// </summary>
         [Test]
         public void Render_flags_the_end_owned_by_the_association_but_not_the_end_owned_by_a_classifier()
         {
@@ -57,6 +65,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(gadgetsBullet, Does.Contain("owned by this association"));
         }
 
+        /// <summary>
+        /// Verifies that the Description section of an association without an <c>ownedComment</c> says
+        /// <c>_No description available._</c>.
+        /// </summary>
         [Test]
         public void Render_says_no_description_available_for_an_association_with_no_ownedComment()
         {

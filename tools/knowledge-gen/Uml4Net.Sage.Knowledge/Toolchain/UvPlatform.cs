@@ -39,6 +39,8 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         public static string? CurrentTarget => TargetFor(RuntimeInformation.RuntimeIdentifier);
 
         /// <summary>The uv release target for a .NET runtime identifier, or <c>null</c> when unsupported.</summary>
+        /// <param name="runtimeIdentifier">The .NET runtime identifier, e.g. <c>win-x64</c>.</param>
+        /// <returns>The Rust target triple uv publishes for that platform, or <c>null</c>.</returns>
         public static string? TargetFor(string runtimeIdentifier) => runtimeIdentifier switch
         {
             "win-x64" => "x86_64-pc-windows-msvc",
@@ -51,6 +53,9 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         };
 
         /// <summary>True when <paramref name="target"/>'s archive is a zip (Windows); false for tar.gz.</summary>
+        /// <param name="target">The uv release target triple.</param>
+        /// <returns><c>true</c> for a Windows target; otherwise <c>false</c>.</returns>
+        /// <exception cref="ArgumentException"><paramref name="target"/> is null, empty or whitespace.</exception>
         public static bool IsZip(string target)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(target);
@@ -59,6 +64,9 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         }
 
         /// <summary>The release asset file name for <paramref name="target"/>.</summary>
+        /// <param name="target">The uv release target triple.</param>
+        /// <returns>The archive name, e.g. <c>uv-x86_64-pc-windows-msvc.zip</c>.</returns>
+        /// <exception cref="ArgumentException"><paramref name="target"/> is null, empty or whitespace.</exception>
         public static string AssetName(string target)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(target);
@@ -67,6 +75,8 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         }
 
         /// <summary>The cached executable's file name for <paramref name="target"/>.</summary>
+        /// <param name="target">The uv release target triple.</param>
+        /// <returns><c>uv.exe</c> for a Windows target; otherwise <c>uv</c>.</returns>
         public static string ExecutableName(string target) => IsZip(target) ? "uv.exe" : "uv";
     }
 }

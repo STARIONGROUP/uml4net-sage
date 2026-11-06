@@ -42,6 +42,8 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <see cref="IClassifier.InheritedMember"/>: non-private members of every ancestor, minus those a
         /// more specific classifier redefines. Ordered by name, then owner (ordinal), for determinism.
         /// </summary>
+        /// <param name="classifier">The classifier whose inherited members are converted.</param>
+        /// <returns>The inherited attributes and operations; inherited members of any other kind are left out.</returns>
         public static IReadOnlyList<FeatureInfo> InheritedFeaturesOf(IClassifier classifier)
         {
             var features = new List<FeatureInfo>();
@@ -71,6 +73,9 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Converts an owned attribute.
         /// </summary>
+        /// <param name="property">The property to convert.</param>
+        /// <param name="ownerQualifiedName">The qualified name of the classifier that owns <paramref name="property"/>.</param>
+        /// <returns>A <see cref="FeatureInfo"/> of kind <c>attribute</c>.</returns>
         public static FeatureInfo FromProperty(IProperty property, string ownerQualifiedName)
         {
             var type = property.Type as INamedElement;
@@ -104,6 +109,12 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Converts an owned operation.
         /// </summary>
+        /// <param name="operation">The operation to convert.</param>
+        /// <param name="ownerQualifiedName">The qualified name of the classifier that owns <paramref name="operation"/>.</param>
+        /// <returns>
+        /// A <see cref="FeatureInfo"/> of kind <c>operation</c>, whose type and multiplicity come from the return
+        /// parameter and whose parameter list excludes it.
+        /// </returns>
         public static FeatureInfo FromOperation(IOperation operation, string ownerQualifiedName)
         {
             var type = operation.Type as INamedElement;
@@ -152,11 +163,13 @@ namespace Uml4Net.Sage.MetamodelGen
 
         /// <summary>
         /// Renders <paramref name="property"/>'s default value in UML notation, or <see langword="null"/> when it has
-        /// none. uml4net.Extensions' <see cref="PropertyExtensions.QueryDefaultValueAsString(IProperty)"/> targets C#
+        /// none. uml4net.Extensions' <see cref="uml4net.Extensions.PropertyExtensions.QueryDefaultValueAsString(uml4net.Classification.IProperty)"/> targets C#
         /// code generation, so its spelling of an unlimited natural's <c>*</c> is mapped back. A
         /// <c>LiteralUnlimitedNatural</c> written without a <c>value</c> (as OMG's own XMI does) holds that literal's
         /// default, <c>0</c>.
         /// </summary>
+        /// <param name="property">The property whose default value is rendered.</param>
+        /// <returns>The default value's text, or <see langword="null"/>.</returns>
         private static string? DefaultValueOf(IProperty property)
         {
             if (!property.QueryHasDefaultValue())

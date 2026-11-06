@@ -65,6 +65,14 @@ namespace Uml4Net.Sage.MetamodelGen
             GenerateStandardProfile(catalog, Path.Combine(knowledgeOutputDirectory, "standard-profile"));
         }
 
+        /// <summary>
+        /// Writes one markdown page per class, enumeration, primitive type and association under
+        /// <c>elements/</c>, then <c>index.json</c>, <c>index.md</c> and <c>metamodel.json</c>, all under
+        /// <paramref name="metamodelDirectory"/>. Elements without a qualified name are skipped.
+        /// </summary>
+        /// <param name="catalog">The catalogued metamodel elements.</param>
+        /// <param name="graph">The generalization graph over <paramref name="catalog"/>'s classes.</param>
+        /// <param name="metamodelDirectory">The <c>metamodel/</c> directory to write into.</param>
         private static void GenerateMetamodel(ElementCatalog catalog, ClassGraph graph, string metamodelDirectory)
         {
             var elementsDirectory = Path.Combine(metamodelDirectory, "elements");
@@ -118,6 +126,13 @@ namespace Uml4Net.Sage.MetamodelGen
             WriteText(Path.Combine(metamodelDirectory, "metamodel.json"), MetamodelJsonGenerator.Serialize(jsonDocument));
         }
 
+        /// <summary>
+        /// Writes one markdown page per stereotype under <c>pages/</c>, then <c>index.json</c> and
+        /// <c>index.md</c>, all under <paramref name="standardProfileDirectory"/>. Stereotypes without a
+        /// qualified name are skipped.
+        /// </summary>
+        /// <param name="catalog">The catalog whose stereotypes are written.</param>
+        /// <param name="standardProfileDirectory">The <c>standard-profile/</c> directory to write into.</param>
         private static void GenerateStandardProfile(ElementCatalog catalog, string standardProfileDirectory)
         {
             var pagesDirectory = Path.Combine(standardProfileDirectory, "pages");
@@ -148,6 +163,12 @@ namespace Uml4Net.Sage.MetamodelGen
         /// </summary>
         private static readonly System.Text.UTF8Encoding Utf8WithoutByteOrderMark = new(encoderShouldEmitUTF8Identifier: false);
 
+        /// <summary>
+        /// Writes <paramref name="content"/> to <paramref name="path"/> as UTF-8 without a byte-order mark, with
+        /// LF line endings and a trailing newline, creating the parent directory if needed.
+        /// </summary>
+        /// <param name="path">The file to create or overwrite.</param>
+        /// <param name="content">The text to write.</param>
         private static void WriteText(string path, string content)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);

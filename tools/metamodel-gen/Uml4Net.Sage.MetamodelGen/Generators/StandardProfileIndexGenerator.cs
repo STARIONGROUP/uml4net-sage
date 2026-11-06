@@ -37,6 +37,8 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Builds the sorted index rows for every stereotype in the catalog.
         /// </summary>
+        /// <param name="catalog">The catalog whose stereotypes are indexed.</param>
+        /// <returns>One row per stereotype with a qualified name, sorted by qualified name (ordinal).</returns>
         public static IReadOnlyList<StandardProfileIndexRow> BuildRows(ElementCatalog catalog)
         {
             return catalog.Stereotypes
@@ -55,6 +57,8 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Serializes the rows as JSON (an array, per the tabular-resource convention).
         /// </summary>
+        /// <param name="rows">The rows to serialize.</param>
+        /// <returns>The JSON array text.</returns>
         public static string SerializeJson(IReadOnlyList<StandardProfileIndexRow> rows)
         {
             return JsonSerializer.Serialize(rows, MetamodelJsonGenerator.SerializerOptions);
@@ -63,6 +67,8 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Renders the human-readable markdown table.
         /// </summary>
+        /// <param name="rows">The rows to render, in the order given.</param>
+        /// <returns>The markdown text: a heading and one table row per stereotype.</returns>
         public static string RenderMarkdown(IReadOnlyList<StandardProfileIndexRow> rows)
         {
             var builder = new StringBuilder();

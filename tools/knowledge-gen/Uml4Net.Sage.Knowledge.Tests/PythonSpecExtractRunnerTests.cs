@@ -29,6 +29,10 @@ namespace Uml4Net.Sage.Knowledge.Tests
     {
         private string tempDirectory = null!;
 
+        /// <summary>
+        /// Creates a temporary directory with a <c>src</c> subfolder, standing in for the
+        /// <c>tools/spec-extract</c> project.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -36,12 +40,19 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Directory.CreateDirectory(Path.Combine(this.tempDirectory, "src"));
         }
 
+        /// <summary>
+        /// Deletes the temporary directory and everything in it.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
             Directory.Delete(this.tempDirectory, recursive: true);
         }
 
+        /// <summary>
+        /// Verifies that a missing PDF skips the extraction with a reason that points to <c>fetch</c>.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_skips_with_a_clear_reason_when_the_pdf_is_missing()
         {
@@ -58,6 +69,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("fetch"));
         }
 
+        /// <summary>
+        /// Verifies that a spec-extract directory without a <c>src</c> folder skips the extraction with a
+        /// reason that names the spec-extract project.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_skips_with_a_clear_reason_when_the_spec_extract_project_is_missing()
         {
@@ -73,6 +89,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("spec-extract project"));
         }
 
+        /// <summary>
+        /// Verifies that, when no Python interpreter starts and uv cannot be provisioned, the extraction
+        /// is skipped with a reason that says both.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_skips_with_a_clear_reason_when_neither_python_nor_uv_is_available()
         {
@@ -88,6 +109,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("uv could not be provisioned"));
         }
 
+        /// <summary>
+        /// Verifies that a zero exit code with a non-empty clause index succeeds, and that the
+        /// interpreter is passed the <c>spec_extract extract</c> module arguments for the UML document.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_succeeds_and_invokes_the_module_with_the_expected_arguments()
         {
@@ -105,6 +131,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(processRunner.LastArguments, Is.EqualTo(new[] { "-m", "spec_extract", "extract", "--pdf", pdfPath, "--out", outputDirectory, "--document", "UML", "--version", "2.5.1" }));
         }
 
+        /// <summary>
+        /// Verifies that the document name given to the runner, here <c>XMI</c>, is passed on as the
+        /// <c>--document</c> argument.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_is_invoked_with_the_given_document_name()
         {
@@ -122,6 +153,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(processRunner.LastArguments, Is.EqualTo(new[] { "-m", "spec_extract", "extract", "--pdf", pdfPath, "--out", outputDirectory, "--document", "XMI", "--version", "2.5.1" }));
         }
 
+        /// <summary>
+        /// Verifies that a zero exit code with an empty clause index is skipped with a reason that
+        /// mentions 0 clauses.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_skips_when_the_module_exits_zero_but_extracted_no_clauses()
         {
@@ -138,6 +174,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("0 clauses"));
         }
 
+        /// <summary>
+        /// Verifies that a zero exit code without an <c>index.json</c> is skipped with a reason that
+        /// names <c>index.json</c>.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_skips_when_the_module_exits_zero_but_writes_no_index()
         {
@@ -153,6 +194,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("index.json"));
         }
 
+        /// <summary>
+        /// Verifies that a non-zero exit code skips the extraction with a reason that includes the
+        /// process's standard error.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_skips_with_the_stderr_when_the_module_exits_non_zero()
         {
@@ -167,6 +213,12 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("boom"));
         }
 
+        /// <summary>
+        /// Verifies that, when no Python interpreter starts, the provisioned uv executable is run with
+        /// <c>run --project &lt;dir&gt; python</c> followed by the module arguments, and the extraction
+        /// succeeds.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_falls_back_to_uv_and_succeeds_when_no_python_interpreter_is_found()
         {
@@ -189,6 +241,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
                 Is.EqualTo(new[] { "run", "--project", this.tempDirectory, "python", "-m", "spec_extract", "extract", "--pdf", pdfPath, "--out", outputDirectory, "--document", "UML", "--version", "2.5.1" }));
         }
 
+        /// <summary>
+        /// Verifies that a non-zero exit code from the uv fallback skips the extraction with a reason
+        /// that includes uv's standard error.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_skips_with_the_stderr_when_the_uv_fallback_exits_non_zero()
         {
@@ -206,6 +263,10 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("uv boom"));
         }
 
+        /// <summary>
+        /// Verifies that a skipped reason says that metamodel and Standard Profile lookups are unaffected.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_states_the_net_effect_whenever_it_skips()
         {
@@ -220,6 +281,11 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("Metamodel and Standard Profile lookups are unaffected"));
         }
 
+        /// <summary>
+        /// Verifies that a Python candidate failing with <c>ModuleNotFoundError</c> does not stop the uv
+        /// fallback, which then succeeds.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_falls_back_to_uv_when_a_python_candidate_is_missing_its_dependencies()
         {
@@ -239,6 +305,12 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.Succeeded, Is.True, "a missing dependency on a plain python candidate should not stop the uv fallback from being tried");
         }
 
+        /// <summary>
+        /// Verifies that, when the Python candidates fail with <c>ModuleNotFoundError</c> and uv is
+        /// unavailable, the skipped reason names pdfplumber, gives the <c>pip install</c> command and
+        /// states the net effect.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_names_pdfplumber_and_gives_an_install_command_when_dependencies_are_missing_and_uv_is_unavailable()
         {
@@ -256,6 +328,12 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("Metamodel and Standard Profile lookups are unaffected"));
         }
 
+        /// <summary>
+        /// Verifies that, when the Python candidates fail with <c>ModuleNotFoundError</c> and the uv
+        /// fallback also fails, the skipped reason names pdfplumber, gives the <c>pip install</c> command,
+        /// includes uv's standard error and states the net effect.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task ExtractAsync_names_pdfplumber_and_gives_an_install_command_when_dependencies_are_missing_and_the_uv_fallback_also_fails()
         {
@@ -277,6 +355,12 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(outcome.SkippedReason, Does.Contain("Metamodel and Standard Profile lookups are unaffected"));
         }
 
+        /// <summary>
+        /// Writes an <c>index.json</c> holding a JSON array of <paramref name="clauseCount"/> empty
+        /// objects, as if <c>spec_extract</c> had produced it.
+        /// </summary>
+        /// <param name="outputDirectory">The directory to write into; it is created if needed.</param>
+        /// <param name="clauseCount">The number of clause entries to write.</param>
         private static void WriteFakeIndex(string outputDirectory, int clauseCount)
         {
             Directory.CreateDirectory(outputDirectory);

@@ -37,6 +37,8 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Renders the markdown page for <paramref name="enumeration"/>.
         /// </summary>
+        /// <param name="enumeration">The enumeration to render.</param>
+        /// <returns>The markdown page, with LF line endings.</returns>
         public static string Render(IEnumeration enumeration)
         {
             var package = ElementNames.NamespaceOf(enumeration);

@@ -62,12 +62,37 @@ namespace Uml4Net.Sage.Tools.Inspection
         {
         }
 
+        /// <summary>
+        /// A logger that adds every warning and error it is given to a shared queue.
+        /// </summary>
+        /// <param name="category">The category recorded with each entry.</param>
+        /// <param name="entries">The queue the entries are added to.</param>
         private sealed class CapturingLogger(string category, ConcurrentQueue<CapturedLogEntry> entries) : ILogger
         {
+            /// <summary>
+            /// Does not support scopes.
+            /// </summary>
+            /// <typeparam name="TState">The type of the scope state.</typeparam>
+            /// <param name="state">The scope state, which is ignored.</param>
+            /// <returns>Always <c>null</c>.</returns>
             public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 
+            /// <summary>
+            /// Gets whether entries of <paramref name="logLevel"/> are captured.
+            /// </summary>
+            /// <param name="logLevel">The level to check.</param>
+            /// <returns><c>true</c> for <see cref="LogLevel.Warning"/> and above.</returns>
             public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Warning;
 
+            /// <summary>
+            /// Adds the formatted entry to the queue when its level is enabled.
+            /// </summary>
+            /// <typeparam name="TState">The type of the entry's state.</typeparam>
+            /// <param name="logLevel">The entry's level.</param>
+            /// <param name="eventId">The entry's event id, which is not recorded.</param>
+            /// <param name="state">The entry's state.</param>
+            /// <param name="exception">The exception related to the entry, if any.</param>
+            /// <param name="formatter">Creates the message from <paramref name="state"/> and <paramref name="exception"/>.</param>
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             {
                 if (!this.IsEnabled(logLevel))

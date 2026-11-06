@@ -40,6 +40,7 @@ namespace Uml4Net.Sage.Tools.Commands
         /// <summary>
         /// Builds the command.
         /// </summary>
+        /// <returns>The <c>remove</c> command with its options and action.</returns>
         public static Command Build()
         {
             var command = new Command("remove", "Delete a UML version's fetched sources and generated knowledge base.");

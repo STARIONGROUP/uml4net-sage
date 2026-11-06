@@ -39,6 +39,9 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
         /// <summary>
         /// Renders the markdown page for <paramref name="class"/>.
         /// </summary>
+        /// <param name="class">The metaclass to render.</param>
+        /// <param name="graph">The generalization graph used to resolve the direct generalizations and specializations.</param>
+        /// <returns>The markdown page, with LF line endings.</returns>
         public static string Render(IClass @class, ClassGraph graph)
         {
             var qualifiedName = @class.QualifiedName;
@@ -85,6 +88,11 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Appends one signature line per feature to <paramref name="builder"/>, ordered by name (ordinal).
+        /// </summary>
+        /// <param name="builder">The builder to append to.</param>
+        /// <param name="features">The features to list.</param>
         private static void AppendFeatureList(StringBuilder builder, IReadOnlyList<FeatureInfo> features)
         {
             foreach (var feature in features.OrderBy(f => f.Name, System.StringComparer.Ordinal))
@@ -93,6 +101,12 @@ namespace Uml4Net.Sage.MetamodelGen.Generators
             }
         }
 
+        /// <summary>
+        /// Appends each constraint as a <c>###</c> heading followed by one fenced code block per body, tagged
+        /// with its language (<c>ocl</c> when none is given), or <c>_None._</c> when there are no constraints.
+        /// </summary>
+        /// <param name="builder">The builder to append to.</param>
+        /// <param name="constraints">The constraints to render.</param>
         private static void AppendConstraints(StringBuilder builder, IReadOnlyList<ConstraintInfo> constraints)
         {
             if (constraints.Count == 0)

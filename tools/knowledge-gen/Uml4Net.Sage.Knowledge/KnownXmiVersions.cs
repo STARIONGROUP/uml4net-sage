@@ -55,6 +55,9 @@ namespace Uml4Net.Sage.Knowledge
         /// <summary>
         /// Attempts to find a known version by its version string.
         /// </summary>
+        /// <param name="version">The version string to look up, e.g. "2.5.1".</param>
+        /// <param name="descriptor">The matching descriptor, or <c>null</c> when the version is unknown.</param>
+        /// <returns><c>true</c> when the version is known; otherwise <c>false</c>.</returns>
         public static bool TryFind(string version, out XmiSpecDescriptor? descriptor)
         {
             descriptor = All.FirstOrDefault(v => v.Version == version);

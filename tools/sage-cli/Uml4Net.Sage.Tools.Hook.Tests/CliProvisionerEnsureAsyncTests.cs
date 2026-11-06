@@ -37,6 +37,11 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
         private string cliDirectory = null!;
         private string runtimeIdentifier = null!;
 
+        /// <summary>
+        /// Picks a unique temporary plugin root, resolves this machine's runtime identifier and computes the
+        /// CLI cache directory for version <c>1.0.0</c>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">This machine's runtime identifier is not one of the four published.</exception>
         [SetUp]
         public void SetUp()
         {
@@ -45,6 +50,9 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             this.cliDirectory = CacheLayout.CliDirectoryFor(this.pluginRoot, "1.0.0", this.runtimeIdentifier);
         }
 
+        /// <summary>
+        /// Deletes the CLI cache directory the test created, if any.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -54,6 +62,12 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             }
         }
 
+        /// <summary>
+        /// Builds an in-memory zip archive that holds one entry.
+        /// </summary>
+        /// <param name="entryName">The name of the entry.</param>
+        /// <param name="entryContent">The bytes of the entry.</param>
+        /// <returns>The bytes of the zip archive.</returns>
         private static byte[] BuildZipContaining(string entryName, byte[] entryContent)
         {
             using var memoryStream = new MemoryStream();
@@ -67,6 +81,11 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             return memoryStream.ToArray();
         }
 
+        /// <summary>
+        /// Verifies that, given a release whose asset hash matches its checksum line, the CLI is downloaded
+        /// and extracted, the returned executable path exists, and the verified marker is written.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_downloads_verifies_and_extracts_a_matching_release()
         {
@@ -95,6 +114,11 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Assert.That(File.Exists(CacheLayout.VerifiedMarkerPath(this.cliDirectory)));
         }
 
+        /// <summary>
+        /// Verifies that, when the downloaded zip's hash differs from the release's checksum line, the result
+        /// is <c>null</c> and no cache directory is created.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_returns_null_and_does_not_extract_on_a_checksum_mismatch()
         {
@@ -121,6 +145,10 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Assert.That(Directory.Exists(this.cliDirectory), Is.False);
         }
 
+        /// <summary>
+        /// Verifies that the result is <c>null</c> when the GitHub Releases API answers 404 Not Found.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_returns_null_when_the_release_is_not_found()
         {
@@ -134,6 +162,11 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Assert.That(resultPath, Is.Null);
         }
 
+        /// <summary>
+        /// Verifies that the result is <c>null</c> when the release only has an asset for another runtime
+        /// identifier.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_returns_null_when_no_asset_matches_this_platform()
         {
@@ -154,6 +187,11 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Assert.That(resultPath, Is.Null);
         }
 
+        /// <summary>
+        /// Verifies that an <see cref="HttpRequestException"/> from the HTTP handler is swallowed and the
+        /// result is <c>null</c>.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_never_throws_when_the_http_client_itself_throws()
         {
@@ -167,6 +205,11 @@ namespace Uml4Net.Sage.Tools.Hook.Tests
             Assert.That(resultPath, Is.Null);
         }
 
+        /// <summary>
+        /// Verifies that, when the cache already holds the executable and the verified marker, the cached
+        /// executable path is returned without any HTTP call.
+        /// </summary>
+        /// <returns>A task that completes when the test has run.</returns>
         [Test]
         public async Task EnsureAsync_reuses_the_cache_without_a_network_call_once_verified()
         {

@@ -28,6 +28,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
     [TestFixture]
     public class XmiModelReaderTests
     {
+        /// <summary>
+        /// Verifies that reading <c>Fixture.xmi</c> returns the <c>Fixture</c> and <c>FixturePrimitiveTypes</c>
+        /// top-level packages.
+        /// </summary>
         [Test]
         public void Read_of_the_fixture_root_package_returns_expected_top_level_packages()
         {
@@ -39,6 +43,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That(names, Does.Contain("FixturePrimitiveTypes"));
         }
 
+        /// <summary>
+        /// Verifies that the type of <c>Widget::label</c>, defined in a sibling XMI file, resolves to the
+        /// <c>String</c> primitive type.
+        /// </summary>
         [Test]
         public void Read_resolves_cross_file_type_references_via_local_reference_base_path()
         {
@@ -52,6 +60,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests
             Assert.That((labelType as uml4net.CommonStructure.INamedElement)?.Name, Is.EqualTo("String"));
         }
 
+        /// <summary>
+        /// Verifies that, in <c>FixtureProfile.xmi</c>, the <c>base_Widget</c> attribute of the <c>Sample</c>
+        /// stereotype resolves to the <c>Widget</c> metaclass in the fixture metamodel.
+        /// </summary>
         [Test]
         public void Read_of_the_fixture_profile_resolves_the_extended_metaclass()
         {

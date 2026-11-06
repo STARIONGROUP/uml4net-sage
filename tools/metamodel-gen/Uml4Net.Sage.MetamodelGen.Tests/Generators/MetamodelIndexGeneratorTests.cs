@@ -27,6 +27,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
     [TestFixture]
     public class MetamodelIndexGeneratorTests
     {
+        /// <summary>
+        /// Verifies that the index rows are sorted ordinally by qualified name and include a class, an enumeration
+        /// and a primitive type, each with the right kind.
+        /// </summary>
         [Test]
         public void BuildRows_includes_classes_enumerations_and_primitive_types_sorted_by_qualified_name()
         {
@@ -43,6 +47,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(rows.Single(r => r.Name == "Widget").Kind, Is.EqualTo("class"));
         }
 
+        /// <summary>
+        /// Verifies that the index has a row of kind <c>association</c> for <c>A_container_gadgets</c>, pointing
+        /// at its page under <c>elements/</c>.
+        /// </summary>
         [Test]
         public void BuildRows_includes_associations()
         {
@@ -55,6 +63,9 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(associationRow.File, Is.EqualTo("elements/A_container_gadgets.md"));
         }
 
+        /// <summary>
+        /// Verifies that the metamodel index has no row for the <c>Sample</c> stereotype.
+        /// </summary>
         [Test]
         public void BuildRows_never_includes_stereotypes()
         {
@@ -65,6 +76,9 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(rows.Select(r => r.Name), Does.Not.Contain("Sample"));
         }
 
+        /// <summary>
+        /// Verifies that the serialized index is a JSON array rather than an object.
+        /// </summary>
         [Test]
         public void SerializeJson_produces_a_flat_array_not_a_keyed_map()
         {

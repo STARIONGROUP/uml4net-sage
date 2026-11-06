@@ -34,6 +34,13 @@ namespace Uml4Net.Sage.MetamodelGen
         private readonly Dictionary<string, IClass> classesByQualifiedName;
         private readonly Dictionary<string, List<string>> directSubclassesByQualifiedName;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClassGraph"/> class from precomputed lookups.
+        /// </summary>
+        /// <param name="classesByQualifiedName">The classes, keyed by qualified name.</param>
+        /// <param name="directSubclassesByQualifiedName">
+        /// The sorted qualified names of each class's direct subclasses, keyed by the class's qualified name.
+        /// </param>
         private ClassGraph(Dictionary<string, IClass> classesByQualifiedName, Dictionary<string, List<string>> directSubclassesByQualifiedName)
         {
             this.classesByQualifiedName = classesByQualifiedName;
@@ -85,6 +92,9 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Attempts to look up a catalogued class by its qualified name.
         /// </summary>
+        /// <param name="qualifiedName">The qualified name of the class to find.</param>
+        /// <param name="class">The class when found; otherwise <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> when the class is in the graph; otherwise <see langword="false"/>.</returns>
         public bool TryGetClass(string qualifiedName, out IClass? @class)
         {
             return this.classesByQualifiedName.TryGetValue(qualifiedName, out @class);
@@ -93,6 +103,10 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Gets the qualified names of the classes directly generalizing the class with the given qualified name.
         /// </summary>
+        /// <param name="qualifiedName">The qualified name of the class.</param>
+        /// <returns>
+        /// The direct superclasses' qualified names, sorted ordinally, or an empty list when the class is unknown.
+        /// </returns>
         public IReadOnlyList<string> DirectSuperClassesOf(string qualifiedName)
         {
             if (!this.classesByQualifiedName.TryGetValue(qualifiedName, out var @class))
@@ -110,6 +124,10 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Gets the qualified names of the classes directly specializing the class with the given qualified name.
         /// </summary>
+        /// <param name="qualifiedName">The qualified name of the class.</param>
+        /// <returns>
+        /// The direct subclasses' qualified names, sorted ordinally, or an empty list when the class is unknown.
+        /// </returns>
         public IReadOnlyList<string> DirectSubclassesOf(string qualifiedName)
         {
             return this.directSubclassesByQualifiedName.TryGetValue(qualifiedName, out var children) ? children : [];
@@ -118,6 +136,8 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Gets every ancestor (transitive superclass) of the class with the given qualified name, sorted.
         /// </summary>
+        /// <param name="qualifiedName">The qualified name of the class.</param>
+        /// <returns>The ancestors' qualified names, sorted ordinally; empty for a root class.</returns>
         public IReadOnlyList<string> AllAncestorsOf(string qualifiedName)
         {
             return this.Traverse(qualifiedName, this.DirectSuperClassesOf);
@@ -126,11 +146,20 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Gets every descendant (transitive subclass) of the class with the given qualified name, sorted.
         /// </summary>
+        /// <param name="qualifiedName">The qualified name of the class.</param>
+        /// <returns>The descendants' qualified names, sorted ordinally; empty for a leaf class.</returns>
         public IReadOnlyList<string> AllDescendantsOf(string qualifiedName)
         {
             return this.Traverse(qualifiedName, this.DirectSubclassesOf);
         }
 
+        /// <summary>
+        /// Collects every class reachable from <paramref name="qualifiedName"/> by repeatedly following
+        /// <paramref name="next"/>, breadth-first. Each class is visited once, so cycles terminate.
+        /// </summary>
+        /// <param name="qualifiedName">The qualified name of the starting class, which is not itself included.</param>
+        /// <param name="next">Gets the qualified names one step away from a class (its direct superclasses or subclasses).</param>
+        /// <returns>The reachable classes' qualified names, sorted ordinally.</returns>
         private List<string> Traverse(string qualifiedName, System.Func<string, IReadOnlyList<string>> next)
         {
             var visited = new HashSet<string>();

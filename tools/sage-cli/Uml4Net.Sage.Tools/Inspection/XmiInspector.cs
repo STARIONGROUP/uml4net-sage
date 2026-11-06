@@ -48,7 +48,7 @@ namespace Uml4Net.Sage.Tools.Inspection
     /// <item>A plain XML pass (<see cref="XmiDocumentScanner"/>) flags every element whose <c>xmi:type</c> is an
     /// abstract or unknown metaclass, and every duplicate <c>xmi:id</c>, with line numbers - even when
     /// <c>uml4net.xmi</c> then cannot read the file.</item>
-    /// <item>The file is read with <see cref="IXmiReaderSettings.ThrowOnUnresolvedReferences"/>, so every
+    /// <item>The file is read with <see cref="uml4net.xmi.Settings.IXmiReaderSettings.ThrowOnUnresolvedReferences"/>, so every
     /// reference the reader could not resolve comes back as a structured
     /// <see cref="XmiReferenceResolutionFailure"/> (element, property, identifier, kind). Only when there are
     /// failures is it read a second time, without throwing, to get the model for the next checks.</item>
@@ -162,6 +162,16 @@ namespace Uml4Net.Sage.Tools.Inspection
             return new InspectionReport(modelPath, umlVersion, ordered);
         }
 
+        /// <summary>
+        /// Reads the model file with <c>uml4net.xmi</c>, capturing the reader's warnings and errors.
+        /// </summary>
+        /// <param name="modelPath">The model file to read.</param>
+        /// <param name="pathMaps">The expanded <c>pathmap://</c> mappings, one entry per document URI.</param>
+        /// <param name="throwOnUnresolvedReferences">
+        /// Whether the reader throws an <see cref="UnresolvedReferencesException"/> when a reference cannot be resolved.
+        /// </param>
+        /// <param name="loggerProvider">The provider that collects the reader's log entries of level warning and above.</param>
+        /// <returns>The reader's result.</returns>
         private static XmiReaderResult Read(string modelPath, IReadOnlyDictionary<string, string> pathMaps, bool throwOnUnresolvedReferences, CapturingLoggerProvider loggerProvider)
         {
             using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(loggerProvider).SetMinimumLevel(LogLevel.Warning));
@@ -187,6 +197,12 @@ namespace Uml4Net.Sage.Tools.Inspection
             }
         }
 
+        /// <summary>
+        /// Adds a finding for every scanned element whose <c>xmi:type</c> is unknown to the metamodel or abstract.
+        /// </summary>
+        /// <param name="scan">The plain XML scan of the model file.</param>
+        /// <param name="facts">The metamodel to check against.</param>
+        /// <param name="findings">The list the findings are added to.</param>
         private static void CheckDeclaredMetaclasses(XmiDocumentScan scan, MetamodelFacts facts, List<InspectionFinding> findings)
         {
             foreach (var element in scan.Elements)
@@ -212,6 +228,11 @@ namespace Uml4Net.Sage.Tools.Inspection
             }
         }
 
+        /// <summary>
+        /// Adds a finding for every <c>xmi:id</c> declared more than once, placed at its second declaration.
+        /// </summary>
+        /// <param name="scan">The plain XML scan of the model file.</param>
+        /// <param name="findings">The list the findings are added to.</param>
         private static void CheckDuplicateXmiIds(XmiDocumentScan scan, List<InspectionFinding> findings)
         {
             foreach (var (xmiId, lines) in scan.XmiIdLines.Where(entry => entry.Value.Count > 1))
@@ -225,6 +246,14 @@ namespace Uml4Net.Sage.Tools.Inspection
             }
         }
 
+        /// <summary>
+        /// Turns each reference resolution failure into an <c>unresolved-reference</c> or <c>invalid-reference</c>
+        /// finding, with a hint about the <c>--pathmap</c> mapping for a <c>pathmap://</c> identifier.
+        /// </summary>
+        /// <param name="failures">The failures reported for the inspected document.</param>
+        /// <param name="scan">The plain XML scan of the model file, used for line numbers.</param>
+        /// <param name="pathMaps">The expanded <c>pathmap://</c> mappings.</param>
+        /// <param name="findings">The list the findings are added to.</param>
         private static void ReportResolutionFailures(
             IReadOnlyList<XmiReferenceResolutionFailure> failures,
             XmiDocumentScan scan,
@@ -261,6 +290,15 @@ namespace Uml4Net.Sage.Tools.Inspection
             }
         }
 
+        /// <summary>
+        /// Adds a <c>multiplicity-violation</c> finding for every required feature of the element's metaclass whose
+        /// value count lies outside its bounds. Properties that already have a resolution failure are skipped.
+        /// </summary>
+        /// <param name="element">The element to check.</param>
+        /// <param name="facts">The metamodel to check against.</param>
+        /// <param name="failedProperties">The element id and property name pairs that already failed to resolve.</param>
+        /// <param name="scan">The plain XML scan of the model file, used for line numbers.</param>
+        /// <param name="findings">The list the findings are added to.</param>
         private static void CheckMultiplicities(
             IElement element,
             MetamodelFacts facts,
@@ -300,6 +338,10 @@ namespace Uml4Net.Sage.Tools.Inspection
         /// Describes an element for a finding message, e.g. <c>Class 'Car' (Car)</c>, or <c>Generalization 'Car-gen'</c>
         /// for an unnamed one.
         /// </summary>
+        /// <param name="element">The element to describe.</param>
+        /// <param name="metaclass">The name of the element's metaclass.</param>
+        /// <param name="xmiId">The element's <c>xmi:id</c>.</param>
+        /// <returns>The description.</returns>
         private static string Describe(IElement element, string metaclass, string xmiId)
         {
             var name = (element as INamedElement)?.Name;
@@ -311,6 +353,12 @@ namespace Uml4Net.Sage.Tools.Inspection
         /// via the uml4net property of the same (Pascal-cased) name. A value-typed property always holds a value and
         /// is not counted.
         /// </summary>
+        /// <param name="element">The element whose values are counted.</param>
+        /// <param name="featureName">The camel-cased metamodel feature name.</param>
+        /// <param name="count">The number of non-null values, or 0 when nothing was counted.</param>
+        /// <returns>
+        /// <c>true</c> when a matching, non-value-typed public property was found and counted; otherwise <c>false</c>.
+        /// </returns>
         private static bool TryCountValues(IElement element, string featureName, out int count)
         {
             count = 0;
@@ -341,6 +389,14 @@ namespace Uml4Net.Sage.Tools.Inspection
             return true;
         }
 
+        /// <summary>
+        /// Checks every stereotype application: an unresolved target is an error, an unresolved stereotype a
+        /// warning, and a target whose metaclass the stereotype does not extend an error.
+        /// </summary>
+        /// <param name="result">The reader's result holding the stereotype applications.</param>
+        /// <param name="facts">The metamodel, used for metaclass conformance.</param>
+        /// <param name="scan">The plain XML scan of the model file, used for line numbers.</param>
+        /// <param name="findings">The list the findings are added to.</param>
         private static void CheckStereotypeApplications(XmiReaderResult result, MetamodelFacts facts, XmiDocumentScan scan, List<InspectionFinding> findings)
         {
             foreach (var application in result.XmiRoot?.StereoTypeApplications ?? [])
@@ -392,6 +448,8 @@ namespace Uml4Net.Sage.Tools.Inspection
         /// <summary>
         /// Gets the metaclasses <paramref name="stereotype"/> may be applied to: those it or any of its generals extends.
         /// </summary>
+        /// <param name="stereotype">The stereotype.</param>
+        /// <returns>The distinct metaclass names, sorted ordinally; empty when there are no extensions.</returns>
         private static IReadOnlyList<string> ExtendedMetaclassesOf(IStereotype stereotype)
         {
             var stereotypes = new List<IStereotype> { stereotype };
@@ -405,6 +463,14 @@ namespace Uml4Net.Sage.Tools.Inspection
                 .ToList();
         }
 
+        /// <summary>
+        /// Expands the given <c>pathmap://</c> mappings into one entry per document URI. A mapping whose value is not
+        /// an existing directory is kept as is, with a full path; a mapping to a directory becomes one entry for each
+        /// referenced document under its prefix.
+        /// </summary>
+        /// <param name="pathMaps">The mappings as given on the command line, or <c>null</c>.</param>
+        /// <param name="referencedDocuments">The <c>pathmap://</c> documents the model file references.</param>
+        /// <returns>The expanded mappings, keyed by document URI.</returns>
         private static Dictionary<string, string> ExpandPathMaps(IReadOnlyDictionary<string, string>? pathMaps, IReadOnlyList<string> referencedDocuments)
         {
             var expanded = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -427,6 +493,14 @@ namespace Uml4Net.Sage.Tools.Inspection
             return expanded;
         }
 
+        /// <summary>
+        /// Gets whether a captured log entry is not already covered by a structured check, so it is reported as a
+        /// <c>reader-diagnostic</c>.
+        /// </summary>
+        /// <param name="entry">The captured log entry.</param>
+        /// <returns>
+        /// <c>true</c> unless the entry comes from a structurally reported category or is a duplicate-id message.
+        /// </returns>
         private static bool IsUnreportedDiagnostic(CapturedLogEntry entry)
         {
             // duplicate ids are reported, with line numbers, from the document scan; the reader also logs those of
@@ -435,11 +509,22 @@ namespace Uml4Net.Sage.Tools.Inspection
                 && !entry.Message.Contains("is not unique within the document", StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Gets the line of the first declaration of an <c>xmi:id</c>.
+        /// </summary>
+        /// <param name="scan">The plain XML scan of the model file.</param>
+        /// <param name="xmiId">The <c>xmi:id</c>, or <c>null</c>.</param>
+        /// <returns>The line number, or <c>null</c> when the id is <c>null</c> or was not scanned.</returns>
         private static int? LineOf(XmiDocumentScan scan, string? xmiId)
         {
             return xmiId is not null && scan.XmiIdLines.TryGetValue(xmiId, out var lines) ? lines[0] : null;
         }
 
+        /// <summary>
+        /// Enumerates an element and, depth first, every element it owns directly or indirectly.
+        /// </summary>
+        /// <param name="element">The element to start from.</param>
+        /// <returns>The element followed by its owned elements.</returns>
         private static IEnumerable<IElement> Descendants(IElement element)
         {
             yield return element;

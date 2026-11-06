@@ -30,6 +30,9 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
         private ElementCatalog catalog;
         private ClassGraph graph;
 
+        /// <summary>
+        /// Builds the fixture catalog and a <see cref="ClassGraph"/> over its stereotypes before each test.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -37,6 +40,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             this.graph = ClassGraph.Build(this.catalog.Stereotypes);
         }
 
+        /// <summary>
+        /// Verifies that the page for <c>Sample</c> has a guillemet heading and names <c>Widget</c>, the
+        /// metaclass its extension points at, in the front matter and the Base metaclasses list.
+        /// </summary>
         [Test]
         public void Render_reads_the_base_metaclass_from_the_stereotypes_extension()
         {
@@ -49,6 +56,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(markdown, Does.Contain("- `Widget`"));
         }
 
+        /// <summary>
+        /// Verifies that the <c>Gadget</c> extension of <c>SpecialSample</c> is reported on SpecialSample's page
+        /// and not on the page of its general, <c>Sample</c>.
+        /// </summary>
         [Test]
         public void Render_does_not_report_a_specializing_stereotypes_extension_on_its_general()
         {
@@ -61,6 +72,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(StereotypeFileGenerator.Render(specialSample, this.graph), Does.Contain("baseMetaclasses: [\"Gadget\"]"));
         }
 
+        /// <summary>
+        /// Verifies that the front matter names the owning profile, and that only the required extension
+        /// (SpecialSample's, whose extension end has lower bound 1) is marked <c>(required)</c>.
+        /// </summary>
         [Test]
         public void Render_marks_a_required_extension_and_names_the_owning_profile()
         {
@@ -75,6 +90,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(specialSampleMarkdown, Does.Contain("- `Gadget` *(required)*"), "SpecialSample's extension end has lower bound 1");
         }
 
+        /// <summary>
+        /// Verifies that the Tagged values section lists the <c>note</c> attribute but not <c>base_Widget</c>,
+        /// the attribute that belongs to the extension.
+        /// </summary>
         [Test]
         public void Render_excludes_the_extension_end_attribute_from_tagged_values()
         {
@@ -87,6 +106,9 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(taggedValuesSection, Does.Not.Contain("base_Widget"));
         }
 
+        /// <summary>
+        /// Verifies that the Generalizations section of <c>SpecialSample</c> links to <c>Sample</c>.
+        /// </summary>
         [Test]
         public void Render_lists_a_stereotypes_direct_generalizations()
         {
@@ -98,6 +120,9 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(generalizationsSection, Does.Contain("[Sample](Sample.md)"));
         }
 
+        /// <summary>
+        /// Verifies that the Specializations section of <c>Sample</c> links to <c>SpecialSample</c>.
+        /// </summary>
         [Test]
         public void Render_lists_a_stereotypes_direct_specializations()
         {
@@ -109,6 +134,10 @@ namespace Uml4Net.Sage.MetamodelGen.Tests.Generators
             Assert.That(specializationsSection, Does.Contain("[SpecialSample](SpecialSample.md)"));
         }
 
+        /// <summary>
+        /// Verifies that the Generalizations section of <c>Sample</c>, which has no generalization, says
+        /// <c>_None._</c>.
+        /// </summary>
         [Test]
         public void Render_says_none_for_a_stereotype_with_no_generalization()
         {

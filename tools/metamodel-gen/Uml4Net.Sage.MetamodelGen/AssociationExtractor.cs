@@ -39,6 +39,8 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Converts every member end of <paramref name="association"/>, in declaration order.
         /// </summary>
+        /// <param name="association">The association whose member ends are converted.</param>
+        /// <returns>One <see cref="AssociationEndInfo"/> per member end.</returns>
         public static IReadOnlyList<AssociationEndInfo> MemberEndsOf(IAssociation association)
         {
             return association.MemberEnd

@@ -32,6 +32,9 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
         private string repositoryRoot = null!;
         private RepositoryLayout layout = null!;
 
+        /// <summary>
+        /// Picks a fresh repository root under the temp folder for each test, without creating it, and its layout.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -39,6 +42,9 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             this.layout = new RepositoryLayout(this.repositoryRoot);
         }
 
+        /// <summary>
+        /// Deletes the test's repository root if the test created it.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -48,6 +54,9 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             }
         }
 
+        /// <summary>
+        /// Verifies that <c>use</c> returns exit code 1 for a version that is fetched but not generated.
+        /// </summary>
         [Test]
         public void Use_returns_1_when_the_version_has_not_been_generated()
         {
@@ -58,6 +67,9 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(1));
         }
 
+        /// <summary>
+        /// Verifies that <c>use</c> returns exit code 0 for a generated version and records it as the default in the manifest.
+        /// </summary>
         [Test]
         public void Use_returns_0_and_updates_the_default_once_generated()
         {
@@ -71,6 +83,9 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(store.Load().Default, Is.EqualTo("2.5.1"));
         }
 
+        /// <summary>
+        /// Verifies that <c>remove</c> without <c>--force</c> returns exit code 1 for the current default version.
+        /// </summary>
         [Test]
         public void Remove_returns_1_on_the_current_default_without_force()
         {
@@ -81,6 +96,10 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             Assert.That(exitCode, Is.EqualTo(1));
         }
 
+        /// <summary>
+        /// Verifies that <c>remove --force</c> on the default version deletes its sources and knowledge folders,
+        /// keeps the shared XMI specification folders, removes the version from the manifest and returns exit code 0.
+        /// </summary>
         [Test]
         public void Remove_with_force_deletes_the_sources_and_knowledge_directories()
         {
@@ -103,6 +122,11 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
+        /// <summary>
+        /// Verifies that <c>remove --force</c> with a version that is not a registered UML version (a path escape,
+        /// the shared <c>xmi</c> folder, an empty or unknown version) returns exit code 1 and deletes nothing.
+        /// </summary>
+        /// <param name="version">The <c>--version</c> value to pass.</param>
         [TestCase("..")]
         [TestCase("xmi")]
         [TestCase("")]
@@ -133,6 +157,10 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
+        /// <summary>
+        /// Verifies that <c>remove --force</c> with an absolute folder path as the version returns exit code 1 and
+        /// leaves that folder in place.
+        /// </summary>
         [Test]
         public void Remove_with_force_refuses_an_absolute_path()
         {
@@ -149,6 +177,10 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
+        /// <summary>
+        /// Verifies that <c>remove --force</c> refuses a version that the manifest lists but that is not a registered
+        /// UML version: exit code 1, its folders kept and its manifest entry kept.
+        /// </summary>
         [Test]
         public void Remove_with_force_refuses_a_version_listed_in_the_manifest_but_not_known()
         {
@@ -169,6 +201,10 @@ namespace Uml4Net.Sage.Tools.Tests.Commands
             });
         }
 
+        /// <summary>
+        /// Verifies that <c>remove</c> without <c>--force</c> refuses the version <c>..</c> with exit code 1 and leaves
+        /// a file in the repository root in place.
+        /// </summary>
         [Test]
         public void Remove_without_force_refuses_a_parent_directory_version()
         {

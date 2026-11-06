@@ -36,6 +36,7 @@ namespace Uml4Net.Sage.Tools.Commands
         /// <summary>
         /// Builds the command.
         /// </summary>
+        /// <returns>The <c>check</c> command with its options and action.</returns>
         public static Command Build()
         {
             var command = new Command("check", "Report local fetch/generate status - offline, no network call.");

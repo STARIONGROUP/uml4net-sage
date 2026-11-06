@@ -36,6 +36,8 @@ namespace Uml4Net.Sage.Tools.Hook
         /// Reads <c>&lt;pluginRoot&gt;/.claude-plugin/plugin.json</c> and returns its
         /// <c>sageCliVersion</c> field, or <c>null</c> if the file is missing or unreadable.
         /// </summary>
+        /// <param name="pluginRoot">The plugin root directory.</param>
+        /// <returns>The pinned CLI version, or <c>null</c> if it cannot be read.</returns>
         public static string? ReadPinnedCliVersion(string pluginRoot)
         {
             try

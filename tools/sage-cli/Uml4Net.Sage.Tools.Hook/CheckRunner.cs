@@ -35,6 +35,10 @@ namespace Uml4Net.Sage.Tools.Hook
         /// Never throws: any failure (the process can't start, times out, exits non-zero, or emits
         /// unparseable output) results in a <c>null</c> return.
         /// </summary>
+        /// <param name="cliExecutablePath">The path of the provisioned CLI executable.</param>
+        /// <param name="pluginRoot">The plugin root, passed as <c>--repository-root</c>.</param>
+        /// <param name="cancellationToken">Cancels reading the output and waiting for the process to exit.</param>
+        /// <returns>The parsed <see cref="CheckResult"/>, or <c>null</c> on any failure.</returns>
         public async Task<CheckResult?> RunAsync(string cliExecutablePath, string pluginRoot, CancellationToken cancellationToken)
         {
             try

@@ -37,6 +37,8 @@ namespace Uml4Net.Sage.MetamodelGen
         /// <summary>
         /// Converts every owned constraint whose specification is an <see cref="IOpaqueExpression"/>.
         /// </summary>
+        /// <param name="namespace">The namespace whose <c>ownedRule</c> constraints are read.</param>
+        /// <returns>One <see cref="ConstraintInfo"/> per opaque-expression specification, in declaration order.</returns>
         public static IReadOnlyList<ConstraintInfo> FromNamespace(INamespace @namespace)
         {
             return FromConstraints(@namespace.OwnedRule);
@@ -46,11 +48,19 @@ namespace Uml4Net.Sage.MetamodelGen
         /// Converts a query operation's <c>bodyCondition</c> - the OCL specification that backs a derived
         /// property's accessor, e.g. <c>Connector::kind()</c> or <c>Message::messageKind()</c>.
         /// </summary>
+        /// <param name="operation">The operation whose <c>bodyCondition</c> constraints are read.</param>
+        /// <returns>One <see cref="ConstraintInfo"/> per opaque-expression specification, in declaration order.</returns>
         public static IReadOnlyList<ConstraintInfo> FromOperationBody(IOperation operation)
         {
             return FromConstraints(operation.BodyCondition);
         }
 
+        /// <summary>
+        /// Converts each <see cref="IOpaqueExpression"/> specification of <paramref name="constraints"/> to a
+        /// <see cref="ConstraintInfo"/>. Specifications of any other kind are ignored.
+        /// </summary>
+        /// <param name="constraints">The constraints to convert.</param>
+        /// <returns>The converted constraints, in declaration order.</returns>
         private static IReadOnlyList<ConstraintInfo> FromConstraints(IEnumerable<IConstraint> constraints)
         {
             var result = new List<ConstraintInfo>();

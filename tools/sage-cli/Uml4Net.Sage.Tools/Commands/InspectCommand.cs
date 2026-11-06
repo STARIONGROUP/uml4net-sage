@@ -49,6 +49,7 @@ namespace Uml4Net.Sage.Tools.Commands
         /// <summary>
         /// Builds the command.
         /// </summary>
+        /// <returns>The <c>inspect</c> command with its argument, options and action.</returns>
         public static Command Build()
         {
             var command = new Command("inspect", "Check a UML model file against the generated metamodel.");

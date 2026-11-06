@@ -109,6 +109,8 @@ namespace Uml4Net.Sage.Tools.Inspection
         /// Reads the <c>xmi:id</c>, <c>xmi:type</c> and <c>href</c> attributes of the element <paramref name="reader"/>
         /// is positioned on, leaving it positioned on that element.
         /// </summary>
+        /// <param name="reader">The reader, positioned on an element.</param>
+        /// <returns>The three attribute values; each is <c>null</c> when the element does not have it.</returns>
         private static (string? XmiId, string? XmiType, string? Href) ReadAttributes(XmlReader reader)
         {
             string? xmiId = null;
@@ -141,6 +143,12 @@ namespace Uml4Net.Sage.Tools.Inspection
             return (xmiId, xmiType, href);
         }
 
+        /// <summary>
+        /// Adds <paramref name="line"/> to the lines that declare <paramref name="xmiId"/>.
+        /// </summary>
+        /// <param name="xmiIdLines">The declaring lines of every <c>xmi:id</c> seen so far.</param>
+        /// <param name="xmiId">The declared <c>xmi:id</c>.</param>
+        /// <param name="line">The line of the declaring element.</param>
         private static void RecordXmiId(Dictionary<string, List<int>> xmiIdLines, string xmiId, int line)
         {
             if (!xmiIdLines.TryGetValue(xmiId, out var lines))
@@ -152,6 +160,11 @@ namespace Uml4Net.Sage.Tools.Inspection
             lines.Add(line);
         }
 
+        /// <summary>
+        /// Adds the document part of <paramref name="href"/>, without its fragment, when it uses the <c>pathmap://</c> scheme.
+        /// </summary>
+        /// <param name="pathmapDocuments">The <c>pathmap://</c> documents seen so far.</param>
+        /// <param name="href">The value of an <c>href</c> attribute.</param>
         private static void RecordPathmapDocument(SortedSet<string> pathmapDocuments, string href)
         {
             if (!href.StartsWith(PathmapScheme, StringComparison.Ordinal))
@@ -168,6 +181,9 @@ namespace Uml4Net.Sage.Tools.Inspection
         /// <c>xmi:type</c> when that is in a UML namespace, otherwise - for an element without <c>xmi:type</c>, such as a
         /// root <c>&lt;uml:Package&gt;</c> - its own name when the element itself is in a UML namespace.
         /// </summary>
+        /// <param name="reader">The reader, positioned on an element.</param>
+        /// <param name="xmiType">The element's <c>xmi:type</c>, or <c>null</c> when it has none.</param>
+        /// <returns>The metaclass name, or <c>null</c> when the element is not a UML element.</returns>
         private static string? MetaclassOf(XmlReader reader, string? xmiType)
         {
             if (xmiType is null)
@@ -181,6 +197,11 @@ namespace Uml4Net.Sage.Tools.Inspection
             return namespaceUri is not null && IsUmlNamespace(namespaceUri) ? xmiType[(separator + 1)..] : null;
         }
 
+        /// <summary>
+        /// Gets whether <paramref name="namespaceUri"/> is an XMI namespace.
+        /// </summary>
+        /// <param name="namespaceUri">The namespace URI.</param>
+        /// <returns><c>true</c> when the URI contains <c>/XMI</c>.</returns>
         private static bool IsXmiNamespace(string namespaceUri)
         {
             return namespaceUri.Contains("/XMI", StringComparison.Ordinal);
@@ -190,6 +211,8 @@ namespace Uml4Net.Sage.Tools.Inspection
         /// Gets whether <paramref name="namespaceUri"/> is an OMG UML or Eclipse UML2 namespace. Namespace URIs are
         /// identifiers, not locations, so only their host and path are compared, never fetched.
         /// </summary>
+        /// <param name="namespaceUri">The namespace URI.</param>
+        /// <returns><c>true</c> for an OMG UML or Eclipse UML2 namespace.</returns>
         private static bool IsUmlNamespace(string namespaceUri)
         {
             return namespaceUri.Contains("www.omg.org/spec/UML/", StringComparison.Ordinal)
