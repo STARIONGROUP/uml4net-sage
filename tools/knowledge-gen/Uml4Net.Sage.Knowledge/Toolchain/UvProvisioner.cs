@@ -110,7 +110,11 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         public FileInfo OkMarker(string version, string target) =>
             new(Path.Combine(this.BinDirectory(version, target).FullName, ".ok"));
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Ensures <c>uv</c> is cached, downloading and verifying it if necessary.
+        /// </summary>
+        /// <param name="cancellationToken">Cancels the download.</param>
+        /// <returns>The cached executable, or <c>null</c> when it could not be provisioned.</returns>
         public async Task<FileInfo?> EnsureAsync(CancellationToken cancellationToken = default)
         {
             var target = UvPlatform.CurrentTarget;

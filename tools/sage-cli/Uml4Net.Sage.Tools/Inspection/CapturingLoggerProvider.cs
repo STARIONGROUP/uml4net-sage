@@ -48,10 +48,16 @@ namespace Uml4Net.Sage.Tools.Inspection
         /// </summary>
         public IReadOnlyCollection<CapturedLogEntry> Entries => this.entries;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Creates a logger that records its entries in this provider.
+        /// </summary>
+        /// <param name="categoryName">The category of the logger's entries.</param>
+        /// <returns>A logger that adds every entry to this provider's captured entries.</returns>
         public ILogger CreateLogger(string categoryName) => new CapturingLogger(categoryName, this.entries);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Does nothing: the provider holds no resources, and its captured entries stay readable.
+        /// </summary>
         public void Dispose()
         {
         }

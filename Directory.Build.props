@@ -43,4 +43,13 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- Every member is documented where it is declared: <inheritdoc/> is not allowed (see CLAUDE.md).
+       Fails the build, naming each file, before the compiler runs. -->
+  <Target Name="ForbidInheritdoc" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <InheritdocViolation Include="@(Compile)" Condition="$([System.IO.File]::ReadAllText('%(Compile.FullPath)').ToLowerInvariant().Contains('&lt;inheritdoc'))" />
+    </ItemGroup>
+    <Error Condition="'@(InheritdocViolation)' != ''" Code="SAGE001" File="%(InheritdocViolation.FullPath)" Text="&lt;inheritdoc/&gt; is not allowed; write the member's documentation out in full." />
+  </Target>
+
 </Project>
