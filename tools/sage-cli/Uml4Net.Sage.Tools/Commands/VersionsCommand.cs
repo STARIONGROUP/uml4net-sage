@@ -42,7 +42,7 @@ namespace Uml4Net.Sage.Tools.Commands
             command.Add(GlobalOptions.RepositoryRoot);
             command.Add(GlobalOptions.Json);
 
-            command.SetAction(parseResult =>
+            command.SetAction((parseResult, cancellationToken) => JsonOutput.RunAsync(parseResult, cancellationToken, () =>
             {
                 var repositoryRoot = RepositoryRootResolver.Resolve(parseResult.GetValue(GlobalOptions.RepositoryRoot));
                 var layout = new RepositoryLayout(repositoryRoot);
@@ -62,9 +62,9 @@ namespace Uml4Net.Sage.Tools.Commands
                     };
                 }).ToList();
 
-                if (parseResult.GetValue(GlobalOptions.Json))
+                if (JsonOutput.IsRequested(parseResult))
                 {
-                    AnsiConsole.Profile.Out.Writer.WriteLine(System.Text.Json.JsonSerializer.Serialize(rows, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                    JsonOutput.Write(rows);
                     return 0;
                 }
 
@@ -88,7 +88,7 @@ namespace Uml4Net.Sage.Tools.Commands
                 AnsiConsole.MarkupLineInterpolated($"XMI {KnownXmiVersions.Current.Version} specification citation: {(xmiSpecEntry?.Generated == true ? "available" : "not available")}");
 
                 return 0;
-            });
+            }));
 
             return command;
         }

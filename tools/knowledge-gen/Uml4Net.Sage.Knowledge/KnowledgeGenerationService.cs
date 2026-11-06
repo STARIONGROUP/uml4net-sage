@@ -81,20 +81,25 @@ namespace Uml4Net.Sage.Knowledge
         /// Downloads the companion OMG XMI specification PDF and records the fetch in
         /// <c>knowledge/installed.json</c>. Unlike <see cref="FetchAsync"/>, a failure here degrades to a
         /// warning rather than throwing: XMI text is a supplementary corpus, and a rotted XMI URL must not
-        /// block the UML setup the caller actually asked for.
+        /// block the UML setup the caller actually asked for. Only the download degrades: a corrupt
+        /// <c>knowledge/installed.json</c> still throws, as it does for every other verb.
         /// </summary>
+        /// <exception cref="InvalidDataException"><c>knowledge/installed.json</c> exists but is not valid JSON.</exception>
         public async Task<XmiSpecFetchOutcome> FetchXmiSpecAsync(RepositoryLayout layout, XmiSpecDescriptor descriptor, CancellationToken cancellationToken = default)
         {
+            IReadOnlyList<FetchManifestEntry> entries;
+
             try
             {
-                var entries = await this.sourceFetcher.FetchXmiSpecAsync(descriptor, layout.SourcesRoot, cancellationToken);
-                new InstalledVersionsStore(layout.KnowledgeRoot).MarkXmiSpecFetched(descriptor.Version);
-                return new XmiSpecFetchOutcome(true, null, entries);
+                entries = await this.sourceFetcher.FetchXmiSpecAsync(descriptor, layout.SourcesRoot, cancellationToken);
             }
             catch (Exception exception) when (exception is HttpRequestException or InvalidDataException or IOException)
             {
                 return new XmiSpecFetchOutcome(false, $"Could not fetch the XMI {descriptor.Version} specification PDF: {exception.Message}", []);
             }
+
+            new InstalledVersionsStore(layout.KnowledgeRoot).MarkXmiSpecFetched(descriptor.Version);
+            return new XmiSpecFetchOutcome(true, null, entries);
         }
 
         /// <summary>

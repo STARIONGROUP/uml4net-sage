@@ -25,7 +25,6 @@ namespace Uml4Net.Sage.Tools.Commands
     using System.CommandLine;
     using System.Globalization;
     using System.IO;
-    using System.Text.Json;
 
     using Spectre.Console;
 
@@ -59,7 +58,7 @@ namespace Uml4Net.Sage.Tools.Commands
             command.Add(GlobalOptions.Version);
             command.Add(GlobalOptions.Json);
 
-            command.SetAction(parseResult =>
+            command.SetAction((parseResult, cancellationToken) => JsonOutput.RunAsync(parseResult, cancellationToken, () =>
             {
                 var version = parseResult.GetValue(GlobalOptions.Version)!;
                 var modelPath = parseResult.GetValue(PathArgument)!;
@@ -68,14 +67,12 @@ namespace Uml4Net.Sage.Tools.Commands
 
                 if (!File.Exists(metamodelJsonPath))
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[red]UML {version} has not been generated yet.[/] Run 'uml4net-sage generate --version {version}' first.");
-                    return 1;
+                    return JsonOutput.Fail(parseResult, $"UML {version} has not been generated yet. Run 'uml4net-sage generate --version {version}' first.");
                 }
 
                 if (!File.Exists(modelPath))
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[red]File not found:[/] {modelPath}");
-                    return 1;
+                    return JsonOutput.Fail(parseResult, $"File not found: {modelPath}");
                 }
 
                 var pathMaps = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -84,8 +81,7 @@ namespace Uml4Net.Sage.Tools.Commands
                     var separator = mapping.IndexOf('=');
                     if (separator <= 0 || separator == mapping.Length - 1)
                     {
-                        AnsiConsole.MarkupLineInterpolated($"[red]Invalid --pathmap '{mapping}':[/] expected <uri>=<path>, e.g. pathmap://UML_LIBRARIES=./libraries");
-                        return 1;
+                        return JsonOutput.Fail(parseResult, $"Invalid --pathmap '{mapping}': expected <uri>=<path>, e.g. pathmap://UML_LIBRARIES=./libraries");
                     }
 
                     pathMaps[mapping[..separator]] = mapping[(separator + 1)..];
@@ -93,9 +89,9 @@ namespace Uml4Net.Sage.Tools.Commands
 
                 var report = XmiInspector.Inspect(modelPath, metamodelJsonPath, version, pathMaps);
 
-                if (parseResult.GetValue(GlobalOptions.Json))
+                if (JsonOutput.IsRequested(parseResult))
                 {
-                    AnsiConsole.Profile.Out.Writer.WriteLine(JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
+                    JsonOutput.Write(report);
                     return report.Findings.Count > 0 ? 1 : 0;
                 }
 
@@ -124,7 +120,7 @@ namespace Uml4Net.Sage.Tools.Commands
 
                 AnsiConsole.Write(table);
                 return 1;
-            });
+            }));
 
             return command;
         }

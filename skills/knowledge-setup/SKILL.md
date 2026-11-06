@@ -31,6 +31,10 @@ Lists every UML version this tool knows about (today, just 2.5.1) alongside its 
 human-readable (non-`--json`) form also prints the XMI specification's own status as a footer, since
 it isn't a per-UML-version fact.
 
+With `--json`, both print one JSON document on one line. If something goes wrong (for example a
+corrupt `knowledge/installed.json`), the document is `{"error": "..."}` with a non-zero exit code;
+tell the user what it says.
+
 ## Fetching and generating
 
 Both of these make network calls / write files - **confirm with the user before running them**

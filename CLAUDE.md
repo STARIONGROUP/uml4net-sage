@@ -94,6 +94,11 @@ before bumping either).
   the project's dependencies into a managed venv itself, so an installed plugin needs neither a
   pre-existing Python nor a provisioned `.venv`. Every failure mode degrades to
   `SpecExtractionOutcome.Skipped` with a reason; it never throws or aborts the rest of `generate`.
+- **`--json` is a contract**: `check`, `versions` and `inspect` write through
+  `Commands/JsonOutput` (one line on stdout, `{"error": "..."}` on every failure, including parse
+  errors handled in `Program.Main`). Keep the PascalCase property names: the committed hook binary's
+  `CheckResult` and the skills read them, and `JsonOutputTests` pins them. The shapes are in
+  `tools/README.md`.
 - **Determinism of generated artifacts**: every generator sorts with `StringComparer.Ordinal`,
   writes LF line endings (`.gitattributes` pins this), and uses fixed `System.Text.Json` options
   (see `MetamodelJsonGenerator.SerializerOptions`) - checked by

@@ -60,7 +60,38 @@ namespace Uml4Net.Sage.Tools.Inspection
         /// </summary>
         /// <param name="metamodelJsonPath">The generated <c>metamodel.json</c>.</param>
         /// <returns>The loaded facts.</returns>
+        /// <exception cref="InvalidDataException">
+        /// The file is not valid JSON, or is JSON without the shape <c>generate</c> writes (a missing
+        /// property or a value of the wrong kind, as in a file from an older or newer sage).
+        /// </exception>
         public static MetamodelFacts Load(string metamodelJsonPath)
+        {
+            try
+            {
+                return LoadFacts(metamodelJsonPath);
+            }
+            catch (Exception exception) when (exception is JsonException or KeyNotFoundException or InvalidOperationException or FormatException)
+            {
+                throw new InvalidDataException(
+                    $"{metamodelJsonPath} is not a valid metamodel.json ({exception.Message}). Run 'uml4net-sage generate' again to rebuild it.",
+                    exception);
+            }
+        }
+
+        /// <summary>
+        /// Gets whether <paramref name="metaclass"/> is a metaclass of the metamodel at all.
+        /// </summary>
+        /// <param name="metaclass">The simple name of the metaclass.</param>
+        /// <returns><c>true</c> when the metamodel declares it.</returns>
+        public bool IsKnown(string metaclass) => this.metaclasses.ContainsKey(metaclass);
+
+        /// <summary>
+        /// Reads the facts, letting a malformed file throw whatever <see cref="JsonDocument"/> and
+        /// <see cref="JsonElement"/> throw; <see cref="Load"/> turns that into one exception.
+        /// </summary>
+        /// <param name="metamodelJsonPath">The generated <c>metamodel.json</c>.</param>
+        /// <returns>The loaded facts.</returns>
+        private static MetamodelFacts LoadFacts(string metamodelJsonPath)
         {
             using var stream = File.OpenRead(metamodelJsonPath);
             using var document = JsonDocument.Parse(stream);
@@ -89,11 +120,6 @@ namespace Uml4Net.Sage.Tools.Inspection
 
             return new MetamodelFacts(metaclasses);
         }
-
-        /// <summary>
-        /// Gets whether <paramref name="metaclass"/> is a metaclass of the metamodel at all.
-        /// </summary>
-        public bool IsKnown(string metaclass) => this.metaclasses.ContainsKey(metaclass);
 
         /// <summary>
         /// Gets whether <paramref name="metaclass"/> is abstract.

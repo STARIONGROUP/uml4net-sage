@@ -26,5 +26,31 @@ python -m venv .venv && .venv/Scripts/pip install -e ".[dev]"   # .venv/bin/pip 
 .venv/Scripts/pytest -v
 ```
 
+## `--json` output
+
+`check`, `versions` and `inspect` accept `--json`. The output is a contract that the SessionStart
+hook, the skills and scripts rely on (`JsonOutputTests` pins it):
+
+- Standard output holds **exactly one line with one JSON document**. There is no banner, progress or
+  log text, and nothing is written to standard error.
+- **Every failure** is the document `{"error": "..."}` with exit code 1. That includes a command
+  line that does not parse (with `--json`, `--json:true` or `--json=true`), a model file that is not
+  XML, a corrupt `knowledge/installed.json` or `metamodel.json`, and any unexpected error.
+- **Ctrl+C is the exception**: the process ends without writing a document. System.CommandLine only
+  handles Ctrl+C while an asynchronous verb is still running, and these verbs are synchronous. Treat
+  a missing or unparseable document as a failure.
+- Property names are PascalCase, as listed below. An absent value is written as `null`, never left
+  out. Renaming or removing a property is a breaking change; adding one is not.
+
+| Verb | Exit code | Document |
+|---|---|---|
+| `check` | 0 | `{"Default": string\|null, "HasAnyVersion": bool, "Versions": [{"Version", "Fetched", "Generated", "SpecGenerated"}], "XmiSpecs": [{"Version", "Fetched", "Generated"}]}` |
+| `versions` | 0 | `[{"Version": string, "IsCurrent", "IsDefault", "Fetched", "Generated", "SpecGenerated": bool}]`, one entry per known UML version |
+| `inspect` | 0 with no findings, 1 with findings | `{"ModelPath": string, "UmlVersion": string, "Findings": [{"Severity": "error"\|"warning", "Category": string, "ElementXmiId": string\|null, "Message": string, "Line": int\|null}]}` |
+| any | 1 | `{"error": string}` |
+
+`inspect` returns 1 both for a model with findings and for a failure. Tell them apart by the
+document: a report has `Findings`, a failure has `error`.
+
 See the root `CLAUDE.md` for coding conventions, the licensing-driven "committed vs git-ignored"
 rules, and determinism requirements for generated output.

@@ -18,18 +18,60 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------------
 
-using System.CommandLine;
-using System.Threading.Tasks;
+namespace Uml4Net.Sage.Tools
+{
+    using System.CommandLine;
+    using System.Linq;
+    using System.Threading.Tasks;
 
-using Uml4Net.Sage.Tools.Commands;
+    using Uml4Net.Sage.Tools.Commands;
 
-var root = new RootCommand("uml4net-sage: fetch, generate and query the OMG UML 2.5.1 knowledge base.");
-root.Add(VersionsCommand.Build());
-root.Add(FetchCommand.Build());
-root.Add(GenerateCommand.Build());
-root.Add(UseCommand.Build());
-root.Add(RemoveCommand.Build());
-root.Add(CheckCommand.Build());
-root.Add(InspectCommand.Build());
+    /// <summary>
+    /// The <c>uml4net-sage</c> entry point.
+    /// </summary>
+    public static class Program
+    {
+        /// <summary>
+        /// Runs the command line.
+        /// </summary>
+        /// <param name="args">The verb and its options.</param>
+        /// <returns>
+        /// The verb's exit code; 1 when a command line with <c>--json</c> does not parse, after writing the
+        /// parse errors as one <c>{"error": "..."}</c> document.
+        /// </returns>
+        public static async Task<int> Main(string[] args)
+        {
+            var parseResult = BuildRootCommand().Parse(args);
 
-return await root.Parse(args).InvokeAsync();
+            // A command line that does not parse never reaches a verb, and System.CommandLine would print
+            // its errors and help as text. A --json caller gets one error document instead. The raw
+            // arguments are all there is to go on, so any spelling of the option counts, whatever its
+            // value: 'check --json false --bogus' also gets a JSON error.
+            if (parseResult.Errors.Count > 0 && args.Any(JsonOutput.IsJsonArgument))
+            {
+                JsonOutput.WriteError(string.Join(" ", parseResult.Errors.Select(error => error.Message)));
+                return 1;
+            }
+
+            return await parseResult.InvokeAsync();
+        }
+
+        /// <summary>
+        /// Assembles the root command and its verbs.
+        /// </summary>
+        /// <returns>The root command the tool exposes.</returns>
+        internal static RootCommand BuildRootCommand()
+        {
+            var root = new RootCommand("uml4net-sage: fetch, generate and query the OMG UML 2.5.1 knowledge base.");
+            root.Add(VersionsCommand.Build());
+            root.Add(FetchCommand.Build());
+            root.Add(GenerateCommand.Build());
+            root.Add(UseCommand.Build());
+            root.Add(RemoveCommand.Build());
+            root.Add(CheckCommand.Build());
+            root.Add(InspectCommand.Build());
+
+            return root;
+        }
+    }
+}

@@ -56,6 +56,16 @@ namespace Uml4Net.Sage.Knowledge.Tests
         }
 
         [Test]
+        public void Load_of_a_corrupt_manifest_throws_an_InvalidDataException_naming_the_file()
+        {
+            Directory.CreateDirectory(this.tempDirectory);
+            var path = Path.Combine(this.tempDirectory, "installed.json");
+            File.WriteAllText(path, "{ not json");
+
+            Assert.That(() => this.store.Load(), Throws.InstanceOf<InvalidDataException>().With.Message.Contains(path));
+        }
+
+        [Test]
         public void MarkFetched_on_the_first_version_sets_it_as_default()
         {
             this.store.MarkFetched("2.5.1", setAsDefault: false);

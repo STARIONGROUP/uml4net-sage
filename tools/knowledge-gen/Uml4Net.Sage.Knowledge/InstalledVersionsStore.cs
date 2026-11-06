@@ -52,6 +52,7 @@ namespace Uml4Net.Sage.Knowledge
         /// <summary>
         /// Loads the manifest, or an empty one if it doesn't exist yet.
         /// </summary>
+        /// <exception cref="InvalidDataException">The manifest exists but is not valid JSON.</exception>
         public InstalledVersionsManifest Load()
         {
             if (!File.Exists(this.manifestPath))
@@ -60,7 +61,18 @@ namespace Uml4Net.Sage.Knowledge
             }
 
             var json = File.ReadAllText(this.manifestPath);
-            var manifest = JsonSerializer.Deserialize<InstalledVersionsManifest>(json, SerializerOptions) ?? InstalledVersionsManifest.Empty;
+            InstalledVersionsManifest manifest;
+
+            try
+            {
+                manifest = JsonSerializer.Deserialize<InstalledVersionsManifest>(json, SerializerOptions) ?? InstalledVersionsManifest.Empty;
+            }
+            catch (JsonException exception)
+            {
+                throw new InvalidDataException(
+                    $"{this.manifestPath} is not valid JSON ({exception.Message}). Delete it and run 'uml4net-sage fetch' and 'generate' again to rebuild it.",
+                    exception);
+            }
 
             // installed.json written before XmiSpecs existed deserializes that property as null, not [] -
             // coalesce so every other member never has to null-check it.
