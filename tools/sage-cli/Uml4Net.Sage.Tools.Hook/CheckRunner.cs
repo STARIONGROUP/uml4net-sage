@@ -33,12 +33,14 @@ namespace Uml4Net.Sage.Tools.Hook
         /// <summary>
         /// Runs <c>&lt;cliExecutablePath&gt; check --json --repository-root &lt;pluginRoot&gt;</c>.
         /// Never throws: any failure (the process can't start, times out, exits non-zero, or emits
-        /// unparseable output) results in a <c>null</c> return.
+        /// unparseable output) results in a <c>null</c> return. When the run is cancelled or fails
+        /// while the CLI is still running, the CLI and any process it started are killed, so nothing
+        /// outlives the hook.
         /// </summary>
-        /// <param name="cliExecutablePath">The path of the provisioned CLI executable.</param>
-        /// <param name="pluginRoot">The plugin root, passed as <c>--repository-root</c>.</param>
-        /// <param name="cancellationToken">Cancels reading the output and waiting for the process to exit.</param>
-        /// <returns>The parsed <see cref="CheckResult"/>, or <c>null</c> on any failure.</returns>
+        /// <param name="cliExecutablePath">The provisioned CLI executable.</param>
+        /// <param name="pluginRoot">The plugin repository root, passed as <c>--repository-root</c>.</param>
+        /// <param name="cancellationToken">Cancels the run; the hook passes its overall timeout.</param>
+        /// <returns>The parsed <c>check --json</c> document, or <c>null</c> on any failure.</returns>
         public async Task<CheckResult?> RunAsync(string cliExecutablePath, string pluginRoot, CancellationToken cancellationToken)
         {
             try
@@ -60,20 +62,53 @@ namespace Uml4Net.Sage.Tools.Hook
                     return null;
                 }
 
-                var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-                await process.WaitForExitAsync(cancellationToken);
-
-                if (process.ExitCode != 0)
+                try
                 {
+                    // Both streams are read while the CLI runs: an unread standard error fills its pipe
+                    // and blocks the CLI on its next write, so it would never exit.
+                    var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+                    var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+                    await process.WaitForExitAsync(cancellationToken);
+
+                    var output = await outputTask;
+                    await errorTask;
+
+                    if (process.ExitCode != 0)
+                    {
+                        return null;
+                    }
+
+                    return JsonSerializer.Deserialize(output, HookJsonContext.Default.CheckResult);
+                }
+                catch
+                {
+                    Kill(process);
                     return null;
                 }
-
-                var output = await outputTask;
-                return JsonSerializer.Deserialize(output, HookJsonContext.Default.CheckResult);
             }
             catch
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Kills <paramref name="process"/> and every process it started, if it is still running.
+        /// Never throws: the process may exit on its own at any moment.
+        /// </summary>
+        /// <param name="process">The CLI process.</param>
+        private static void Kill(Process process)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+            }
+            catch
+            {
+                // Already exited, or not ours to kill any more: either way there is nothing left to stop.
             }
         }
     }
