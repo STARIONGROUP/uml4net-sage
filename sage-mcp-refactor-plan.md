@@ -474,10 +474,10 @@ What makes that possible:
   query API's fixture knowledge base is generated in the tests from the existing `Widget` / `Gadget`
   toy XMI).
 
-One issue and one `feature/gh-<n>-...` branch per phase; a phase that is too large for one review is
+One issue and one `feature/gh-<n>-...` branch per phase, all tracked by #43; an item added to or moved in a phase here is added to or moved in its issue in the same change, so the two never need reconciling; a phase that is too large for one review is
 split along its bullets, not reordered.
 
-### Phase 0: Repository groundwork
+### Phase 0: Repository groundwork (#44)
 
 Independent of the refactor, and done first so that every later phase is recorded and checked the
 same way.
@@ -495,7 +495,7 @@ same way.
   - **Needs, before this step:** a SonarCloud project for the repository and its `SONAR_TOKEN`
     secret.
 
-### Phase 1: The knowledge library in its final shape
+### Phase 1: The knowledge library in its final shape (#45)
 
 Everything structural, and the whole write path, in one pass. No query API yet, no MCP.
 
@@ -563,7 +563,7 @@ Everything structural, and the whole write path, in one pass. No query API yet, 
       file; the extractor unpacked, kept in a checkout, replaced when it differs; the home folder
       rules (absolute path, checkout marker).
 
-### Phase 2: The query API, and the facts it needs
+### Phase 2: The query API, and the facts it needs (#46)
 
 - [ ] From 2.6's table, write down each question's arguments and answer type. Mark each fact an
       answer needs that `metamodel.json`, the indexes or the Standard Profile index do not hold.
@@ -588,7 +588,7 @@ Everything structural, and the whole write path, in one pass. No query API yet, 
       that the C# answer equals the `jq` answer (required in CI, skipped locally without `jq`); that
       is the evidence for removing `jq` in Phase 4.
 
-### Phase 3: The server and the CLI over it
+### Phase 3: The server and the CLI over it (#47)
 
 The query verbs and the MCP tools are written together, because each tool answers with the document
 its verb prints.
@@ -616,7 +616,7 @@ its verb prints.
       `serve` over stdio on the fixture knowledge base; an install with progress and a default
       switch on each axis through the real server; a lock held by another process.
 
-### Phase 4: The launcher, the skills and every client package
+### Phase 4: The launcher, the skills and every client package (#48)
 
 The whole plugin changes face in one phase, so the skills are written once, against tools that
 already answer everything.
@@ -655,7 +655,7 @@ already answer everything.
       `tools/README.md`, a README per new tool project, `knowledge/README.md`, `CLAUDE.md` and
       `.github/copilot-instructions.md` describing the result.
 
-### Phase 5: Release
+### Phase 5: Release (#49)
 
 - [ ] `release.yml` as hypha's: started by hand with a version; tests; the .NET tool package with
       its SBOM; the self-contained single-file `uml4net-sage` for five platforms; a smoke test
