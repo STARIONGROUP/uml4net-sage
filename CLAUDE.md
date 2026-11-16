@@ -30,12 +30,19 @@ dotnet test tools/metamodel-gen/Uml4Net.Sage.MetamodelGen.Tests/Uml4Net.Sage.Met
 
 # Python (tools/spec-extract only)
 cd tools/spec-extract
-python -m venv .venv
-.venv/Scripts/pip install -e ".[dev]"   # .venv/bin/pip on Linux/macOS
-.venv/Scripts/pytest -v
-.venv/Scripts/ruff check .
-.venv/Scripts/ruff format .
+uv sync --extra dev                    # .venv from uv.lock: the versions CI and `generate` use
+uv run --extra dev pytest -v
+uv run --extra dev ruff check .
+uv run --extra dev ruff format .
 ```
+
+Without uv, `python -m venv .venv` and `.venv/Scripts/pip install -e ".[dev]"` (`.venv/bin/pip` on
+Linux/macOS) also work, but install the newest versions rather than the locked ones.
+
+CI (`.github/workflows/build-test.yml`) runs on Linux: the build, the tests with coverage, a check
+that the tests left no tracked file changed, ruff, pytest with coverage, and a SonarCloud analysis
+(`STARIONGROUP_uml4net-sage`). The `uv` it installs is `UvProvisioner.PinnedVersion`; change the two
+together.
 
 **Test frameworks**: NUnit 4.x for .NET, pytest for Python. **Target**: `net10.0` for all tooling
 (confirm this still matches whatever the sibling `uml4net` repository's tooling projects target

@@ -22,8 +22,8 @@ dotnet build uml4net-sage.slnx
 dotnet test uml4net-sage.slnx
 
 cd tools/spec-extract
-python -m venv .venv && .venv/Scripts/pip install -e ".[dev]"   # .venv/bin/pip on Linux/macOS
-.venv/Scripts/pytest -v
+uv sync --extra dev                   # .venv from uv.lock: the versions CI uses
+uv run --extra dev pytest -v
 ```
 
 ## `--json` output
