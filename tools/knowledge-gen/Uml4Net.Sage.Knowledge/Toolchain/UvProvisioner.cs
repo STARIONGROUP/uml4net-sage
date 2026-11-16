@@ -116,9 +116,21 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         /// <summary>The cached <c>uv</c> executable itself.</summary>
         /// <param name="version">The uv release version.</param>
         /// <param name="target">The uv release target triple.</param>
-        /// <returns>The path of the executable in that build's cache directory, whether or not it exists.</returns>
-        public FileInfo Executable(string version, string target) =>
-            new(Path.Combine(this.BinDirectory(version, target).FullName, UvPlatform.ExecutableName(target)));
+        /// <returns>
+        /// The path of the executable in that build's cache directory, whether or not it exists. uv's zip
+        /// archives (Windows) hold the executable at their root; its tar.gz archives (Linux, macOS) hold
+        /// it in a <c>uv-&lt;target&gt;</c> folder, which is used when the executable is there and not at
+        /// the root.
+        /// </returns>
+        public FileInfo Executable(string version, string target)
+        {
+            var directory = this.BinDirectory(version, target).FullName;
+            var executableName = UvPlatform.ExecutableName(target);
+            var flat = Path.Combine(directory, executableName);
+            var wrapped = Path.Combine(directory, $"uv-{target}", executableName);
+
+            return new FileInfo(File.Exists(flat) || !File.Exists(wrapped) ? flat : wrapped);
+        }
 
         /// <summary>
         /// Written only once the cached download's checksum has been verified - its presence is what
@@ -199,6 +211,9 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
 
                 Extract(archivePath, binDirectory.FullName, target);
                 File.Delete(archivePath);
+
+                // Only now can the executable's path tell a flat archive from a wrapped one.
+                executable = this.Executable(PinnedVersion, target);
 
                 if (!OperatingSystem.IsWindows())
                 {
@@ -306,7 +321,8 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
 
         /// <summary>
         /// Extracts the zip or tar.gz archive into <paramref name="destination"/>, overwriting existing
-        /// files. Every uv release target's archive is flat (no wrapping folder) - verified live.
+        /// files. A zip holds the executable at its root, a tar.gz in a <c>uv-&lt;target&gt;</c> folder;
+        /// <see cref="Executable"/> finds it in either.
         /// </summary>
         /// <param name="archivePath">The downloaded archive.</param>
         /// <param name="destination">The directory to extract into.</param>

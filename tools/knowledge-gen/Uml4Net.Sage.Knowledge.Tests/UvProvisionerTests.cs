@@ -21,6 +21,7 @@
 namespace Uml4Net.Sage.Knowledge.Tests
 {
     using System;
+    using System.Formats.Tar;
     using System.IO;
     using System.IO.Compression;
     using System.Net;
@@ -55,21 +56,38 @@ namespace Uml4Net.Sage.Knowledge.Tests
         }
 
         /// <summary>
-        /// Builds an in-memory zip archive with one entry. The archive is always a zip, whatever
-        /// <paramref name="target"/> is.
+        /// Builds an in-memory archive laid out as uv publishes one for <paramref name="target"/>: a
+        /// zip with the entry at its root on Windows, a tar.gz with the entry in a
+        /// <c>uv-&lt;target&gt;</c> folder elsewhere.
         /// </summary>
-        /// <param name="target">The uv release target triple; not used.</param>
+        /// <param name="target">The uv release target triple, which decides the format and layout.</param>
         /// <param name="entryName">The name of the single entry.</param>
         /// <param name="entryContent">The content of the single entry.</param>
-        /// <returns>The zip archive's bytes.</returns>
+        /// <returns>The archive's bytes.</returns>
         private static byte[] BuildArchiveContaining(string target, string entryName, byte[] entryContent)
         {
             using var memoryStream = new MemoryStream();
-            using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, leaveOpen: true))
+
+            if (UvPlatform.IsZip(target))
             {
-                var entry = archive.CreateEntry(entryName);
-                using var entryStream = entry.Open();
-                entryStream.Write(entryContent);
+                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, leaveOpen: true))
+                {
+                    var entry = archive.CreateEntry(entryName);
+                    using var entryStream = entry.Open();
+                    entryStream.Write(entryContent);
+                }
+
+                return memoryStream.ToArray();
+            }
+
+            using (var gzip = new GZipStream(memoryStream, CompressionLevel.Fastest, leaveOpen: true))
+            using (var tar = new TarWriter(gzip, TarEntryFormat.Pax, leaveOpen: true))
+            {
+                var entry = new PaxTarEntry(TarEntryType.RegularFile, $"uv-{target}/{entryName}")
+                {
+                    DataStream = new MemoryStream(entryContent),
+                };
+                tar.WriteEntry(entry);
             }
 
             return memoryStream.ToArray();
@@ -104,6 +122,26 @@ namespace Uml4Net.Sage.Knowledge.Tests
             Assert.That(executable, Is.Not.Null);
             Assert.That(File.Exists(executable!.FullName));
             Assert.That(File.Exists(provisioner.OkMarker(UvProvisioner.PinnedVersion, this.target).FullName));
+        }
+
+        [TestCase(false, TestName = "Executable_is_at_the_root_of_a_flat_archive")]
+        [TestCase(true, TestName = "Executable_is_in_the_target_folder_of_a_wrapped_archive")]
+        public void Executable_finds_the_executable_of_a_flat_or_a_wrapped_archive(bool wrapped)
+        {
+            // uv's zip archives are flat and its tar.gz archives wrap the executable in uv-<target>/;
+            // this checks both on whichever platform the tests run, not only the one it downloads for.
+            var provisioner = new UvProvisioner(new HttpClient(new StubHttpMessageHandler()), this.cacheRoot);
+            var binDirectory = provisioner.BinDirectory(UvProvisioner.PinnedVersion, this.target).FullName;
+            var executableName = UvPlatform.ExecutableName(this.target);
+            var expected = wrapped
+                ? Path.Combine(binDirectory, $"uv-{this.target}", executableName)
+                : Path.Combine(binDirectory, executableName);
+            Directory.CreateDirectory(Path.GetDirectoryName(expected)!);
+            File.WriteAllText(expected, "fake uv");
+
+            var executable = provisioner.Executable(UvProvisioner.PinnedVersion, this.target);
+
+            Assert.That(executable.FullName, Is.EqualTo(expected));
         }
 
         [Test]
