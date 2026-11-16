@@ -356,3 +356,8 @@ __pycache__/
 *.egg-info/
 /tools/spec-extract/.venv/
 /tools/spec-extract/dist/
+
+# Coverage reports written by CI's test steps (dotnet-coverage at the root, pytest-cov in spec-extract)
+/coverage.xml
+/tools/spec-extract/coverage.xml
+/tools/spec-extract/.coverage
