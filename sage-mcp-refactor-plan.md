@@ -210,11 +210,11 @@ Reading it:
 ### 2.4 Solution structure
 
 Hypha's tree, with the names changed. Every hypha path has its Sage path, read from hypha's source
-at `b150219`:
+at `14d19e3`:
 
 | hypha | Sage |
 | --- | --- |
-| `mycelium-hypha.sln`: a `tools` solution folder, one subfolder per project pair | `uml4net-sage.slnx` (2.10), with the same folders |
+| `mycelium-hypha.slnx`: its platforms, a `tools` solution folder, and one subfolder per project pair, in alphabetical order | `uml4net-sage.slnx`, the same |
 | `tools/knowledge-gen/Hypha.Knowledge` and `.Tests` | `tools/knowledge-gen/Uml4Net.Sage.Knowledge` and `.Tests` |
 | `tools/metamodel-gen/Hypha.Knowledge.Metamodel` and `.Tests` | `tools/metamodel-gen/Uml4Net.Sage.Knowledge.Metamodel` and `.Tests` |
 | `tools/hypha-mcp/Hypha.Mcp` and `.Tests` | `tools/sage-mcp/Uml4Net.Sage.Mcp` and `.Tests` |
@@ -248,7 +248,7 @@ Each project file has hypha's shape for that project: `RootNamespace`, `Assembly
 and the embedded resources. What hypha repeats in every project file (target framework, language
 version, nullable, implicit usings) stays in Sage's `Directory.Build.props` (2.10).
 
-Packages: hypha's `Directory.Packages.props`, its packages at its versions. At `b150219` that adds
+Packages: hypha's `Directory.Packages.props`, its packages at its versions. At `14d19e3` that adds
 `Handlebars.Net`, `Microsoft.Extensions.DependencyInjection.Abstractions`,
 `Microsoft.Extensions.Http.Resilience`, `Microsoft.Extensions.Logging.Abstractions`,
 `Microsoft.Sbom.Targets`, `ModelContextProtocol`, `Spectre.Console.Testing`, `uml4net.Extensions`
@@ -574,7 +574,6 @@ The only places Sage differs from hypha's source. Anything else that differs is 
 
 | hypha | Sage | Why |
 | --- | --- | --- |
-| `mycelium-hypha.sln` | `uml4net-sage.slnx` | Decided: keep the newer format Sage already uses |
 | No `Directory.Build.props` or `.editorconfig`; each project file sets the target framework, language version, nullable and implicit usings (enabled) | `Directory.Build.props` (implicit usings disabled) and `.editorconfig` kept | Decided: keep. A ported file that relies on hypha's implicit usings gets them written out, and nothing else in it changes |
 | `.github/scripts/first_start.py` | The First start check written in C# | `CLAUDE.md`: Python only in `tools/spec-extract` |
 | Branches `GH<n>` | Branches `feature/gh-<n>-<name>` and `fix/gh-<n>-<name>` | Sage's practice since its first pull request, and in its `CLAUDE.md` and `CONTRIBUTING.md` |
