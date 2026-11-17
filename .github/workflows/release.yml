@@ -45,7 +45,7 @@ jobs:
           echo "line=uml4net-sage-${{ steps.version.outputs.version }}-${{ matrix.rid }}.zip sha256:$hash" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-${{ matrix.rid }}
           path: |
@@ -56,7 +56,7 @@ jobs:
         run: echo "${{ steps.checksum.outputs.line }}" > checksum-${{ matrix.rid }}.txt
 
       - name: Upload checksum
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: checksum-${{ matrix.rid }}
           path: checksum-${{ matrix.rid }}.txt
