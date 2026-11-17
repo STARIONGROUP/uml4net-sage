@@ -4,11 +4,14 @@ Goal: one implementation of Sage for every AI client (Claude Code, GitHub Copilo
 Gemini CLI, Claude Desktop, ...), exposed in one way: an MCP server, as mycelium-hypha does since its
 tools 2.0.0 / plugin 3.0.0.
 
-Reference: `mycelium-hypha` on `development` (commit `b150219`). Its own plan,
-`hypha-mcp-refactor-plan.md`, was removed once done; read it with
-`git show 9309280^:hypha-mcp-refactor-plan.md` in that repository. This file takes its target
-architecture and says where Sage differs, but not its ten steps: with the target known, Sage gets
-there in six phases (section 3). Section 2.9 lists, item by item, what "on par with hypha" means.
+Reference: the source of [mycelium-hypha](https://github.com/mycelium-cmbse/mycelium-hypha) on its
+`development` branch (commit `b150219` when this plan was written; on the maintainer's machine a
+sibling checkout at `../../mycelium/mycelium-hypha`). Sage takes hypha's architecture, its solution
+structure and its code, by the rule of section 2.0, and differs only where section 2.10 says so and
+why. Hypha's own plan, `hypha-mcp-refactor-plan.md`, was removed once done (`git show
+9309280^:hypha-mcp-refactor-plan.md` in that repository); it is history, not a reference. With the
+target known, Sage gets there in six phases (section 3). Section 2.9 lists, item by item, what "on
+par with hypha" means.
 
 Unchanged decision: all knowledge is generated on the user's machine from OMG's own files. Nothing
 generated is distributed (see `CLAUDE.md`, "Committed vs git-ignored").
@@ -53,6 +56,50 @@ What hypha has that Sage does not need:
 
 ## 2. Target architecture
 
+### 2.0 How Sage follows hypha
+
+The rule, for every phase and every pull request:
+
+1. **Hypha's source is the reference**: not this plan, not hypha's wiki or its old plan, and not
+   anyone's memory of either. Before porting anything, read the files in a clone of hypha at the
+   head of its `development`. Where this plan describes hypha and the source says otherwise, the
+   source wins, and the plan is corrected in the same pull request.
+2. **Where Sage does what hypha does, Sage's code is hypha's code**: the same files, folders, types,
+   members, tests and comments, with only the names of section 2.4 changed. Port file by file and
+   keep each file's shape, so that the two can be compared side by side. Do not rewrite, simplify or
+   improve a hypha file while porting it; an improvement goes to hypha first and then comes across.
+3. **A divergence is allowed only where Sage requires something different**: UML and XMI instead of
+   SysML v2, omg.org instead of GitHub, OMG's licensing, Sage's own features, and the decisions
+   recorded in 2.10. Every divergence is an entry in 2.10 with its reason. A difference from hypha
+   that has no entry there is a defect, whatever its merit.
+4. **Sage code that does what hypha does is replaced, not adapted.** Parts of Sage started as copies
+   of hypha in September 2026 (the `uv` provisioner, the specification extractor) and drifted: hypha
+   fixed the `uv-<target>` archive layout, added logging and moved `uv` into `toolchain/`, and Sage
+   did not follow. Such code is replaced by hypha's current files in the phase that owns it.
+5. **Each pull request says what it ported**: the hypha commit it read, which hypha file each Sage
+   file comes from, and the 2.10 entries it relies on.
+6. **Hypha keeps moving.** At the start of each phase, compare against hypha's current `development`,
+   not the commit this plan names, and bring its changes to files Sage already ported across in that
+   phase.
+
+File headers are hypha's, on every `.cs` and `.py` file (decided 17 November 2026):
+
+```
+// ------------------------------------------------------------------------------------------------
+// <copyright file="FileName.cs" company="Starion Group S.A.">
+//
+//   Copyright 2026 Starion Group S.A.
+//   SPDX-License-Identifier: Apache-2.0
+//
+// </copyright>
+// ------------------------------------------------------------------------------------------------
+```
+
+```
+# Copyright 2026 Starion Group S.A.
+# SPDX-License-Identifier: Apache-2.0
+```
+
 ### 2.1 Principles (hypha's ten, unchanged)
 
 1. **One binary**: a single self-contained `uml4net-sage` per platform, holding the CLI verbs and the
@@ -80,15 +127,15 @@ is today.
 
 | Component | Kind | Role | Comes from |
 | --- | --- | --- | --- |
-| `Uml4Net.Sage.Knowledge` (`tools/knowledge-gen`) | Library | Reading: layout, installed versions, contracts and typed readers, query API, lookup, search, addressing, grounding. Writing: fetch, generator orchestration, the specification and cross-reference generators, install / use / remove, the lock | Exists; gains the read side |
-| `Uml4Net.Sage.Knowledge.Metamodel` (`tools/metamodel-gen`) | Library | XMI to `metamodel/` and `standard-profile/`, with uml4net | `Uml4Net.Sage.MetamodelGen`, renamed |
-| `Uml4Net.Sage.Inspection` (`tools/inspection`) | Library | `XmiInspector`, `XmiDocumentScanner`, `MetamodelFacts`, findings | Moved out of `Uml4Net.Sage.Tools/Inspection` |
-| `Uml4Net.Sage.Mcp` (`tools/sage-mcp`) | Library | MCP tools, resources, prompts, `instructions` | New |
-| `Uml4Net.Sage.Tools` (`tools/sage-cli`) | Executable `uml4net-sage` | CLI verbs and `serve` | Exists; gains `serve`, `query`, `lookup` and the `xmi` verbs; also packed as a .NET tool |
-| `Uml4Net.Sage.Launcher` (`tools/sage-launcher`) | Executable `sage-launch`, NativeAOT | Downloads the matching `uml4net-sage` once, then runs `uml4net-sage serve` | `Uml4Net.Sage.Tools.Hook`'s `CliProvisioner`, `ChecksumTable`, `CacheLayout`, `GitHubRelease`, `RuntimeIdentifier` |
-| `tools/spec-extract` | Python | PDF to clause text, run through `uv` | Exists; also embedded in the knowledge library (Phase 1) |
-| `skills/` | Markdown | Grounding discipline, when to cite or reason | Rewritten over the tools |
-| `extensions/vscode` | VS Code extension (TypeScript) | Bundles `uml4net-sage` and registers its `serve` as an MCP server definition provider for Copilot. No tools, commands or storage of its own; the server reads the home folder like every other client | New, ported from hypha's `extensions/vscode` |
+| `Uml4Net.Sage.Knowledge` (`tools/knowledge-gen`) | Library | Reading: layout, installed versions, contracts and typed readers, query API, lookup, search, addressing, grounding. Writing: fetch, generator orchestration, the specification and cross-reference generators, install / use / remove, the lock | hypha's `Hypha.Knowledge`; Sage's current classes are replaced by hypha's |
+| `Uml4Net.Sage.Knowledge.Metamodel` (`tools/metamodel-gen`) | Library | XMI to `metamodel/` and `standard-profile/`, with uml4net | hypha's `Hypha.Knowledge.Metamodel`, its Handlebars generators and templates; Sage's `Uml4Net.Sage.MetamodelGen` is renamed into it and keeps only what UML needs beyond hypha (2.10) |
+| `Uml4Net.Sage.Inspection` (`tools/inspection`) | Library | `XmiInspector`, `XmiDocumentScanner`, `MetamodelFacts`, findings | Sage's own (2.10), moved out of `Uml4Net.Sage.Tools/Inspection` |
+| `Uml4Net.Sage.Mcp` (`tools/sage-mcp`) | Library | MCP tools, resources, prompts, `instructions` | hypha's `Hypha.Mcp` |
+| `Uml4Net.Sage.Tools` (`tools/sage-cli`) | Executable `uml4net-sage` | CLI verbs and `serve` | hypha's `Hypha.Tools`; Sage's verbs are replaced by hypha's, and `inspect` stays (2.10); also packed as a .NET tool |
+| `Uml4Net.Sage.Launcher` (`tools/sage-launcher`) | Executable `sage-launch`, NativeAOT | Downloads the matching `uml4net-sage` once, then runs `uml4net-sage serve` | hypha's `Hypha.Launcher`, not Sage's hook |
+| `tools/spec-extract` | Python | PDF to clause text, run through `uv` | hypha's `tools/spec-extract`, with Sage's adaptations to the UML and XMI PDFs (2.10); embedded in the knowledge library |
+| `skills/` | Markdown | Grounding discipline, when to cite or reason | Rewritten over the tools, in the shape of hypha's skills |
+| `extensions/vscode` | VS Code extension (TypeScript) | Bundles `uml4net-sage` and registers its `serve` as an MCP server definition provider for Copilot. No tools, commands or storage of its own; the server reads the home folder like every other client | hypha's `extensions/vscode` |
 
 Retired: `Uml4Net.Sage.Tools.Hook`, `hooks/native/`, `agents/`, `jq`, the `sageCliVersion` field and
 the `hooks` block of `.claude-plugin/plugin.json`, `RepositoryRootResolver`'s `CLAUDE_PLUGIN_ROOT`
@@ -160,7 +207,55 @@ Reading it:
   runs and the extractor write there, under one lock. Only `Uml4Net.Sage.Inspection` reads a file of
   the user's.
 
-### 2.4 Project dependencies
+### 2.4 Solution structure
+
+Hypha's tree, with the names changed. Every hypha path has its Sage path, read from hypha's source
+at `b150219`:
+
+| hypha | Sage |
+| --- | --- |
+| `mycelium-hypha.sln`: a `tools` solution folder, one subfolder per project pair | `uml4net-sage.slnx` (2.10), with the same folders |
+| `tools/knowledge-gen/Hypha.Knowledge` and `.Tests` | `tools/knowledge-gen/Uml4Net.Sage.Knowledge` and `.Tests` |
+| `tools/metamodel-gen/Hypha.Knowledge.Metamodel` and `.Tests` | `tools/metamodel-gen/Uml4Net.Sage.Knowledge.Metamodel` and `.Tests` |
+| `tools/hypha-mcp/Hypha.Mcp` and `.Tests` | `tools/sage-mcp/Uml4Net.Sage.Mcp` and `.Tests` |
+| `tools/hypha-cli/Hypha.Tools` and `.Tests`: assembly and command `hypha`, package `Hypha.Tools` | `tools/sage-cli/Uml4Net.Sage.Tools` and `.Tests`: assembly and command `uml4net-sage`, package `Uml4Net.Sage.Tools` |
+| `tools/hypha-launcher/Hypha.Launcher` and `.Tests`: assembly `hypha-launch` | `tools/sage-launcher/Uml4Net.Sage.Launcher` and `.Tests`: assembly `sage-launch` |
+| no counterpart | `tools/inspection/Uml4Net.Sage.Inspection` and `.Tests` (2.10) |
+| `tools/spec-extract` | `tools/spec-extract` |
+| `tools/README.md`, `tools/hypha-cli/README.md`, `tools/hypha-cli/Hypha.Tools/README.md` (the package's), `tools/hypha-launcher/README.md`, `tools/metamodel-gen/README.md`, `tools/spec-extract/README.md` | The same files at the same places, plus `tools/inspection/README.md` |
+| Root: `Directory.Packages.props`, `NuGet.config`, `CHANGELOG.md`, `RELEASING.md`, `CITATION.cff`, `CLAUDE.md`, `CODE_OF_CONDUCT.md`, `LICENSE`, `NOTICE`, `README.md`, and the packaging files of 2.8 | The same; `Nuget.Config` is renamed `NuGet.config`. Also `Directory.Build.props` and `.editorconfig` (2.10). `coverlet.runsettings` goes: hypha has none, and CI collects coverage with `dotnet-coverage` |
+
+Inside the projects, hypha's folders:
+
+- **`Uml4Net.Sage.Knowledge`**: `HyphaKnowledgeOptions.cs` and `ServiceCollectionExtensions.cs` at
+  the root (as `SageKnowledgeOptions.cs` and `ServiceCollectionExtensions.cs`); `Layout/`,
+  `Toolchain/`, `Hosting/`, `Progress/`, `Generation/`, `Lookup/`, `Query/`, `Specification/`,
+  `CrossReferences/` and `Metamodel/` as hypha's; `Releases/` as `Versions/` and `Api/` as `Xmi/`
+  (2.10); `StandardProfile/` is Sage's (2.10). Not ported: `Grammar/`, `Keywords/`,
+  `ModelLibrary/`, `TextualNotation/`, `Migration/` (2.10).
+- **`Uml4Net.Sage.Knowledge.Metamodel`**: `Generation/`, `Generators/`, `Templates/`,
+  `XmiModelReader.cs`, `ServiceCollectionExtensions.cs`.
+- **`Uml4Net.Sage.Mcp`**: `Tools/`, `Resources/`, `Prompts/`, `ServerInstructions.cs`,
+  `ServiceCollectionExtensions.cs`.
+- **`Uml4Net.Sage.Tools`**: `Commands/` (with `Commands/Xmi/` where hypha has `Commands/Api/`),
+  `Hosting/`, `Program.cs`, `README.md`.
+- **`Uml4Net.Sage.Launcher`**: hypha's files at the root and `Provisioning/`.
+- **Test projects**: as hypha's, test classes at the project root, with `Fixtures/` and, for the
+  metamodel, `Expected/`.
+
+Each project file has hypha's shape for that project: `RootNamespace`, `AssemblyName`, the
+`Assembly`, `Package` and `Publish` property groups, the package references, `InternalsVisibleTo`
+and the embedded resources. What hypha repeats in every project file (target framework, language
+version, nullable, implicit usings) stays in Sage's `Directory.Build.props` (2.10).
+
+Packages: hypha's `Directory.Packages.props`, its packages at its versions. At `b150219` that adds
+`Handlebars.Net`, `Microsoft.Extensions.DependencyInjection.Abstractions`,
+`Microsoft.Extensions.Http.Resilience`, `Microsoft.Extensions.Logging.Abstractions`,
+`Microsoft.Sbom.Targets`, `ModelContextProtocol`, `Spectre.Console.Testing`, `uml4net.Extensions`
+and `uml4net.Reporting` to Sage, raises `uml4net.xmi` from 9.1.0 to 9.2.0 among others, and removes
+Sage's `Polly`, `Polly.Extensions.Http`, `Microsoft.Extensions.Http`,
+`Microsoft.Extensions.Http.Polly`, `Serilog`, `NUnit.Console` and `coverlet.msbuild`, which hypha
+does without. Sage adds a package only for a 2.10 entry.
 
 Which project references which, after the change. The one difference from hypha is
 `Uml4Net.Sage.Inspection`; today the arrow between the first two runs the other way.
@@ -423,25 +518,64 @@ What "on par" means, item by item. Anything not in this table is not in hypha ei
 | CI: locked `uv`, "the tests wrote nothing", `jq` required, extension jobs on three systems, SonarCloud | The same |
 | CHANGELOG, RELEASING, CONTRIBUTING, templates, dependabot, copilot-instructions, wiki | The same |
 
-Deliberately not ported, because Sage has nothing for it to act on:
-
-| hypha has | Why Sage does not |
-| --- | --- |
-| `hypha_check_releases`, `discover`, GitHub tag discovery, the rate-limit notice, `--token` | Sage's versions are a registry compiled into the CLI and fetched from fixed omg.org addresses; a new UML version arrives with a new tools release |
-| `hypha_diff` | One UML version. It becomes a question on an existing tool the day a second version is registered |
-| `hypha_syntax`, the grammar, keywords, the model library, worked examples | No UML counterpart |
-| `hypha_api`, the PIM, OpenAPI | No UML counterpart; the `xmi` axis takes the second version line |
-| `move-window`, the release window | One version |
-| The migration, `migrate`, `leftOut` | Nothing of 1.x can be copied (2.5) |
-
-What Sage has beyond hypha: `uml4net_sage_inspect`, `uml4net_sage_association`,
-`uml4net_sage_stereotype`, `uml4net_sage_xmi_schema`, `datapackage.json`.
+What hypha has that Sage does not port, and what Sage has beyond hypha, are in 2.10, each with its
+reason.
 
 **Done means** what hypha's own release was verified to: the First start workflow green on five
 platforms, and by hand Claude Code and VS Code with Copilot on Windows. hypha has not yet verified
 the Agent Plugin install, Gemini CLI, the `.mcpb` in Claude Desktop, Codex's sandbox, or the
 extension on macOS and Windows on Arm (its #259); Sage ships those in the same unverified state and
 tracks them in one follow-up issue, outside this plan.
+
+### 2.10 Divergences from hypha
+
+The only places Sage differs from hypha's source. Anything else that differs is a defect (2.0).
+"Decided" entries were taken with the maintainer on 16 and 17 November 2026.
+
+**Names**
+
+| hypha | Sage | Why |
+| --- | --- | --- |
+| `Hypha.*` namespaces and projects; command `hypha`; `hypha-launch`; `HYPHA_HOME`, `HYPHA_BIN`; `hypha://`; repository `mycelium-cmbse/mycelium-hypha`, marketplace `mycelium` | `Uml4Net.Sage.*`; `uml4net-sage`; `sage-launch`; `UML4NET_SAGE_HOME`, `UML4NET_SAGE_BIN`; `sage://`; `STARIONGROUP/uml4net-sage`, marketplace `uml4net` | The product. Decided: `UML4NET_SAGE_HOME`, since other software is also called Sage |
+| Tool prefix `hypha_`, server name `hypha` | Prefix `uml4net_sage_`, server name `sage` | Decided. Claude Code joins plugin, server and tool name into one name of at most 64 characters; with server `sage` that leaves 20 characters after the prefix (2.6) |
+| "Release" in types, folders, verbs and tools (`IReleaseOperations`, `ReleaseStatus`, `Releases/`, `--tag`, `hypha_install_release`) | "Version" (`IVersionOperations`, `VersionStatus`, `Versions/`, `--version`, `uml4net_sage_install_version`) | Decided. OMG calls UML's editions versions (2.5.1); a SysML release is a tag. Names only: the structure and behaviour are hypha's |
+
+**What UML and OMG require**
+
+| hypha | Sage | Why |
+| --- | --- | --- |
+| The Systems Modeling API as the second version line: `Api/`, `IApiOperations`, `axis: api`, `hypha api ...`, `hypha_api`, the PIM and OpenAPI generators | The XMI specification as the second line: `Xmi/`, `IXmiSpecOperations`, `axis: xmi`, `uml4net-sage xmi ...`, `uml4net_sage_xmi_schema` and the XSD reader | Decided: two version lines, as hypha. UML has no API; its companion standard is XMI |
+| Upstream discovery: GitHub tags (`ReleaseDiscovery`, `CommitResolver`, `ReleaseCatalog`), the token and rate limit, `discover`, `check` against upstream, `hypha_check_releases` | A registry compiled into the CLI (`KnownUmlVersions`, `KnownXmiVersions`) with fixed omg.org addresses; `check` reports local state only | OMG publishes at fixed addresses, without tags or an API. A new UML version arrives with a tools release |
+| `Grammar/`, `Keywords/`, `TextualNotation/`, `ModelLibrary/`, worked examples, `hypha_syntax` | Not ported | UML has no textual notation and no model library in its sources |
+| `hypha_diff`, `move-window` and the release window | Not ported | One UML version is registered. The diff becomes a question on an existing tool when a second one is |
+| `Migration/`, `migrate`, `leftOut` | Not ported | Decided: plugin 1.x wrote no `schemaVersion`, so hypha's migration would copy nothing (2.5) |
+| Cross-references from the grammar: clause, production, feature-assignment and example edges | Clause edges only, matched on clause titles (`clause-title`); hypha's document types without the grammar and example edges | UML has no grammar; its specification has one "Classifier Descriptions" subclause per metaclass |
+| Metamodel generators for SysML's kinds, including `PimGenerator` and `ModelVocabulary` | hypha's generators for the kinds UML's metamodel has, plus associations, the Standard Profile and its stereotypes | UML's metamodel has associations and a Standard Profile; it has no PIM |
+| `tools/spec-extract` tuned to the SysML v2 and KerML PDFs | hypha's pipeline with Sage's adaptations to the UML and XMI PDFs, each listed here when Phase 1 brings the extractor level with hypha's | Different documents, different layouts |
+
+**What Sage adds**
+
+| Sage | Why |
+| --- | --- |
+| `Uml4Net.Sage.Inspection`, the `inspect` verb, `uml4net_sage_inspect`, its prompt | Checking a user's UML model file is a Sage feature; hypha validates notation through a skill instead |
+| `uml4net_sage_association`, `uml4net_sage_stereotype`, the association and stereotype pages, `StandardProfile/` | UML's metamodel content (above) |
+| `datapackage.json` | An existing Sage output; no tool reads through it |
+
+**Licensing**
+
+| hypha | Sage | Why |
+| --- | --- | --- |
+| `sources/PrimitiveTypes.xmi` committed and embedded in `Hypha.Knowledge` | `PrimitiveTypes.xmi` fetched from omg.org with each version; nothing of OMG's committed | `CLAUDE.md`: no OMG file is committed until OMG's position on its machine-readable files is confirmed |
+| A real release's XMI committed as the metamodel test fixture, with `Expected/` golden files from it | `Expected/` golden files from Sage's hand-written toy fixture | The same |
+
+**Build and process**
+
+| hypha | Sage | Why |
+| --- | --- | --- |
+| `mycelium-hypha.sln` | `uml4net-sage.slnx` | Decided: keep the newer format Sage already uses |
+| No `Directory.Build.props` or `.editorconfig`; each project file sets the target framework, language version, nullable and implicit usings (enabled) | `Directory.Build.props` (implicit usings disabled) and `.editorconfig` kept | Decided: keep. A ported file that relies on hypha's implicit usings gets them written out, and nothing else in it changes |
+| `.github/scripts/first_start.py` | The First start check written in C# | `CLAUDE.md`: Python only in `tools/spec-extract` |
+| Branches `GH<n>` | Branches `feature/gh-<n>-<name>` and `fix/gh-<n>-<name>` | Sage's practice since its first pull request, and in its `CLAUDE.md` and `CONTRIBUTING.md` |
 
 ---
 
@@ -465,11 +599,9 @@ What makes that possible:
 - **Work backwards from the tools.** The tool table fixes the query methods, which fix the facts
   `metamodel.json` must hold, which fix the contracts. They are written in that order of dependency,
   once, in Phases 1 and 2.
-- **Port, do not re-derive.** Where hypha has the finished code, copy it with the names changed and
-  its tests, then delete what Sage does not need: the launcher, `ReaderSafeFile`, the release lock,
-  `KnowledgeProgress`, `DocumentCache`, the options and DI registration, the MCP answer, refusal
-  and progress plumbing, the `axis` argument, the manifest rendering and its tests, the launcher
-  dispatch script, the VS Code extension, the workflows, `RELEASING.md`, `docs/other-clients.md`.
+- **Port, do not re-derive** (2.0). Each phase names the hypha source it ports. Copy those files
+  with the names of 2.4 and their tests, take out only what 2.10 says Sage does not have, and
+  replace the Sage code they supersede.
 - **`CLAUDE.md` still holds.** Python only in `tools/spec-extract`; no OMG-derived fixtures (the
   query API's fixture knowledge base is generated in the tests from the existing `Widget` / `Gadget`
   toy XMI).
@@ -499,6 +631,12 @@ same way.
 
 Everything structural, and the whole write path, in one pass. No query API yet, no MCP.
 
+Ports from hypha: the root, `Layout/`, `Toolchain/`, `Hosting/`, `Progress/`, `Generation/`,
+`Metamodel/` and `Specification/` of `Hypha.Knowledge`, `Releases/` as `Versions/` and the
+operations of `Api/` as `Xmi/`; `Hypha.Knowledge.Metamodel`; the existing verbs' commands,
+`GlobalOptions`, `JsonOutput`, `ProgressDisplay` and `Hosting/` of `Hypha.Tools`; and the tests of
+all of them.
+
 - [ ] Projects: rename `Uml4Net.Sage.MetamodelGen` to `Uml4Net.Sage.Knowledge.Metamodel`; move the
       types of every generated JSON document into `Uml4Net.Sage.Knowledge`; reverse the reference;
       move `Inspection/` into `Uml4Net.Sage.Inspection`. Delete `Uml4Net.Sage.Tools.Hook`, its tests
@@ -508,6 +646,17 @@ Everything structural, and the whole write path, in one pass. No query API yet, 
   - **Decided: inspection gets its own library**, `Uml4Net.Sage.Inspection` in `tools/inspection`,
     with its own test project. It needs `uml4net.xmi`, which stays out of `Uml4Net.Sage.Knowledge`,
     and the MCP library cannot reference the executable.
+- [ ] The solution structure of 2.4: project folders, project files in hypha's shape, test projects
+      laid out as hypha's, `Nuget.Config` renamed `NuGet.config`, `coverlet.runsettings` removed.
+- [ ] `Directory.Packages.props` as hypha's (2.4): its packages at its versions, and none of Sage's
+      that hypha does without.
+- [ ] Hypha's file header (2.0) on every `.cs` and `.py` file, in one mechanical commit, and
+      `CLAUDE.md`'s header convention pointing at it.
+  - **Decided: SPDX headers, as hypha** (17 November 2026), in place of the full Apache text in
+    Sage's C# files and of no header in its Python files.
+- [ ] `CLAUDE.md` takes the conventions hypha's has and Sage's lacks: one public type per file;
+      services through dependency injection, with options and `ILogger`; no dash as punctuation in
+      prose. Sage's conventions that hypha's code also follows stay as they are.
 - [ ] Composition: `SageKnowledgeOptions` (home, repository root, output root, toolchain root, the
       omg.org addresses, download concurrency, lock wait) with validation; `AddSageKnowledge` and
       `AddSageMetamodel` registering every service; constructors injectable, no hidden statics;
@@ -546,9 +695,23 @@ Everything structural, and the whole write path, in one pass. No query API yet, 
       whose process is gone, a wait of ten minutes under `serve` and none otherwise.
 - [ ] Every generated file and manifest written through a temporary file and a rename
       (`ReaderSafeFile`), replacing the `File.WriteAll*` calls.
-- [ ] `tools/spec-extract` (`pyproject.toml`, `uv.lock`, `src/`) embedded in the knowledge library
-      and unpacked into `toolchain/spec-extract/` outside a source checkout; `uv` provisioned into
-      `toolchain/` with its cache and managed Python there, not in the old cache folder.
+- [ ] hypha's `Toolchain/` (`IUvProvisioner`, `UvProvisioner`, `UvPlatform`, `ISpecExtractProject`,
+      `SpecExtractProject`), `Hosting/` (`IProcessRunner`, `IProcessProbe` and their system
+      implementations) and `Generation/SpecGenerator`, with their tests, replacing Sage's
+      `UvProvisioner`, `UvPlatform`, `PythonSpecExtractRunner`, `ProcessRunner` and
+      `SpecExtractionOutcome`. `tools/spec-extract` (`pyproject.toml`, `uv.lock`, `src/`) is
+      embedded and unpacked into `toolchain/spec-extract/` outside a source checkout; `uv`, its
+      cache and its managed Python live in `toolchain/`.
+- [ ] `tools/spec-extract` brought level with hypha's: hypha's files and tests where Sage has none
+      or an older copy (`model.py`, `conftest.py`, `test_cli.py`, `test_generate.py`,
+      `test_pipeline_real.py`), with Sage's adaptations to the UML and XMI PDFs kept and each one
+      entered in 2.10.
+- [ ] The metamodel generator on hypha's: its `Generation/` (model loader, `MetamodelGenerator`),
+      its `Generators/` (`HandleBarsGenerator` and the payload types) and its `Templates/*.hbs`, for
+      the kinds UML's metamodel has, with templates of Sage's own for associations, stereotypes and
+      the Standard Profile index, and hypha's package diagrams (`diagrams/<Package>.md`). Sage's
+      C# page writers (`Generators/`, `Markdown/`, `Model/`) go. `Expected/` golden files from the
+      toy fixture, re-blessed by an `[Explicit]` test, as hypha's.
 - [ ] The CLI over the new services: `fetch`, `generate [artifact]`, `versions`, `use`, `remove`,
       `check`, `inspect`, and `uml4net-sage xmi fetch|generate|list|use|remove`, all asynchronous so
       that cancellation reaches them; a live progress display when the output is a terminal.
@@ -564,6 +727,9 @@ Everything structural, and the whole write path, in one pass. No query API yet, 
       rules (absolute path, checkout marker).
 
 ### Phase 2: The query API, and the facts it needs (#46)
+
+Ports from hypha: `Query/`, `Lookup/` and `CrossReferences/` of `Hypha.Knowledge`, with their tests,
+`Jq.cs` and `KnowledgeQueryJqTests.cs` included.
 
 - [ ] From 2.6's table, write down each question's arguments and answer type. Mark each fact an
       answer needs that `metamodel.json`, the indexes or the Standard Profile index do not hold.
@@ -593,6 +759,9 @@ Everything structural, and the whole write path, in one pass. No query API yet, 
 The query verbs and the MCP tools are written together, because each tool answers with the document
 its verb prints.
 
+Ports from hypha: `Hypha.Mcp` whole; `QueryCommand`, `LookupCommand` and `ServeCommand` of
+`Hypha.Tools`; and their tests (`Hypha.Mcp.Tests`, `ServeCommandTests`, `ServeReleaseChangeTests`).
+
 - [ ] `uml4net-sage query <question>` for every question of 2.6, and `lookup`, each with `--json`.
       Document the shapes in `tools/README.md`, pin them in `JsonOutputTests`.
 - [ ] `Uml4Net.Sage.Mcp` with `AddSageMcp`: the tools, resource template, prompts and `instructions`
@@ -620,6 +789,11 @@ its verb prints.
 
 The whole plugin changes face in one phase, so the skills are written once, against tools that
 already answer everything.
+
+Ports from hypha: `Hypha.Launcher` and its tests; `bin/`; `manifest.source.json` and every manifest
+rendered from it, with `PackageManifests.cs` and `PackageManifestTests.cs`; `packaging/mcpb/`;
+`launcher-binaries.yml`; the skills' structure and `commands/overview.md`; `docs/other-clients.md`;
+`extensions/vscode`; `.github/copilot-instructions.md`.
 
 - [ ] `Uml4Net.Sage.Launcher`, ported from `tools/hypha-launcher` with its tests (the bootstrap and
       fallback servers, each download failure reason, two launchers at once, the real process
@@ -656,6 +830,9 @@ already answer everything.
       `.github/copilot-instructions.md` describing the result.
 
 ### Phase 5: Release (#49)
+
+Ports from hypha: `release.yml`, `first-start.yml` (its check in C#, 2.10), `desktop-bundle.yml`,
+`publish-vscode.yml`, the extension jobs of `build-test-sonar.yml`, and `RELEASING.md`.
 
 - [ ] `release.yml` as hypha's: started by hand with a version; tests; the .NET tool package with
       its SBOM; the self-contained single-file `uml4net-sage` for five platforms; a smoke test
@@ -703,6 +880,10 @@ already answer everything.
 - **Phases 1 and 2 are the real refactor**, and Phase 1 is large because it is done in one pass. If
   it has to be split, split it along its bullets (projects and contracts, then the home folder and
   the operations), never by keeping an old path alive beside the new one.
+- **Drift from hypha is the failure that already happened once**: the `uv` provisioner was copied
+  in September 2026, hypha fixed it after that, and Sage shipped the bug until #44 found it on
+  Linux. Rules 4 to 6 of 2.0 are there for it; a review that finds a difference without a 2.10
+  entry sends the file back to hypha's version.
 - **The price of fewer phases** is that the plugin cannot be loaded from `development` between
   Phase 1 and Phase 4. Users are not affected (they are on the `v1.6.0` tag), but a fix to plugin 1.x
   in that time needs a branch from that tag.
