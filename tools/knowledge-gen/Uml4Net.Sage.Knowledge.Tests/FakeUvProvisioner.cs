@@ -20,6 +20,7 @@
 
 namespace Uml4Net.Sage.Knowledge.Tests
 {
+    using System.Collections.Generic;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
@@ -55,6 +56,12 @@ namespace Uml4Net.Sage.Knowledge.Tests
         /// <param name="executable">The executable to return.</param>
         /// <returns>A provisioner whose <see cref="EnsureAsync"/> returns <paramref name="executable"/>.</returns>
         public static FakeUvProvisioner Returning(FileInfo executable) => new(executable);
+
+        /// <summary>
+        /// Gets the environment variables every <c>uv</c> invocation runs with: none, so uv keeps its
+        /// default locations.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> Environment { get; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Returns the configured executable without downloading anything.

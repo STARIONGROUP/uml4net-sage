@@ -1,19 +1,8 @@
-// -------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 // <copyright file="UvPlatform.cs" company="Starion Group S.A.">
 //
-//   Copyright (C) 2019-2026 Starion Group S.A.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-//   you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-//       http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-//   distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-//   limitations under the License.
+//   Copyright 2026 Starion Group S.A.
+//   SPDX-License-Identifier: Apache-2.0
 //
 // </copyright>
 // ------------------------------------------------------------------------------------------------
@@ -28,10 +17,10 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
     /// </summary>
     /// <remarks>
     /// <c>uv</c> publishes Rust target-triple asset names (e.g. <c>uv-x86_64-pc-windows-msvc.zip</c>),
-    /// not .NET runtime identifiers - there is no shared convention with this repository's own release
-    /// assets to reuse here, so this is a small, independent map. Every target ships a flat archive
-    /// (the executables sit at the archive root, no wrapping folder) and a companion
-    /// <c>&lt;asset&gt;.sha256</c> asset.
+    /// not .NET runtime identifiers; there is no shared convention with the rest of this repository's
+    /// own release assets to reuse here, so this is a small, independent map. Every supported target
+    /// has a companion <c>&lt;asset&gt;.sha256</c> asset. Archive contents may be flat or wrapped in a
+    /// platform-named directory.
     /// </remarks>
     public static class UvPlatform
     {
@@ -39,8 +28,6 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         public static string? CurrentTarget => TargetFor(RuntimeInformation.RuntimeIdentifier);
 
         /// <summary>The uv release target for a .NET runtime identifier, or <c>null</c> when unsupported.</summary>
-        /// <param name="runtimeIdentifier">The .NET runtime identifier, e.g. <c>win-x64</c>.</param>
-        /// <returns>The Rust target triple uv publishes for that platform, or <c>null</c>.</returns>
         public static string? TargetFor(string runtimeIdentifier) => runtimeIdentifier switch
         {
             "win-x64" => "x86_64-pc-windows-msvc",
@@ -53,9 +40,6 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         };
 
         /// <summary>True when <paramref name="target"/>'s archive is a zip (Windows); false for tar.gz.</summary>
-        /// <param name="target">The uv release target triple.</param>
-        /// <returns><c>true</c> for a Windows target; otherwise <c>false</c>.</returns>
-        /// <exception cref="ArgumentException"><paramref name="target"/> is null, empty or whitespace.</exception>
         public static bool IsZip(string target)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(target);
@@ -64,9 +48,6 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         }
 
         /// <summary>The release asset file name for <paramref name="target"/>.</summary>
-        /// <param name="target">The uv release target triple.</param>
-        /// <returns>The archive name, e.g. <c>uv-x86_64-pc-windows-msvc.zip</c>.</returns>
-        /// <exception cref="ArgumentException"><paramref name="target"/> is null, empty or whitespace.</exception>
         public static string AssetName(string target)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(target);
@@ -75,8 +56,6 @@ namespace Uml4Net.Sage.Knowledge.Toolchain
         }
 
         /// <summary>The cached executable's file name for <paramref name="target"/>.</summary>
-        /// <param name="target">The uv release target triple.</param>
-        /// <returns><c>uv.exe</c> for a Windows target; otherwise <c>uv</c>.</returns>
         public static string ExecutableName(string target) => IsZip(target) ? "uv.exe" : "uv";
     }
 }
