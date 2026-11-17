@@ -14,16 +14,17 @@ the [GitHub releases](https://github.com/STARIONGROUP/uml4net-sage/releases) and
 - **Repository groundwork for the MCP refactor** (`refs #44`, part of #43): this changelog, a
   contributing guide, pull request and issue templates, and Dependabot updates for the GitHub
   Actions, the NuGet packages and the specification extractor's `uv.lock`.
-- **CI runs on Linux, with SonarCloud and coverage** (`refs #44`): one job builds and tests the
-  solution, collects coverage for C# and Python, and fails when the tests leave a tracked file
-  changed. The Python checks install from `uv.lock`, through the `uv` version the CLI pins, so they
-  test the versions `uml4net-sage generate` installs. `pytest-cov` joins the extractor's development
-  dependencies.
+- **CI runs on Linux, with SonarCloud and coverage** (`refs #44`): mycelium-hypha's build job, which
+  builds and tests the solution, collects coverage for C# and Python, and fails when the tests leave
+  a tracked file changed. The Python checks install from `uv.lock`, through the `uv` version the CLI
+  pins, so they test the versions `uml4net-sage generate` installs. `pytest-cov` joins the
+  extractor's development dependencies.
 
 ### Fixed
 - **Verbatim specification text through `uv` on Linux and macOS** (`refs #44`): the `uv` the CLI
   downloads when no Python is found was extracted and then reported missing, because uv's tar.gz
   archives hold the executable in a `uv-<target>` folder. Without a Python of the user's own,
-  `uml4net-sage generate` therefore skipped the specification text there.
+  `uml4net-sage generate` therefore skipped the specification text there. The provisioner and its
+  tests are now mycelium-hypha's, which had fixed this; Sage's copy dated from before the fix.
 
 [Unreleased]: https://github.com/STARIONGROUP/uml4net-sage/compare/v1.6.0...HEAD

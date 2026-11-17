@@ -4,11 +4,8 @@
 #   comes on its own, since it is the one that may need reading the release notes.
 # - A cooldown of 14 days: a version is proposed only once it has been out for two weeks, the same
 #   rule used when pinning versions by hand.
-# - Commit messages and pull-request titles in the repository's "[Update] ..." form (the trailing
+# - Commit messages and pull-request titles in the repository's "[Update] …" form (the trailing
 #   space stops Dependabot adding a colon after the bracket).
-#
-# The same configuration as mycelium-hypha's; the npm entry for the VS Code extension is added with
-# the extension (#48).
 
 version: 2
 
@@ -27,7 +24,8 @@ updates:
       github-actions:
         update-types: [minor, patch]
 
-  # The central package versions in Directory.Packages.props, for every project in the solution.
+  # The central package versions in Directory.Packages.props, for every project in the solution,
+  # the NativeAOT launcher included.
   - package-ecosystem: nuget
     directory: /
     target-branch: development
@@ -41,8 +39,8 @@ updates:
       nuget:
         update-types: [minor, patch]
 
-  # The specification extractor: uv.lock is what `uml4net-sage generate` installs through uv, and
-  # what CI installs to lint and test it, so an update here is tested as it ships.
+  # The specification extractor: uv.lock is what the CLI installs through uv, and what CI installs
+  # to lint and test it, so an update here is tested as it ships.
   - package-ecosystem: uv
     directory: /tools/spec-extract
     target-branch: development

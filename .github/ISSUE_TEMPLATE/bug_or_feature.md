@@ -21,16 +21,14 @@ assignees: []
 <!-- A description of the bug or feature -->
 
 ### Steps to Reproduce
-<!-- List of steps, sample model file or link to a project that reproduces the behavior. Do not attach OMG's own XMI or PDF files. -->
+<!-- List of steps, sample code, failing test or link to a project that reproduces the behavior. Do not attach OMG's own XMI or PDF files. -->
 
 ### System Configuration
 <!-- Tell us about the environment where you are experiencing the bug -->
 
-- uml4net-sage plugin version:
-- uml4net-sage tools (CLI) version:
+- uml4net-sage version:
 - UML version (e.g. 2.5.1):
-- AI client (e.g. Claude Code) and its version:
-- Environment (operating system, version and so on):
+- Environment (Operating system, version and so on):
 - Additional information:
 
 <!-- Thanks for reporting the issue to uml4net-sage! -->

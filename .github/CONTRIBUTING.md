@@ -1,61 +1,66 @@
 # How to contribute
 
-Thank you for wanting to contribute to uml4net-sage. A few guidelines keep the history readable and
-the review quick.
+We would like to start with saying thank you for wanting to contribute to the uml4net-sage codebase. We want to keep it as easy as possible to contribute changes that get things working in your environment. There are a few guidelines that we need contributors to follow so that we have a chance of keeping on top of things.
 
-- [Making changes](#making-changes)
-  - [Keeping up with development](#keeping-up-with-development)
-  - [Sending a pull request](#sending-a-pull-request)
-- [Building and testing](#building-and-testing)
+- [Making Changes](#making-changes)
+  - [Handling Updates from Upstream/Development](#handling-updates-from-upstreamdevelopment)
+  - [Sending a Pull Request](#sending-a-pull-request)
+- [Building and Testing](#building-and-testing)
   - [Prerequisites](#prerequisites)
   - [.NET](#net)
   - [Python](#python)
-- [Style guidelines](#style-guidelines)
-- [What may be committed](#what-may-be-committed)
+- [Style Guidelines](#style-guidelines)
+- [What May Be Committed](#what-may-be-committed)
 
-## Making changes
+## Making Changes
 
-1. [Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) the repository on GitHub, and clone your fork
-1. Configure the upstream repository (`git remote add upstream https://github.com/STARIONGROUP/uml4net-sage.git`)
-1. Check out `development`
-1. Create a branch from `development` named after the issue it addresses: `feature/gh-<issue-number>-<short-name>` for a feature, `fix/gh-<issue-number>-<short-name>` for a fix
-1. Work on your change, and rebase if required (see below)
-1. Push the branch to your fork
-1. Send a pull request into `development`
+1. [Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) on GitHub
+1. Clone your fork locally
+1. Configure the upstream repo (`git remote add upstream https://github.com/STARIONGROUP/uml4net-sage.git`)
+1. Checkout development
+1. Create a local branch named after the issue it addresses (`git checkout -b feature/gh-<issue-number>-<short-name>`, or `fix/gh-...` for a fix) from development
+1. Work on your feature
+1. Rebase if required (see below)
+1. Push the branch up to GitHub (`git push origin feature/gh-<issue-number>-<short-name>`)
+1. Send a Pull Request on GitHub into `development`
 
-Never work on, or send a pull request from, `development` itself: always use a branch.
+You should **never** work on a clone of main or development, and you should **never** send a pull request from main or development; always send it from a branch. The reasons for this are detailed below.
 
-### Keeping up with development
+### Handling Updates from Upstream/Development
 
-When `development` moves while you work:
+While you're working away in your branch it's quite possible that your upstream development (most likely the canonical uml4net-sage version) may be updated. If this happens you should:
 
-1. Stash any uncommitted changes
+1. [Stash](https://git-scm.com/book/en/v2/Git-Tools-Stashing-and-Cleaning) any un-committed changes you need to
 1. `git checkout development`
 1. `git pull upstream development`
-1. `git checkout <your-branch>`
-1. `git rebase development`
+1. `git checkout feature/gh-<issue-number>-<short-name>`
+1. `git rebase development feature/gh-<issue-number>-<short-name>`
+1. `git push origin development` (optional): this makes sure your remote development is up to date
 
-This keeps the history a straight line from `development` followed by your changes, without merge
-commits.
+This ensures that your history is "clean" i.e. you have one branch off from development followed by your changes in a straight line. Failing to do this ends up with several "messy" merges in your history, which we don't want. This is the reason why you should always work in a branch and you should never be working in, or sending pull requests from, development.
 
-### Sending a pull request
+If you're working on a long running feature then you may want to do this quite often, rather than run the risk of potential merge issues further down the line.
 
-Before sending it, rebase on `development` (above), so the pull request holds only your changes. Then
-send a descriptive pull request into `development` and wait for a maintainer to review it.
+### Sending a Pull Request
 
-Commit subjects follow `[Verb] <summary>; fixes #<n>` (or `refs #<n>` when the commit does not close
-the issue), for example `[Fix] the uv provisioner finds uv in the tar.gz archives of Linux and macOS;
-refs #44`. Common verbs are `Add`, `Update`, `Fix`, `Remove` and `Refactor`. Add a line to the
-`[Unreleased]` section of `CHANGELOG.md` for anything a user of the plugin or the CLI would notice.
+While working on your feature you may well create several branches, which is fine, but before you send a pull request you should ensure that you have rebased back to a single "Feature branch". We care about your commits, and we care about your feature branch; but we don't care about how many or which branches you created while you were working on it :smile:.
 
-A pull request with tests is a pull request that is likely to be merged.
+When you're ready to go you should confirm that you are up to date and rebased with upstream/development (see "Handling Updates from Upstream/Development" above), and then:
 
-## Building and testing
+1. `git push origin feature/gh-<issue-number>-<short-name>`
+1. Send a descriptive [Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) on GitHub into `development`, making sure you have selected the correct branch in the GitHub UI!
+1. Wait for a maintainer to review and merge your changes.
+
+Commit subjects follow `[Verb] <summary>; fixes #<n>`, for example `[Fix] the uv provisioner finds uv in the tar.gz archives of Linux and macOS; refs #44`.
+
+And remember; **A pull-request with tests is a pull-request that's likely to be pulled in.** :grin: Bonus points if you document your feature in our [wiki](https://github.com/STARIONGROUP/uml4net-sage/wiki) once it has been pulled in.
+
+## Building and Testing
 
 ### Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download), for everything under `tools/` except `tools/spec-extract`
-- Python 3.12 or later and [uv](https://docs.astral.sh/uv/), for `tools/spec-extract`
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) for `tools/metamodel-gen`, `tools/knowledge-gen` and `tools/sage-cli`
+- Python 3.12 or later for `tools/spec-extract`
 
 ### .NET
 
@@ -66,38 +71,28 @@ dotnet build uml4net-sage.slnx
 dotnet test uml4net-sage.slnx
 ```
 
-A test run reaches no network and leaves the working tree clean; CI fails a pull request whose .NET
-or Python tests change a tracked file or leave a new file that `.gitignore` does not cover.
+A normal test run never reaches the network and leaves the working tree clean.
 
 ### Python
 
 From `tools/spec-extract/`:
 
 ```sh
-uv sync --extra dev                  # .venv from uv.lock: the versions CI and uml4net-sage generate use
+uv sync --extra dev                  # .venv from uv.lock: the versions CI uses
 uv run --extra dev ruff check .
-uv run --extra dev ruff format --check .
 uv run --extra dev pytest
 ```
 
-Without uv, `python -m venv .venv` and `pip install -e ".[dev]"` also work, but install the newest
+Without uv, `python -m venv .venv` and `pip install -e .[dev]` also work, but install the newest
 versions rather than the locked ones, so ruff and pytest may differ from CI.
 
-## Style guidelines
+## Style Guidelines
 
-The full conventions are in [`CLAUDE.md`](../CLAUDE.md), "Conventions". In short:
+- **C#:** block-scoped namespaces with `using`s inside the namespace, one public type per file, NUnit tests. Every source file opens with the Apache-2.0 copyright header (Starion Group S.A.).
+- **Python:** ruff-clean; each file carries the `# Copyright … / # SPDX-License-Identifier: Apache-2.0` header.
+- **Generated artifacts** must be byte-stable: ordinal sorting, LF line endings, and no timestamps, machine paths or culture-sensitive formatting.
+- **Prose and docs** use no dash as punctuation, neither the en dash nor the em dash: write the sentence with a comma, a colon, parentheses, a semicolon or a full stop instead. Hyphens in compound words stay.
 
-- **C#:** 4 spaces, no tabs; no `_` prefix on members, and `this.` for instance members; `var`
-  unless the type is ambiguous; braces on every block; no `#region`; `using`s inside the namespace,
-  `System.*` first. Every public member has its own XML documentation (no `<inheritdoc/>`); test
-  methods and fixtures have none. Every `.cs` file opens with the Apache 2.0 copyright header.
-- **Python** exists only in `tools/spec-extract`: ruff-clean and ruff-formatted.
-- **Generated output** is byte-stable: ordinal sorting, LF line endings, fixed JSON options, and no
-  timestamps, machine paths or culture-sensitive formatting.
+## What May Be Committed
 
-## What may be committed
-
-OMG permits informational use of its specifications but not their redistribution (see `NOTICE`).
-So nothing fetched from omg.org (`sources/<version>/`) and nothing generated from it
-(`knowledge/<version>/`) is ever committed, and test fixtures are hand-written toy models, never
-OMG's own files. See `CLAUDE.md`, "Committed vs git-ignored".
+OMG permits informational use of its specifications but not their redistribution (see `NOTICE`). So nothing fetched from omg.org (`sources/<version>/`) and nothing generated from it (`knowledge/<version>/`) is ever committed, and test fixtures are hand-written toy models, never OMG's own files. See `CLAUDE.md`, "Committed vs git-ignored".
