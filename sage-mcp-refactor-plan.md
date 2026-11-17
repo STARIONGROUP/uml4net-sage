@@ -210,11 +210,11 @@ Reading it:
 ### 2.4 Solution structure
 
 Hypha's tree, with the names changed. Every hypha path has its Sage path, read from hypha's source
-at `b150219`:
+at `14d19e3`:
 
 | hypha | Sage |
 | --- | --- |
-| `mycelium-hypha.sln`: a `tools` solution folder, one subfolder per project pair | `uml4net-sage.slnx` (2.10), with the same folders |
+| `mycelium-hypha.slnx`: its platforms, a `tools` solution folder, and one subfolder per project pair, in alphabetical order | `uml4net-sage.slnx`, the same |
 | `tools/knowledge-gen/Hypha.Knowledge` and `.Tests` | `tools/knowledge-gen/Uml4Net.Sage.Knowledge` and `.Tests` |
 | `tools/metamodel-gen/Hypha.Knowledge.Metamodel` and `.Tests` | `tools/metamodel-gen/Uml4Net.Sage.Knowledge.Metamodel` and `.Tests` |
 | `tools/hypha-mcp/Hypha.Mcp` and `.Tests` | `tools/sage-mcp/Uml4Net.Sage.Mcp` and `.Tests` |
@@ -248,7 +248,7 @@ Each project file has hypha's shape for that project: `RootNamespace`, `Assembly
 and the embedded resources. What hypha repeats in every project file (target framework, language
 version, nullable, implicit usings) stays in Sage's `Directory.Build.props` (2.10).
 
-Packages: hypha's `Directory.Packages.props`, its packages at its versions. At `b150219` that adds
+Packages: hypha's `Directory.Packages.props`, its packages at its versions. At `14d19e3` that adds
 `Handlebars.Net`, `Microsoft.Extensions.DependencyInjection.Abstractions`,
 `Microsoft.Extensions.Http.Resilience`, `Microsoft.Extensions.Logging.Abstractions`,
 `Microsoft.Sbom.Targets`, `ModelContextProtocol`, `Spectre.Console.Testing`, `uml4net.Extensions`
@@ -537,6 +537,7 @@ The only places Sage differs from hypha's source. Anything else that differs is 
 | hypha | Sage | Why |
 | --- | --- | --- |
 | `Hypha.*` namespaces and projects; command `hypha`; `hypha-launch`; `HYPHA_HOME`, `HYPHA_BIN`; `hypha://`; repository `mycelium-cmbse/mycelium-hypha`, marketplace `mycelium` | `Uml4Net.Sage.*`; `uml4net-sage`; `sage-launch`; `UML4NET_SAGE_HOME`, `UML4NET_SAGE_BIN`; `sage://`; `STARIONGROUP/uml4net-sage`, marketplace `uml4net` | The product. Decided: `UML4NET_SAGE_HOME`, since other software is also called Sage |
+| SonarCloud project `mycelium-cmbse_mycelium-hypha` in organization `mycelium-cmbse` | `STARIONGROUP_uml4net-sage` in `stariongroup`, as the sibling `uml4net` repository's | The product's own analysis |
 | Tool prefix `hypha_`, server name `hypha` | Prefix `uml4net_sage_`, server name `sage` | Decided. Claude Code joins plugin, server and tool name into one name of at most 64 characters; with server `sage` that leaves 20 characters after the prefix (2.6) |
 | "Release" in types, folders, verbs and tools (`IReleaseOperations`, `ReleaseStatus`, `Releases/`, `--tag`, `hypha_install_release`) | "Version" (`IVersionOperations`, `VersionStatus`, `Versions/`, `--version`, `uml4net_sage_install_version`) | Decided. OMG calls UML's editions versions (2.5.1); a SysML release is a tag. Names only: the structure and behaviour are hypha's |
 
@@ -567,12 +568,12 @@ The only places Sage differs from hypha's source. Anything else that differs is 
 | --- | --- | --- |
 | `sources/PrimitiveTypes.xmi` committed and embedded in `Hypha.Knowledge` | `PrimitiveTypes.xmi` fetched from omg.org with each version; nothing of OMG's committed | `CLAUDE.md`: no OMG file is committed until OMG's position on its machine-readable files is confirmed |
 | A real release's XMI committed as the metamodel test fixture, with `Expected/` golden files from it | `Expected/` golden files from Sage's hand-written toy fixture | The same |
+| `.github/CONTRIBUTING.md` and the issue template say nothing about OMG's files | `CONTRIBUTING.md` has a "What May Be Committed" section, and the issue template asks not to attach OMG's XMI or PDF files | The same: contributors and reporters are the ones who could commit or post them |
 
 **Build and process**
 
 | hypha | Sage | Why |
 | --- | --- | --- |
-| `mycelium-hypha.sln` | `uml4net-sage.slnx` | Decided: keep the newer format Sage already uses |
 | No `Directory.Build.props` or `.editorconfig`; each project file sets the target framework, language version, nullable and implicit usings (enabled) | `Directory.Build.props` (implicit usings disabled) and `.editorconfig` kept | Decided: keep. A ported file that relies on hypha's implicit usings gets them written out, and nothing else in it changes |
 | `.github/scripts/first_start.py` | The First start check written in C# | `CLAUDE.md`: Python only in `tools/spec-extract` |
 | Branches `GH<n>` | Branches `feature/gh-<n>-<name>` and `fix/gh-<n>-<name>` | Sage's practice since its first pull request, and in its `CLAUDE.md` and `CONTRIBUTING.md` |
@@ -614,14 +615,14 @@ split along its bullets, not reordered.
 Independent of the refactor, and done first so that every later phase is recorded and checked the
 same way.
 
-- [ ] `CHANGELOG.md` (Keep a Changelog, an `[Unreleased]` section on top), which the release steps
+- [x] `CHANGELOG.md` (Keep a Changelog, an `[Unreleased]` section on top), which the release steps
       of Phase 5 move entries out of.
-- [ ] `.github/CONTRIBUTING.md`, a pull request template and an issue template.
-- [ ] `.github/dependabot.yml`: GitHub Actions, NuGet and `uv` (`tools/spec-extract`), weekly, into
+- [x] `.github/CONTRIBUTING.md`, a pull request template and an issue template.
+- [x] `.github/dependabot.yml`: GitHub Actions, NuGet and `uv` (`tools/spec-extract`), weekly, into
       `development`. The npm entry is added with the extension in Phase 4.
-- [ ] `build-test.yml`: the Python job through `uv` with the locked versions (`uv sync --frozen`),
-      as `uml4net-sage generate` uses them; a step that fails when the tests left the working tree
-      changed; SonarCloud with coverage for C# and Python.
+- [x] `build-test-sonar.yml`, hypha's build job: the Python job through `uv` with the locked
+      versions (`uv sync --frozen`), as `uml4net-sage generate` uses them; a step that fails when
+      the tests left a tracked file changed; SonarCloud with coverage for C# and Python.
   - **Decided: all four hygiene items are in the plan**: dependabot, copilot-instructions (Phase 4),
     CONTRIBUTING with templates, and SonarCloud with a wiki (the wiki in Phase 5).
   - **Needs, before this step:** a SonarCloud project for the repository and its `SONAR_TOKEN`
@@ -698,10 +699,12 @@ all of them.
 - [ ] hypha's `Toolchain/` (`IUvProvisioner`, `UvProvisioner`, `UvPlatform`, `ISpecExtractProject`,
       `SpecExtractProject`), `Hosting/` (`IProcessRunner`, `IProcessProbe` and their system
       implementations) and `Generation/SpecGenerator`, with their tests, replacing Sage's
-      `UvProvisioner`, `UvPlatform`, `PythonSpecExtractRunner`, `ProcessRunner` and
-      `SpecExtractionOutcome`. `tools/spec-extract` (`pyproject.toml`, `uv.lock`, `src/`) is
-      embedded and unpacked into `toolchain/spec-extract/` outside a source checkout; `uv`, its
-      cache and its managed Python live in `toolchain/`.
+      `PythonSpecExtractRunner`, `ProcessRunner` and `SpecExtractionOutcome` (`UvProvisioner`,
+      `UvPlatform` and `IUvProvisioner` are hypha's since #44), and the interim
+      `Commands/UvProvisioning.cs` that hands the provisioner its client, logger and cache folder.
+      `tools/spec-extract` (`pyproject.toml`, `uv.lock`, `src/`) is embedded and unpacked into
+      `toolchain/spec-extract/` outside a source checkout; `uv`, its cache and its managed Python
+      live in `toolchain/`.
 - [ ] `tools/spec-extract` brought level with hypha's: hypha's files and tests where Sage has none
       or an older copy (`model.py`, `conftest.py`, `test_cli.py`, `test_generate.py`,
       `test_pipeline_real.py`), with Sage's adaptations to the UML and XMI PDFs kept and each one

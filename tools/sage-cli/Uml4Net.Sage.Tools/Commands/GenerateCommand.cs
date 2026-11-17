@@ -27,7 +27,6 @@ namespace Uml4Net.Sage.Tools.Commands
     using Spectre.Console;
 
     using Uml4Net.Sage.Knowledge;
-    using Uml4Net.Sage.Knowledge.Toolchain;
 
     /// <summary>
     /// <c>uml4net-sage generate</c>: regenerates the metamodel, standard-profile, (if the PDF and Python
@@ -63,7 +62,8 @@ namespace Uml4Net.Sage.Tools.Commands
                 }
 
                 using var httpClient = new HttpClient();
-                var specExtractRunner = new PythonSpecExtractRunner(new ProcessRunner(), new UvProvisioner(httpClient));
+                using var gitHubClient = UvProvisioning.CreateGitHubClient();
+                var specExtractRunner = new PythonSpecExtractRunner(new ProcessRunner(), UvProvisioning.Create(gitHubClient));
                 var service = new KnowledgeGenerationService(new SourceFetcher(httpClient), specExtractRunner);
 
                 AnsiConsole.MarkupLineInterpolated($"Generating knowledge base for UML {descriptor.Version}...");

@@ -353,6 +353,8 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
+.coverage
+coverage.xml
 *.egg-info/
 /tools/spec-extract/.venv/
 /tools/spec-extract/dist/

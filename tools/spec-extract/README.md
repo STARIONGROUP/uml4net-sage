@@ -39,12 +39,14 @@ Test-driven, not a distributed CLI, same as hypha's own `spec-extract` — `pyte
 way to exercise and verify the pipeline:
 
 ```bash
-python -m venv .venv
-.venv/Scripts/pip install -e ".[dev]"   # .venv/bin/pip on Linux/macOS
-.venv/Scripts/pytest -v
-.venv/Scripts/ruff check .
-.venv/Scripts/ruff format .
+uv sync --extra dev                    # .venv from uv.lock: the versions CI and `generate` use
+uv run --extra dev pytest -v
+uv run --extra dev ruff check .
+uv run --extra dev ruff format .
 ```
+
+Without uv, `python -m venv .venv` and `.venv/Scripts/pip install -e ".[dev]"` (`.venv/bin/pip` on
+Linux/macOS) also work, but install the newest versions rather than the locked ones.
 
 Unit tests use hand-built synthetic data (including a minimal, hand-written test PDF built by
 `tests/pdf_fixtures.py` — not derived from any OMG or third-party document). One test
