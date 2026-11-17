@@ -614,12 +614,12 @@ split along its bullets, not reordered.
 Independent of the refactor, and done first so that every later phase is recorded and checked the
 same way.
 
-- [ ] `CHANGELOG.md` (Keep a Changelog, an `[Unreleased]` section on top), which the release steps
+- [x] `CHANGELOG.md` (Keep a Changelog, an `[Unreleased]` section on top), which the release steps
       of Phase 5 move entries out of.
-- [ ] `.github/CONTRIBUTING.md`, a pull request template and an issue template.
-- [ ] `.github/dependabot.yml`: GitHub Actions, NuGet and `uv` (`tools/spec-extract`), weekly, into
+- [x] `.github/CONTRIBUTING.md`, a pull request template and an issue template.
+- [x] `.github/dependabot.yml`: GitHub Actions, NuGet and `uv` (`tools/spec-extract`), weekly, into
       `development`. The npm entry is added with the extension in Phase 4.
-- [ ] `build-test.yml`: the Python job through `uv` with the locked versions (`uv sync --frozen`),
+- [x] `build-test.yml`: the Python job through `uv` with the locked versions (`uv sync --frozen`),
       as `uml4net-sage generate` uses them; a step that fails when the tests left the working tree
       changed; SonarCloud with coverage for C# and Python.
   - **Decided: all four hygiene items are in the plan**: dependabot, copilot-instructions (Phase 4),
