@@ -537,6 +537,7 @@ The only places Sage differs from hypha's source. Anything else that differs is 
 | hypha | Sage | Why |
 | --- | --- | --- |
 | `Hypha.*` namespaces and projects; command `hypha`; `hypha-launch`; `HYPHA_HOME`, `HYPHA_BIN`; `hypha://`; repository `mycelium-cmbse/mycelium-hypha`, marketplace `mycelium` | `Uml4Net.Sage.*`; `uml4net-sage`; `sage-launch`; `UML4NET_SAGE_HOME`, `UML4NET_SAGE_BIN`; `sage://`; `STARIONGROUP/uml4net-sage`, marketplace `uml4net` | The product. Decided: `UML4NET_SAGE_HOME`, since other software is also called Sage |
+| SonarCloud project `mycelium-cmbse_mycelium-hypha` in organization `mycelium-cmbse` | `STARIONGROUP_uml4net-sage` in `stariongroup`, as the sibling `uml4net` repository's | The product's own analysis |
 | Tool prefix `hypha_`, server name `hypha` | Prefix `uml4net_sage_`, server name `sage` | Decided. Claude Code joins plugin, server and tool name into one name of at most 64 characters; with server `sage` that leaves 20 characters after the prefix (2.6) |
 | "Release" in types, folders, verbs and tools (`IReleaseOperations`, `ReleaseStatus`, `Releases/`, `--tag`, `hypha_install_release`) | "Version" (`IVersionOperations`, `VersionStatus`, `Versions/`, `--version`, `uml4net_sage_install_version`) | Decided. OMG calls UML's editions versions (2.5.1); a SysML release is a tag. Names only: the structure and behaviour are hypha's |
 
@@ -567,6 +568,7 @@ The only places Sage differs from hypha's source. Anything else that differs is 
 | --- | --- | --- |
 | `sources/PrimitiveTypes.xmi` committed and embedded in `Hypha.Knowledge` | `PrimitiveTypes.xmi` fetched from omg.org with each version; nothing of OMG's committed | `CLAUDE.md`: no OMG file is committed until OMG's position on its machine-readable files is confirmed |
 | A real release's XMI committed as the metamodel test fixture, with `Expected/` golden files from it | `Expected/` golden files from Sage's hand-written toy fixture | The same |
+| `.github/CONTRIBUTING.md` and the issue template say nothing about OMG's files | `CONTRIBUTING.md` has a "What May Be Committed" section, and the issue template asks not to attach OMG's XMI or PDF files | The same: contributors and reporters are the ones who could commit or post them |
 
 **Build and process**
 
@@ -619,9 +621,9 @@ same way.
 - [x] `.github/CONTRIBUTING.md`, a pull request template and an issue template.
 - [x] `.github/dependabot.yml`: GitHub Actions, NuGet and `uv` (`tools/spec-extract`), weekly, into
       `development`. The npm entry is added with the extension in Phase 4.
-- [x] `build-test.yml`: the Python job through `uv` with the locked versions (`uv sync --frozen`),
-      as `uml4net-sage generate` uses them; a step that fails when the tests left the working tree
-      changed; SonarCloud with coverage for C# and Python.
+- [x] `build-test-sonar.yml`, hypha's build job: the Python job through `uv` with the locked
+      versions (`uv sync --frozen`), as `uml4net-sage generate` uses them; a step that fails when
+      the tests left a tracked file changed; SonarCloud with coverage for C# and Python.
   - **Decided: all four hygiene items are in the plan**: dependabot, copilot-instructions (Phase 4),
     CONTRIBUTING with templates, and SonarCloud with a wiki (the wiki in Phase 5).
   - **Needs, before this step:** a SonarCloud project for the repository and its `SONAR_TOKEN`
@@ -698,10 +700,12 @@ all of them.
 - [ ] hypha's `Toolchain/` (`IUvProvisioner`, `UvProvisioner`, `UvPlatform`, `ISpecExtractProject`,
       `SpecExtractProject`), `Hosting/` (`IProcessRunner`, `IProcessProbe` and their system
       implementations) and `Generation/SpecGenerator`, with their tests, replacing Sage's
-      `UvProvisioner`, `UvPlatform`, `PythonSpecExtractRunner`, `ProcessRunner` and
-      `SpecExtractionOutcome`. `tools/spec-extract` (`pyproject.toml`, `uv.lock`, `src/`) is
-      embedded and unpacked into `toolchain/spec-extract/` outside a source checkout; `uv`, its
-      cache and its managed Python live in `toolchain/`.
+      `PythonSpecExtractRunner`, `ProcessRunner` and `SpecExtractionOutcome` (`UvProvisioner`,
+      `UvPlatform` and `IUvProvisioner` are hypha's since #44), and the interim
+      `Commands/UvProvisioning.cs` that hands the provisioner its client, logger and cache folder.
+      `tools/spec-extract` (`pyproject.toml`, `uv.lock`, `src/`) is embedded and unpacked into
+      `toolchain/spec-extract/` outside a source checkout; `uv`, its cache and its managed Python
+      live in `toolchain/`.
 - [ ] `tools/spec-extract` brought level with hypha's: hypha's files and tests where Sage has none
       or an older copy (`model.py`, `conftest.py`, `test_cli.py`, `test_generate.py`,
       `test_pipeline_real.py`), with Sage's adaptations to the UML and XMI PDFs kept and each one
