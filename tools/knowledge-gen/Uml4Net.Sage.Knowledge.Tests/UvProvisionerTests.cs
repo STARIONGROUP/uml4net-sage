@@ -93,13 +93,17 @@ namespace Uml4Net.Sage.Knowledge.Tests
             return memoryStream.ToArray();
         }
 
-        [Test]
-        public async Task EnsureAsync_downloads_verifies_and_caches_a_matching_release()
+        /// <summary>
+        /// Builds a handler that serves one valid release of uv for <paramref name="target"/>: the
+        /// release document, the archive's checksum and the archive, in the order the provisioner asks.
+        /// </summary>
+        /// <param name="target">The uv release target triple the archive is built for.</param>
+        /// <returns>The handler, with the three responses queued.</returns>
+        private static StubHttpMessageHandler HandlerServingAValidRelease(string target)
         {
-            var executableName = UvPlatform.ExecutableName(this.target);
-            var archiveBytes = BuildArchiveContaining(this.target, executableName, Encoding.UTF8.GetBytes("fake uv"));
+            var archiveBytes = BuildArchiveContaining(target, UvPlatform.ExecutableName(target), Encoding.UTF8.GetBytes("fake uv"));
             var sha256 = Convert.ToHexStringLower(SHA256.HashData(archiveBytes));
-            var assetName = UvPlatform.AssetName(this.target);
+            var assetName = UvPlatform.AssetName(target);
 
             var releaseJson = JsonSerializer.Serialize(new
             {
@@ -115,13 +119,44 @@ namespace Uml4Net.Sage.Knowledge.Tests
             handler.Enqueue(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent($"{sha256} *{assetName}") });
             handler.Enqueue(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(archiveBytes) });
 
-            var provisioner = new UvProvisioner(new HttpClient(handler), this.cacheRoot);
+            return handler;
+        }
+
+        [Test]
+        public async Task EnsureAsync_downloads_verifies_and_caches_a_matching_release()
+        {
+            var provisioner = new UvProvisioner(new HttpClient(HandlerServingAValidRelease(this.target)), this.cacheRoot);
 
             var executable = await provisioner.EnsureAsync();
 
             Assert.That(executable, Is.Not.Null);
             Assert.That(File.Exists(executable!.FullName));
             Assert.That(File.Exists(provisioner.OkMarker(UvProvisioner.PinnedVersion, this.target).FullName));
+        }
+
+        [Test]
+        public async Task EnsureAsync_makes_the_extracted_executable_runnable_on_unix()
+        {
+            // The archive's entry carries no execute bit, so only the provisioner's own chmod, applied
+            // to the executable in the uv-<target> folder the tar.gz holds it in, makes it runnable.
+            // Windows has no execute bit, and its archive is a flat zip.
+            if (OperatingSystem.IsWindows())
+            {
+                Assert.Ignore("Unix file modes do not exist on Windows.");
+                return;
+            }
+
+            var provisioner = new UvProvisioner(new HttpClient(HandlerServingAValidRelease(this.target)), this.cacheRoot);
+
+            var executable = await provisioner.EnsureAsync();
+
+            Assert.That(executable, Is.Not.Null);
+            var expected = Path.Combine(
+                provisioner.BinDirectory(UvProvisioner.PinnedVersion, this.target).FullName,
+                $"uv-{this.target}",
+                UvPlatform.ExecutableName(this.target));
+            Assert.That(executable!.FullName, Is.EqualTo(expected));
+            Assert.That(File.GetUnixFileMode(executable.FullName).HasFlag(UnixFileMode.UserExecute), Is.True);
         }
 
         [TestCase(false, TestName = "Executable_is_at_the_root_of_a_flat_archive")]
@@ -237,6 +272,28 @@ namespace Uml4Net.Sage.Knowledge.Tests
 
             Assert.That(executable, Is.Not.Null);
             Assert.That(executable!.FullName, Is.EqualTo(Path.Combine(binDirectory.FullName, executableName)));
+        }
+
+        [Test]
+        public async Task EnsureAsync_reuses_a_wrapped_cache_without_a_network_call_once_verified()
+        {
+            // The cache a tar.gz leaves on Linux and macOS: the executable in uv-<target>/, the marker
+            // at the build's root. A later run must find it there rather than download again.
+            var binDirectory = new UvProvisioner(new HttpClient(new StubHttpMessageHandler()), this.cacheRoot)
+                .BinDirectory(UvProvisioner.PinnedVersion, this.target);
+            var wrappedDirectory = Directory.CreateDirectory(Path.Combine(binDirectory.FullName, $"uv-{this.target}"));
+            var executableName = UvPlatform.ExecutableName(this.target);
+            var expected = Path.Combine(wrappedDirectory.FullName, executableName);
+            await File.WriteAllTextAsync(expected, "already here");
+            await File.WriteAllTextAsync(Path.Combine(binDirectory.FullName, ".ok"), "verified");
+
+            var handler = new StubHttpMessageHandler(); // no responses enqueued - any HTTP call would throw
+            var provisioner = new UvProvisioner(new HttpClient(handler), this.cacheRoot);
+
+            var executable = await provisioner.EnsureAsync();
+
+            Assert.That(executable, Is.Not.Null);
+            Assert.That(executable!.FullName, Is.EqualTo(expected));
         }
     }
 }
