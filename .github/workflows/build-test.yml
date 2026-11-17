@@ -20,8 +20,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Empty on a pull request from a fork, which gets no secrets: the analysis is then skipped
-      # and the build and the tests still run.
+      # Empty when the run gets no Actions secrets: on a pull request from a fork, and on one that
+      # Dependabot opens (Dependabot runs get only Dependabot secrets, so add SONAR_TOKEN there too
+      # to have its pull requests analysed). The analysis is then skipped; the build and the tests
+      # still run.
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
@@ -88,14 +90,6 @@ jobs:
           dotnet tool install --global dotnet-coverage --version 18.12.0
           dotnet-coverage collect "dotnet test uml4net-sage.slnx --no-restore --no-build --verbosity normal" -f xml -o "coverage.xml"
 
-      - name: Assert the tests wrote nothing
-        # Generation is `uml4net-sage generate`'s job; the tests verify. A test that writes into a
-        # tracked file would make the test run part of producing the knowledge base.
-        run: |
-          if ! git diff --exit-code --stat; then
-            echo "::error::the test run modified tracked files; tests must not write the repository"
-            exit 1
-          fi
 
       - name: Lint Python (ruff)
         working-directory: tools/spec-extract
@@ -109,6 +103,17 @@ jobs:
         env:
           PYTHONPATH: src
         run: pytest -v --cov=spec_extract --cov-report=xml
+
+      - name: Assert the tests wrote nothing
+        # Generation is `uml4net-sage generate`'s job; the tests verify. After both the .NET and the
+        # Python tests, the working tree must be as checked out: no tracked file changed and no new
+        # file that .gitignore does not cover (the coverage reports and caches are ignored).
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            echo "::error::the test run changed the working tree; tests must not write the repository"
+            exit 1
+          fi
 
       - name: SonarQube end
         if: env.SONAR_TOKEN != ''

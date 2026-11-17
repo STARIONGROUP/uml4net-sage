@@ -39,8 +39,9 @@ uv run --extra dev ruff format .
 Without uv, `python -m venv .venv` and `.venv/Scripts/pip install -e ".[dev]"` (`.venv/bin/pip` on
 Linux/macOS) also work, but install the newest versions rather than the locked ones.
 
-CI (`.github/workflows/build-test.yml`) runs on Linux: the build, the tests with coverage, a check
-that the tests left no tracked file changed, ruff, pytest with coverage, and a SonarCloud analysis
+CI (`.github/workflows/build-test.yml`) runs on Linux: the build, the tests with coverage, ruff,
+pytest with coverage, a check that the .NET and Python tests left the working tree as checked out
+(no tracked file changed and no file `.gitignore` does not cover), and a SonarCloud analysis
 (`STARIONGROUP_uml4net-sage`). The `uv` it installs is `UvProvisioner.PinnedVersion`; change the two
 together.
 

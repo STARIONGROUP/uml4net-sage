@@ -66,8 +66,8 @@ dotnet build uml4net-sage.slnx
 dotnet test uml4net-sage.slnx
 ```
 
-A test run reaches no network and leaves the working tree clean; CI fails a pull request whose tests
-change a tracked file.
+A test run reaches no network and leaves the working tree clean; CI fails a pull request whose .NET
+or Python tests change a tracked file or leave a new file that `.gitignore` does not cover.
 
 ### Python
 

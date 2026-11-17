@@ -357,7 +357,10 @@ __pycache__/
 /tools/spec-extract/.venv/
 /tools/spec-extract/dist/
 
-# Coverage reports written by CI's test steps (dotnet-coverage at the root, pytest-cov in spec-extract)
+# What CI writes while it runs: the SonarScanner's working folder, and the coverage reports
+# (dotnet-coverage at the root, pytest-cov in spec-extract). The workflow fails when the tests leave
+# anything that is not ignored.
+/.sonarqube/
 /coverage.xml
 /tools/spec-extract/coverage.xml
 /tools/spec-extract/.coverage
