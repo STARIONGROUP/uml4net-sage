@@ -647,13 +647,22 @@ same way.
 
 ### Phase 1: The knowledge library in its final shape (#45)
 
-Everything structural, and the whole write path, in one pass. No query API yet, no MCP.
+Everything structural, and the whole write path. No query API yet, no MCP. Four pull requests, in
+order, each with its own issue (#59 to #62); #45 tracks them. The items keep the plan's order, except that the
+packages go with the composition (dropping Polly moves `SourceFetcher`'s retries onto the
+resilience handler) and the two generators come after the CLI, which does not need them.
 
 Ports from hypha: the root, `Layout/`, `Toolchain/`, `Hosting/`, `Progress/`, `Generation/`,
 `Metamodel/` and `Specification/` of `Hypha.Knowledge`, `Releases/` as `Versions/` and the
 operations of `Api/` as `Xmi/`; `Hypha.Knowledge.Metamodel`; the existing verbs' commands,
 `GlobalOptions`, `JsonOutput`, `ProgressDisplay` and `Hosting/` of `Hypha.Tools`; and the tests of
 all of them.
+
+#### Phase 1a: Projects, structure, headers and conventions (#59)
+
+The structural moves, before anything changes behaviour: every later part's diff then shows only what it changes.
+
+Ports from hypha: hypha's project files (each project's `RootNamespace`, `AssemblyName`, property groups, package references, `InternalsVisibleTo`), its solution folders and test project layout, its file header, and the conventions in its `CLAUDE.md`.
 
 - [ ] Projects: rename `Uml4Net.Sage.MetamodelGen` to `Uml4Net.Sage.Knowledge.Metamodel`; move the
       types of every generated JSON document into `Uml4Net.Sage.Knowledge`; reverse the reference;
@@ -666,8 +675,6 @@ all of them.
     and the MCP library cannot reference the executable.
 - [ ] The solution structure of 2.4: project folders, project files in hypha's shape, test projects
       laid out as hypha's, `Nuget.Config` renamed `NuGet.config`, `coverlet.runsettings` removed.
-- [ ] `Directory.Packages.props` as hypha's (2.4): its packages at its versions, and none of Sage's
-      that hypha does without.
 - [ ] Hypha's file header (2.0) on every `.cs` and `.py` file, in one mechanical commit, and
       `CLAUDE.md`'s header convention pointing at it.
   - **Decided: SPDX headers, as hypha** (17 November 2026), in place of the full Apache text in
@@ -675,6 +682,16 @@ all of them.
 - [ ] `CLAUDE.md` takes the conventions hypha's has and Sage's lacks: one public type per file;
       services through dependency injection, with options and `ILogger`; no dash as punctuation in
       prose. Sage's conventions that hypha's code also follows stay as they are.
+- [ ] Tests: the solution builds and every existing test passes after the moves and renames, with nothing but names and headers changed in the test code.
+
+#### Phase 1b: Packages, composition, contracts and generators (#60)
+
+How the libraries are put together and what they write, before the write path moves onto it.
+
+Ports from hypha: hypha's `Directory.Packages.props`; the root of `Hypha.Knowledge` (`HyphaKnowledgeOptions`, `ServiceCollectionExtensions`, with its named HTTP clients and resilience handler), its `Metamodel/`, `Specification/` and the `IKnowledgeGenerator` / `IKnowledgeBuilder` part of `Generation/`; `Hypha.Knowledge.Metamodel`'s `ServiceCollectionExtensions`; and their tests.
+
+- [ ] `Directory.Packages.props` as hypha's (2.4): its packages at its versions, and none of Sage's
+      that hypha does without.
 - [ ] Composition: `SageKnowledgeOptions` (home, repository root, output root, toolchain root, the
       omg.org addresses, download concurrency, lock wait) with validation; `AddSageKnowledge` and
       `AddSageMetamodel` registering every service; constructors injectable, no hidden statics;
@@ -689,6 +706,14 @@ all of them.
       cross-references (40), data package (50); and for the XMI axis, a separate collection:
       specification text (10), data package (20). A generator whose inputs are absent returns
       `Skipped` with a reason; inputs that would yield wrong output throw.
+- [ ] Tests: generation is byte-for-byte deterministic across two runs; every document carries its `schemaVersion`; the services resolve from `AddSageKnowledge` and `AddSageMetamodel`.
+
+#### Phase 1c: Home folder, version operations, toolchain and CLI (#61)
+
+The write path and the verbs over it: the one part that changes what a user sees.
+
+Ports from hypha: `Layout/`, `Progress/`, `Toolchain/`, `Hosting/` and `Generation/SpecGenerator` of `Hypha.Knowledge`, `Releases/` as `Versions/` and the operations of `Api/` as `Xmi/`; the existing verbs' commands, `GlobalOptions`, `JsonOutput`, `ProgressDisplay` and `Hosting/` of `Hypha.Tools`; and their tests.
+
 - [ ] The home folder and the resolution order of 2.5, replacing `RepositoryRootResolver`; a checkout
       is a folder that also holds `uml4net-sage.slnx`.
   - **Decided: the variable is `UML4NET_SAGE_HOME`**, and the default folder `uml4net-sage` in the
@@ -722,6 +747,23 @@ all of them.
       `tools/spec-extract` (`pyproject.toml`, `uv.lock`, `src/`) is embedded and unpacked into
       `toolchain/spec-extract/` outside a source checkout; `uv`, its cache and its managed Python
       live in `toolchain/`.
+- [ ] The CLI over the new services: `fetch`, `generate [artifact]`, `versions`, `use`, `remove`,
+      `check`, `inspect`, and `uml4net-sage xmi fetch|generate|list|use|remove`, all asynchronous so
+      that cancellation reaches them; a live progress display when the output is a terminal.
+- [ ] `--json` in its final form: camelCase documents, `{"error": "..."}` on every failure, exit
+      codes 0, 1, 2 (a usage error) and 130 (cancelled). `JsonOutputTests`, `tools/README.md` and
+      `CLAUDE.md` are updated in the same change.
+  - **Decided: camelCase everywhere from 2.0.0**, as hypha. The PascalCase names were pinned for
+    the hook binary and the skills, and both stop reading them. It is a breaking change to `check`,
+    `versions` and `inspect`, made in the major version.
+- [ ] Tests: two processes installing and switching at once; a reader never sees half a file; the extractor unpacked, kept in a checkout, replaced when it differs; the home folder rules (absolute path, checkout marker).
+
+#### Phase 1d: Specification extractor and metamodel generator (#62)
+
+The two generators brought level with hypha's, on the composition of 1b.
+
+Ports from hypha: hypha's `tools/spec-extract`; the `Generation/`, `Generators/` and `Templates/` of `Hypha.Knowledge.Metamodel`; and `Hypha.Knowledge.Metamodel.Tests` with its `Expected/` golden files and their bless tests.
+
 - [ ] `tools/spec-extract` brought level with hypha's: hypha's files and tests where Sage has none
       or an older copy (`model.py`, `conftest.py`, `test_cli.py`, `test_generate.py`,
       `test_pipeline_real.py`), with Sage's adaptations to the UML and XMI PDFs kept and each one
@@ -732,19 +774,7 @@ all of them.
       the Standard Profile index, and hypha's package diagrams (`diagrams/<Package>.md`). Sage's
       C# page writers (`Generators/`, `Markdown/`, `Model/`) go. `Expected/` golden files from the
       toy fixture, re-blessed by an `[Explicit]` test, as hypha's.
-- [ ] The CLI over the new services: `fetch`, `generate [artifact]`, `versions`, `use`, `remove`,
-      `check`, `inspect`, and `uml4net-sage xmi fetch|generate|list|use|remove`, all asynchronous so
-      that cancellation reaches them; a live progress display when the output is a terminal.
-- [ ] `--json` in its final form: camelCase documents, `{"error": "..."}` on every failure, exit
-      codes 0, 1, 2 (a usage error) and 130 (cancelled). `JsonOutputTests`, `tools/README.md` and
-      `CLAUDE.md` are updated in the same change.
-  - **Decided: camelCase everywhere from 2.0.0**, as hypha. The PascalCase names were pinned for
-    the hook binary and the skills, and both stop reading them. It is a breaking change to `check`,
-    `versions` and `inspect`, made in the major version.
-- [ ] Tests: generation is byte-for-byte deterministic across two runs; `dotnet test` leaves the
-      working tree clean; two processes installing and switching at once; a reader never sees half a
-      file; the extractor unpacked, kept in a checkout, replaced when it differs; the home folder
-      rules (absolute path, checkout marker).
+- [ ] Tests: generation stays byte-for-byte deterministic across two runs; the `Expected/` golden files match.
 
 ### Phase 2: The query API, and the facts it needs (#46)
 
