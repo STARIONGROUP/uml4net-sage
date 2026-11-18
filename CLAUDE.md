@@ -56,7 +56,6 @@ before bumping either).
 | `tools/knowledge-gen/Uml4Net.Sage.Knowledge` | `KnownUmlVersions` registry, `SourceFetcher` (plain HTTPS GETs from omg.org), `PythonSpecExtractRunner` (the C#/Python seam), `DataPackageGenerator`, `InstalledVersionsStore` |
 | `tools/inspection/Uml4Net.Sage.Inspection` | Checks a UML model file serialized as XMI against the metamodel (`XmiDocumentScanner`, `XmiInspector`, `MetamodelFacts`); the `inspect` verb runs it |
 | `tools/sage-cli/Uml4Net.Sage.Tools` | The `uml4net-sage` CLI: `fetch`, `generate`, `versions`, `use`, `remove`, `check`, `inspect` |
-| `tools/sage-cli/Uml4Net.Sage.Tools.Hook` | The committed, NativeAOT, dependency-free SessionStart hook |
 | `tools/spec-extract` | Python: PDF-to-markdown clause extraction |
 
 ### Key types & patterns
@@ -90,8 +89,9 @@ before bumping either).
     the extensions whose `ExtensionEnd` is typed by that stereotype itself.
 - **Why the full CLI is not NativeAOT**: `uml4net.xmi` (reflection-heavy), Spectre.Console and
   System.CommandLine are not trim/AOT-friendly, so the CLI ships as a self-contained (non-AOT) publish
-  per runtime identifier (`.github/workflows/release.yml`). Only the dependency-free SessionStart hook
-  (`tools/sage-cli/Uml4Net.Sage.Tools.Hook`) is NativeAOT - see `hooks/native/README.md`.
+  per runtime identifier (`.github/workflows/release.yml`). Only plugin 1.x's SessionStart hook is
+  NativeAOT; its source was removed in #59 and its binaries stay in `hooks/native/` until Phase 4 of
+  the MCP refactor (#48) replaces it with the launcher - see `hooks/native/README.md`.
 - **`PythonSpecExtractRunner`'s `uv` fallback**: verbatim spec citation (both `uml-spec-citation` and
   `xmi-spec-citation`) shells out to
   `tools/spec-extract` (Python/pdfplumber). It first tries a `.venv` under that directory or a system
@@ -104,8 +104,8 @@ before bumping either).
   `SpecExtractionOutcome.Skipped` with a reason; it never throws or aborts the rest of `generate`.
 - **`--json` is a contract**: `check`, `versions` and `inspect` write through
   `Commands/JsonOutput` (one line on stdout, `{"error": "..."}` on every failure, including parse
-  errors handled in `Program.Main`). Keep the PascalCase property names: the committed hook binary's
-  `CheckResult` and the skills read them, and `JsonOutputTests` pins them. The shapes are in
+  errors handled in `Program.Main`). Keep the PascalCase property names: plugin 1.x's hook binary
+  and its skills read them, and `JsonOutputTests` pins them, until #61 moves them to camelCase. The shapes are in
   `tools/README.md`.
 - **Determinism of generated artifacts**: every generator sorts with `StringComparer.Ordinal`,
   writes LF line endings (`.gitattributes` pins this), and uses fixed `System.Text.Json` options
@@ -127,8 +127,8 @@ fresh, per machine, by `uml4net-sage fetch` + `generate`.
 **Committed**: everything version-independent - `knowledge/registry.json` and the `*.schema.json`
 files (they describe uml4net-sage's own output shape, not OMG content), `sources/README.md` and
 `knowledge/README.md` (provenance/shape documentation, no OMG text), the plugin's `skills/`/
-`agents/`/`commands/`, and `hooks/native/*` binaries (compiled from this repo's own C# source - see
-`hooks/native/README.md` for why binaries are the one exception to "nothing generated is
+`agents/`/`commands/`, and `hooks/native/*` binaries (compiled from this repo's own C# source, at tag `v1.6.0` -
+see `hooks/native/README.md` for why binaries are the one exception to "nothing generated is
 committed").
 
 **No committed test fixtures derived from OMG content**: `Uml4Net.Sage.Knowledge.Metamodel.Tests` uses

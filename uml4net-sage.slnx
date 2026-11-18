@@ -18,8 +18,6 @@
     <Project Path="tools/metamodel-gen/Uml4Net.Sage.Knowledge.Metamodel/Uml4Net.Sage.Knowledge.Metamodel.csproj" />
   </Folder>
   <Folder Name="/tools/sage-cli/">
-    <Project Path="tools/sage-cli/Uml4Net.Sage.Tools.Hook.Tests/Uml4Net.Sage.Tools.Hook.Tests.csproj" />
-    <Project Path="tools/sage-cli/Uml4Net.Sage.Tools.Hook/Uml4Net.Sage.Tools.Hook.csproj" />
     <Project Path="tools/sage-cli/Uml4Net.Sage.Tools.Tests/Uml4Net.Sage.Tools.Tests.csproj" />
     <Project Path="tools/sage-cli/Uml4Net.Sage.Tools/Uml4Net.Sage.Tools.csproj" />
   </Folder>

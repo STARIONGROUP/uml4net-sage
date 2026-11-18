@@ -1,7 +1,12 @@
 # hooks/native/
 
+> **Being retired.** The hook's source, `tools/sage-cli/Uml4Net.Sage.Tools.Hook`, was removed in
+> #59: in the MCP refactor (#43) a launcher replaces it, and Phase 4 (#48) removes this folder with
+> the `hooks` block of `.claude-plugin/plugin.json`. Until then these are the binaries plugin 1.x
+> ships. Their source is at the tag `v1.6.0`, which is also what the marketplace installs.
+
 Committed, platform-specific `SessionStart` hook binaries: a small, dependency-free NativeAOT build
-of `tools/sage-cli/Uml4Net.Sage.Tools.Hook`. This binary only checks local knowledge-base status
+of `tools/sage-cli/Uml4Net.Sage.Tools.Hook` (at `v1.6.0`). This binary only checks local knowledge-base status
 and (on demand) downloads/verifies the full `uml4net-sage` CLI from a GitHub Release - it never
 depends on `uml4net.xmi`, PdfPig-equivalents, or any other heavy library, which is what makes it
 NativeAOT-publishable in the first place (the full CLI is not - see the root `CLAUDE.md`).
@@ -49,11 +54,12 @@ command). Adding a second, `"shell":"powershell"`-forced hook entry to cover thi
 unconditionally on every platform, including POSIX machines that don't have `pwsh` installed by
 default - trading a Windows-only, non-blocking annoyance for a new one on every other platform.
 
-## How these are built
+## How these were built
 
-`.github/workflows/hook-binaries.yml` runs a build matrix across the three currently-buildable
-runtime identifiers and commits the resulting binaries here as part of cutting a release. To build
-one locally (including for `osx-x64`, on real Intel-Mac hardware):
+Up to `v1.6.0`, `.github/workflows/hook-binaries.yml` ran a build matrix across the three
+buildable runtime identifiers and committed the resulting binaries here as part of cutting a
+release. Both it and the source were removed in #59; from a checkout of `v1.6.0`, one is built
+locally (including for `osx-x64`, on real Intel-Mac hardware) with:
 
 ```bash
 dotnet publish tools/sage-cli/Uml4Net.Sage.Tools.Hook -r <rid> -c Release --self-contained -p:PublishAot=true -o hooks/native/<rid>
