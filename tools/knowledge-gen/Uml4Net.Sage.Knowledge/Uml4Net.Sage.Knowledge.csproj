@@ -12,6 +12,11 @@
       The uml4net-sage knowledge base: the registry of UML and XMI specification versions, fetching
       their sources from omg.org, generating the knowledge from them, and recording what is installed.
     </Description>
+    <Authors>Starion Group S.A.</Authors>
+    <Company>Starion Group S.A.</Company>
+    <Copyright>Copyright 2026 Starion Group S.A.</Copyright>
+    <RepositoryUrl>https://github.com/STARIONGROUP/uml4net-sage</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>

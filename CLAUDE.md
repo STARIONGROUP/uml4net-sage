@@ -180,7 +180,8 @@ mycelium-hypha's, whose code Sage ports (`sage-mcp-refactor-plan.md`, section 2.
 - **License header:** every source file (C#, Python, TypeScript and JavaScript) opens with two SPDX
   comment lines and nothing else: `SPDX-FileCopyrightText: 2026 Starion Group S.A.` and
   `SPDX-License-Identifier: Apache-2.0`, as `//` or `#` comments, as mycelium-hypha's do. The root
-  `.editorconfig`'s `file_header_template` writes it into new C# files.
+  `.editorconfig`'s `file_header_template` writes it into new C# files. The Handlebars templates
+  (#62) carry it in a `{{!-- --}}` comment, which renders nothing.
 - Default branch: `development` (never work directly on `master`). Create feature branches from
   `development` (`feature/gh-<n>-<name>` or `fix/gh-<n>-<name>`); rebase before submitting PRs. Ask
   before committing or pushing. Commit subject: `[Verb] <summary>; fixes #<n>` (or `refs #<n>`).

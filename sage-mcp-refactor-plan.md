@@ -90,7 +90,8 @@ file opens with two SPDX comment lines and nothing else, as hypha's do since its
 // SPDX-License-Identifier: Apache-2.0
 ```
 
-Python files take the same two lines as `#` comments. The `.editorconfig`'s `file_header_template`
+Python files take the same two lines as `#` comments, and the Handlebars templates (1d) carry them
+in a `{{!-- --}}` comment, which renders nothing. The `.editorconfig`'s `file_header_template`
 writes the header into new C# files, as hypha's does.
 
 ### 2.1 Principles (hypha's ten, unchanged)
@@ -247,8 +248,9 @@ Packages: hypha's `Directory.Packages.props`, its packages at its versions. At `
 `Microsoft.Sbom.Targets`, `ModelContextProtocol`, `Spectre.Console.Testing`, `uml4net.Extensions`
 and `uml4net.Reporting` to Sage, raises `uml4net.xmi` from 9.1.0 to 9.2.0 among others, and removes
 Sage's `Polly`, `Polly.Extensions.Http`, `Microsoft.Extensions.Http`,
-`Microsoft.Extensions.Http.Polly`, `Serilog`, `NUnit.Console` and `coverlet.msbuild`, which hypha
-does without. Sage adds a package only for a 2.10 entry.
+`Microsoft.Extensions.Http.Polly` and `Serilog`, which hypha does without. (`NUnit.Console` and
+`coverlet.msbuild` went in 1a, when the test projects took hypha's package references.) Sage adds
+a package only for a 2.10 entry.
 
 Which project references which, after the change. The one difference from hypha is
 `Uml4Net.Sage.Inspection`; today the arrow between the first two runs the other way.
@@ -461,7 +463,7 @@ uml4net-sage/
 ├── extensions/vscode/           the VS Code extension: package.json, src/, scripts/, host tests, icon.png
 ├── bin/                         the committed launchers (replaces hooks/native/)
 ├── CHANGELOG.md, RELEASING.md
-└── .github/                     CONTRIBUTING.md, templates, dependabot.yml, copilot-instructions.md
+└── .github/                     CONTRIBUTING.md, SECURITY.md, templates, dependabot.yml, copilot-instructions.md
 ```
 
 Every manifest is rendered from `manifest.source.json` by code in the CLI's test project, as in
@@ -509,7 +511,7 @@ What "on par" means, item by item. Anything not in this table is not in hypha ei
 | Release workflow: manual start, tests, SBOM, third-party notices, smoke test, checksum table, draft, NuGet | The same |
 | Launcher binaries, First start, Desktop bundle and Publish extension workflows | The same; the First start check is written in C# |
 | CI: locked `uv`, "the tests wrote nothing", `jq` required, extension jobs on three systems, SonarCloud | The same |
-| CHANGELOG, RELEASING, CONTRIBUTING, templates, dependabot, copilot-instructions, wiki | The same |
+| CHANGELOG, RELEASING, CONTRIBUTING, SECURITY, templates, dependabot, copilot-instructions, wiki | The same |
 
 What hypha has that Sage does not port, and what Sage has beyond hypha, are in 2.10, each with its
 reason.
@@ -885,7 +887,8 @@ rendered from it, with `PackageManifests.cs` and `PackageManifestTests.cs`; `pac
 ### Phase 5: Release (#49)
 
 Ports from hypha: `release.yml`, `first-start.yml` (its check in C#, 2.10), `desktop-bundle.yml`,
-`publish-vscode.yml`, the extension jobs of `build-test-sonar.yml`, and `RELEASING.md`.
+`publish-vscode.yml`, the extension jobs of `build-test-sonar.yml`, `RELEASING.md`, and
+`.github/SECURITY.md` (hypha's since its `6f69242`).
 
 - [ ] `release.yml` as hypha's: started by hand with a version; tests; the .NET tool package with
       its SBOM; the self-contained single-file `uml4net-sage` for five platforms; a smoke test
@@ -908,6 +911,9 @@ Ports from hypha: `release.yml`, `first-start.yml` (its check in C#, 2.10), `des
 - [ ] `RELEASING.md`: the three version lines; the order (tools, then the plugin, then the
       extension); the pre-release procedure; the plugin steps (bump `manifest.source.json`,
       re-render, move the CHANGELOG entries, merge, tag, publish the release by hand).
+- [ ] `.github/SECURITY.md` as hypha's: private reporting through GitHub, best effort, and the
+      newest release of each part supported. Its table of parts (plugin with launcher, CLI and
+      server, VS Code extension) and their tags only exist once this phase releases them.
 - [ ] Before the first publish: the nuget.org package id and `NUGET_API_KEY`; the Marketplace
       publisher and Open VSX namespace with Trusted Publishing for the publish workflow.
   - **Still open:** which publisher the extension goes out under, an existing Starion Group one or

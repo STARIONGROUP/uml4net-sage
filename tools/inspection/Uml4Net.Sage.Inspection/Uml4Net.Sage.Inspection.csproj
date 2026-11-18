@@ -13,6 +13,11 @@
       abstract or unknown metaclasses, duplicate ids, multiplicities and misapplied stereotypes, read
       with uml4net and reported as findings.
     </Description>
+    <Authors>Starion Group S.A.</Authors>
+    <Company>Starion Group S.A.</Company>
+    <Copyright>Copyright 2026 Starion Group S.A.</Copyright>
+    <RepositoryUrl>https://github.com/STARIONGROUP/uml4net-sage</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>

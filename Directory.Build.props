@@ -1,53 +1,17 @@
 <Project>
 
   <!-- Shared MSBuild properties imported at the top of every project in the solution. mycelium-hypha
-       has no Directory.Build.props and repeats these in each project file; uml4net-sage keeps them
-       here (sage-mcp-refactor-plan.md, section 2.10), with hypha's values. What hypha sets per
-       project (RootNamespace, AssemblyName, Description, ...) stays in each project file. -->
+       has no Directory.Build.props and opens each project file with these four properties; uml4net-sage
+       keeps them here instead (sage-mcp-refactor-plan.md, section 2.10), with hypha's values. Everything
+       else hypha sets per project (RootNamespace, AssemblyName, the Assembly group, the test packages,
+       IsPackable) stays in each project file, as hypha has it. -->
 
-  <PropertyGroup Label="What hypha's project files repeat">
+  <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
     <!-- Hypha enables implicit usings; Sage writes every using out (section 2.10). -->
     <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <PropertyGroup Label="Company / repository metadata (all projects)">
-    <Authors>Starion Group S.A.</Authors>
-    <Company>Starion Group S.A.</Company>
-    <Copyright>Copyright 2026 Starion Group S.A.</Copyright>
-    <RepositoryUrl>https://github.com/STARIONGROUP/uml4net-sage</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <NeutralLanguage>en-US</NeutralLanguage>
-    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Test-project defaults" Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
-
-  <ItemGroup Label="Shared test harness (all *.Tests projects)" Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="NUnit" />
-    <PackageReference Include="NUnit.Console" />
-    <PackageReference Include="NUnit3TestAdapter">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="NUnit.Analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.collector">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.msbuild">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
 
 </Project>

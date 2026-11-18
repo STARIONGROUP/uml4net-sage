@@ -7,12 +7,22 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly">
-    <!-- Hypha's Package and Publish groups, with the .NET tool, come with the release in Phase 5 (#49). -->
+    <!-- Hypha's Package group, with the .NET tool, and the rest of its Publish group come with the
+         release in Phase 5 (#49). -->
     <Description>
       Fetches the OMG UML and XMI specifications, generates a local knowledge base from them
       (metamodel, Standard Profile, specification text) and checks UML model files against it, with
       JSON output for editors and language-model tools.
     </Description>
+    <Authors>Starion Group S.A.</Authors>
+    <Company>Starion Group S.A.</Company>
+    <Copyright>Copyright 2026 Starion Group S.A.</Copyright>
+    <RepositoryUrl>https://github.com/STARIONGROUP/uml4net-sage</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Publish">
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>

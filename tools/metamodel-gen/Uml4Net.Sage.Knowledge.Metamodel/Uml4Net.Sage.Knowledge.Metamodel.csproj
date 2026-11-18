@@ -13,6 +13,11 @@
       per metaclass, enumeration, primitive type, association and stereotype, an index, and the
       metamodel graph.
     </Description>
+    <Authors>Starion Group S.A.</Authors>
+    <Company>Starion Group S.A.</Company>
+    <Copyright>Copyright 2026 Starion Group S.A.</Copyright>
+    <RepositoryUrl>https://github.com/STARIONGROUP/uml4net-sage</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
