@@ -18,7 +18,7 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------------
 
-namespace Uml4Net.Sage.Knowledge.Metamodel.Tests.Generators
+namespace Uml4Net.Sage.Knowledge.Metamodel.Tests
 {
     using System.Linq;
 

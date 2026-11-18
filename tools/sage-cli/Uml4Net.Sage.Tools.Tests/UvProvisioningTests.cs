@@ -7,7 +7,7 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------------
 
-namespace Uml4Net.Sage.Tools.Tests.Commands
+namespace Uml4Net.Sage.Tools.Tests
 {
     using System;
     using System.IO;

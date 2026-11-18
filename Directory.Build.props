@@ -1,20 +1,27 @@
 <Project>
 
-  <!-- Shared MSBuild properties imported at the top of every project in the solution.
-       Per-project values (Version, PackageId, Title, Description, TargetFramework, ...)
-       stay in each .csproj. -->
+  <!-- Shared MSBuild properties imported at the top of every project in the solution. mycelium-hypha
+       has no Directory.Build.props and repeats these in each project file; uml4net-sage keeps them
+       here (sage-mcp-refactor-plan.md, section 2.10), with hypha's values. What hypha sets per
+       project (RootNamespace, AssemblyName, Description, ...) stays in each project file. -->
+
+  <PropertyGroup Label="What hypha's project files repeat">
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <!-- Hypha enables implicit usings; Sage writes every using out (section 2.10). -->
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
 
   <PropertyGroup Label="Company / repository metadata (all projects)">
+    <Authors>Starion Group S.A.</Authors>
     <Company>Starion Group S.A.</Company>
-    <Copyright>Copyright © Starion Group S.A.</Copyright>
-    <Authors>Sam Gerené</Authors>
-    <RepositoryUrl>https://github.com/STARIONGROUP/uml4net-sage.git</RepositoryUrl>
-    <RepositoryType>Git</RepositoryType>
+    <Copyright>Copyright 2026 Starion Group S.A.</Copyright>
+    <RepositoryUrl>https://github.com/STARIONGROUP/uml4net-sage</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <NeutralLanguage>en-US</NeutralLanguage>
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
   <PropertyGroup Label="Test-project defaults" Condition="$(MSBuildProjectName.EndsWith('.Tests'))">

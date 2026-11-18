@@ -1,7 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Uml4Net.Sage.Knowledge.Metamodel</RootNamespace>
+    <AssemblyName>Uml4Net.Sage.Knowledge.Metamodel</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Assembly">
+    <!-- Not a package of its own: the uml4net-sage CLI carries it. -->
+    <IsPackable>false</IsPackable>
+    <Description>
+      Generates the metamodel and Standard Profile knowledge of a UML version from its XMI: one page
+      per metaclass, enumeration, primitive type, association and stereotype, an index, and the
+      metamodel graph.
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>
