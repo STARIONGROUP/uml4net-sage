@@ -647,10 +647,11 @@ same way.
 
 ### Phase 1: The knowledge library in its final shape (#45)
 
-Everything structural, and the whole write path. No query API yet, no MCP. Four pull requests, in
-order, each with its own issue (#59 to #62); #45 tracks them. The items keep the plan's order, except that the
-packages go with the composition (dropping Polly moves `SourceFetcher`'s retries onto the
-resilience handler) and the two generators come after the CLI, which does not need them.
+Everything structural, and the whole write path. No query API yet, no MCP. Four pull requests,
+each with its own issue (#59 to #62), tracked by #45, in the order of hypha's own layers: names
+and structure first; then the foundations every hypha generator and operation stands on
+(layout, composition, toolchain, generation); then the write path and the CLI over it; then
+what two of the generators write.
 
 Ports from hypha: the root, `Layout/`, `Toolchain/`, `Hosting/`, `Progress/`, `Generation/`,
 `Metamodel/` and `Specification/` of `Hypha.Knowledge`, `Releases/` as `Versions/` and the
@@ -658,18 +659,21 @@ operations of `Api/` as `Xmi/`; `Hypha.Knowledge.Metamodel`; the existing verbs'
 `GlobalOptions`, `JsonOutput`, `ProgressDisplay` and `Hosting/` of `Hypha.Tools`; and the tests of
 all of them.
 
-#### Phase 1a: Projects, structure, headers and conventions (#59)
+#### Phase 1a: Names and structure (#59)
 
-The structural moves, before anything changes behaviour: every later part's diff then shows only what it changes.
+Hypha's names, folders, project files and file headers, with no change in behaviour, so that every later part's diff reads against hypha's.
 
 Ports from hypha: hypha's project files (each project's `RootNamespace`, `AssemblyName`, property groups, package references, `InternalsVisibleTo`), its solution folders and test project layout, its file header, and the conventions in its `CLAUDE.md`.
 
-- [ ] Projects: rename `Uml4Net.Sage.MetamodelGen` to `Uml4Net.Sage.Knowledge.Metamodel`; move the
-      types of every generated JSON document into `Uml4Net.Sage.Knowledge`; reverse the reference;
-      move `Inspection/` into `Uml4Net.Sage.Inspection`. Delete `Uml4Net.Sage.Tools.Hook`, its tests
-      and `hook-binaries.yml` now: the released plugin runs the committed binaries of its own tag.
-  - **Decided: the rename.** `Uml4Net.Sage.MetamodelGen` becomes `Uml4Net.Sage.Knowledge.Metamodel`
-    in the same change that reverses the reference, so this repository and hypha read alike.
+- [ ] Projects: rename `Uml4Net.Sage.MetamodelGen` to `Uml4Net.Sage.Knowledge.Metamodel` (projects,
+      folders, namespaces, test project); move `Inspection/` into `Uml4Net.Sage.Inspection`. Delete
+      `Uml4Net.Sage.Tools.Hook`, its tests and `hook-binaries.yml` now: the released plugin runs the
+      committed binaries of its own tag.
+  - **Decided: the rename comes first**, in 1a, so that every later diff reads against hypha's names.
+    The reference between the two projects keeps its current direction until 1b, where hypha's
+    generator interfaces make the reversal possible: today `KnowledgeGenerationService` calls the
+    metamodel generator directly, and the JSON types cannot move into `Uml4Net.Sage.Knowledge`
+    while that library still references the generator.
   - **Decided: inspection gets its own library**, `Uml4Net.Sage.Inspection` in `tools/inspection`,
     with its own test project. It needs `uml4net.xmi`, which stays out of `Uml4Net.Sage.Knowledge`,
     and the MCP library cannot reference the executable.
@@ -682,14 +686,26 @@ Ports from hypha: hypha's project files (each project's `RootNamespace`, `Assemb
 - [ ] `CLAUDE.md` takes the conventions hypha's has and Sage's lacks: one public type per file;
       services through dependency injection, with options and `ILogger`; no dash as punctuation in
       prose. Sage's conventions that hypha's code also follows stay as they are.
-- [ ] Tests: the solution builds and every existing test passes after the moves and renames, with nothing but names and headers changed in the test code.
+- [ ] Tests: the solution builds and every existing test passes after the moves and renames, with nothing but names, namespaces, folders and headers changed in the test code.
 
-#### Phase 1b: Packages, composition, contracts and generators (#60)
+#### Phase 1b: Foundations: layout, composition, toolchain and generation (#60)
 
-How the libraries are put together and what they write, before the write path moves onto it.
+The layers every hypha generator and operation stands on: where the files are (`Layout/`), how services are composed (options, dependency injection, logging, HTTP clients), how external tools run (`Hosting/`, `Toolchain/`), and how knowledge is generated (`Generation/`). The existing Sage generators come to run on them, and the project reference turns round.
 
-Ports from hypha: hypha's `Directory.Packages.props`; the root of `Hypha.Knowledge` (`HyphaKnowledgeOptions`, `ServiceCollectionExtensions`, with its named HTTP clients and resilience handler), its `Metamodel/`, `Specification/` and the `IKnowledgeGenerator` / `IKnowledgeBuilder` part of `Generation/`; `Hypha.Knowledge.Metamodel`'s `ServiceCollectionExtensions`; and their tests.
+Ports from hypha: `HyphaKnowledgeOptions`, `ServiceCollectionExtensions`, `Layout/`, `Hosting/`, `Progress/`, `Toolchain/`, `Generation/`, `Metamodel/` and `Specification/` of `Hypha.Knowledge`; `Hypha.Knowledge.Metamodel`'s `ServiceCollectionExtensions`; hypha's `Directory.Packages.props`; and their tests.
 
+- [ ] The home folder and the resolution order of 2.5, replacing `RepositoryRootResolver`; a checkout
+      is a folder that also holds `uml4net-sage.slnx`.
+  - **Decided: the variable is `UML4NET_SAGE_HOME`**, and the default folder `uml4net-sage` in the
+    per-user local application data folder. "Sage" is also the name of other software (SageMath,
+    Sage accounting), so a bare `SAGE_HOME` could be set by something else.
+- [ ] Every generated file and manifest written through a temporary file and a rename
+      (`ReaderSafeFile`), replacing the `File.WriteAll*` calls.
+- [ ] The reference reversed, as hypha's: `Uml4Net.Sage.Knowledge.Metamodel` references
+      `Uml4Net.Sage.Knowledge` and never the reverse, and the types of every generated JSON document
+      move into `Uml4Net.Sage.Knowledge`, so that reading `metamodel.json` needs neither the
+      generator nor uml4net. `KnowledgeGenerationService` goes: generation runs through the
+      generator collection below.
 - [ ] `Directory.Packages.props` as hypha's (2.4): its packages at its versions, and none of Sage's
       that hypha does without.
 - [ ] Composition: `SageKnowledgeOptions` (home, repository root, output root, toolchain root, the
@@ -701,24 +717,28 @@ Ports from hypha: hypha's `Directory.Packages.props`; the root of `Hypha.Knowled
       camelCase with the fixed options of `MetamodelJsonGenerator.SerializerOptions`; a
       `schemaVersion` on every document and on `installed.json`; a committed schema for each
       document that has none.
+- [ ] hypha's `Toolchain/` (`IUvProvisioner`, `UvProvisioner`, `UvPlatform`, `ISpecExtractProject`,
+      `SpecExtractProject`), `Hosting/` (`IProcessRunner`, `IProcessProbe` and their system
+      implementations) and `Generation/SpecGenerator`, with their tests, replacing Sage's
+      `PythonSpecExtractRunner`, `ProcessRunner` and `SpecExtractionOutcome` (`UvProvisioner`,
+      `UvPlatform` and `IUvProvisioner` are hypha's since #44), and the interim
+      `Commands/UvProvisioning.cs` that hands the provisioner its client, logger and cache folder.
+      `tools/spec-extract` (`pyproject.toml`, `uv.lock`, `src/`) is embedded and unpacked into
+      `toolchain/spec-extract/` outside a source checkout; `uv`, its cache and its managed Python
+      live in `toolchain/`.
 - [ ] Generators as an `IKnowledgeGenerator` collection (`Artifact`, `Order`, `GenerateAsync`), run
       by one `IKnowledgeBuilder`: metamodel (10), standard profile (20), specification text (30),
       cross-references (40), data package (50); and for the XMI axis, a separate collection:
       specification text (10), data package (20). A generator whose inputs are absent returns
       `Skipped` with a reason; inputs that would yield wrong output throw.
-- [ ] Tests: generation is byte-for-byte deterministic across two runs; every document carries its `schemaVersion`; the services resolve from `AddSageKnowledge` and `AddSageMetamodel`.
+- [ ] Tests: generation is byte-for-byte deterministic across two runs; every document carries its `schemaVersion`; the services resolve from `AddSageKnowledge` and `AddSageMetamodel`; a reader never sees half a file; the extractor unpacked, kept in a checkout, replaced when it differs; the home folder rules (absolute path, checkout marker).
 
-#### Phase 1c: Home folder, version operations, toolchain and CLI (#61)
+#### Phase 1c: Write path: version operations and the CLI (#61)
 
-The write path and the verbs over it: the one part that changes what a user sees.
+Installing, switching and removing versions on both axes, under the lock, and the CLI verbs over them: the part that changes what a user sees.
 
-Ports from hypha: `Layout/`, `Progress/`, `Toolchain/`, `Hosting/` and `Generation/SpecGenerator` of `Hypha.Knowledge`, `Releases/` as `Versions/` and the operations of `Api/` as `Xmi/`; the existing verbs' commands, `GlobalOptions`, `JsonOutput`, `ProgressDisplay` and `Hosting/` of `Hypha.Tools`; and their tests.
+Ports from hypha: `Releases/` of `Hypha.Knowledge` as `Versions/` and the operations of `Api/` as `Xmi/`; the existing verbs' commands, `GlobalOptions`, `JsonOutput`, `ProgressDisplay` and `Hosting/` of `Hypha.Tools`; and their tests.
 
-- [ ] The home folder and the resolution order of 2.5, replacing `RepositoryRootResolver`; a checkout
-      is a folder that also holds `uml4net-sage.slnx`.
-  - **Decided: the variable is `UML4NET_SAGE_HOME`**, and the default folder `uml4net-sage` in the
-    per-user local application data folder. "Sage" is also the name of other software (SageMath,
-    Sage accounting), so a bare `SAGE_HOME` could be set by something else.
 - [ ] `IVersionOperations` for the UML axis and `IXmiSpecOperations` for the XMI axis (as hypha's
       `IReleaseOperations` and `IApiOperations`): install (fetch, then generate), use, remove, under
       one cross-process lock, reporting one progress record through `IProgress<T>`. Each axis has its
@@ -736,17 +756,6 @@ Ports from hypha: `Layout/`, `Progress/`, `Toolchain/`, `Hosting/` and `Generati
     hypha does was reversed when the review showed there would be nothing in a format to copy.
 - [ ] The lock as hypha's: `.release-operation.lock` holding the process id, recovery of a lock
       whose process is gone, a wait of ten minutes under `serve` and none otherwise.
-- [ ] Every generated file and manifest written through a temporary file and a rename
-      (`ReaderSafeFile`), replacing the `File.WriteAll*` calls.
-- [ ] hypha's `Toolchain/` (`IUvProvisioner`, `UvProvisioner`, `UvPlatform`, `ISpecExtractProject`,
-      `SpecExtractProject`), `Hosting/` (`IProcessRunner`, `IProcessProbe` and their system
-      implementations) and `Generation/SpecGenerator`, with their tests, replacing Sage's
-      `PythonSpecExtractRunner`, `ProcessRunner` and `SpecExtractionOutcome` (`UvProvisioner`,
-      `UvPlatform` and `IUvProvisioner` are hypha's since #44), and the interim
-      `Commands/UvProvisioning.cs` that hands the provisioner its client, logger and cache folder.
-      `tools/spec-extract` (`pyproject.toml`, `uv.lock`, `src/`) is embedded and unpacked into
-      `toolchain/spec-extract/` outside a source checkout; `uv`, its cache and its managed Python
-      live in `toolchain/`.
 - [ ] The CLI over the new services: `fetch`, `generate [artifact]`, `versions`, `use`, `remove`,
       `check`, `inspect`, and `uml4net-sage xmi fetch|generate|list|use|remove`, all asynchronous so
       that cancellation reaches them; a live progress display when the output is a terminal.
@@ -756,11 +765,11 @@ Ports from hypha: `Layout/`, `Progress/`, `Toolchain/`, `Hosting/` and `Generati
   - **Decided: camelCase everywhere from 2.0.0**, as hypha. The PascalCase names were pinned for
     the hook binary and the skills, and both stop reading them. It is a breaking change to `check`,
     `versions` and `inspect`, made in the major version.
-- [ ] Tests: two processes installing and switching at once; a reader never sees half a file; the extractor unpacked, kept in a checkout, replaced when it differs; the home folder rules (absolute path, checkout marker).
+- [ ] Tests: two processes installing and switching at once; a failed fetch leaves the previous default; the `--json` documents of every verb, pinned in `JsonOutputTests`.
 
-#### Phase 1d: Specification extractor and metamodel generator (#62)
+#### Phase 1d: Generator content: the specification extractor and the metamodel pages (#62)
 
-The two generators brought level with hypha's, on the composition of 1b.
+What two of the generators write, brought level with hypha's, on the foundations of 1b.
 
 Ports from hypha: hypha's `tools/spec-extract`; the `Generation/`, `Generators/` and `Templates/` of `Hypha.Knowledge.Metamodel`; and `Hypha.Knowledge.Metamodel.Tests` with its `Expected/` golden files and their bless tests.
 
