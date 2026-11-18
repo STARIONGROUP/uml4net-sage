@@ -3,7 +3,10 @@
 > **Being retired.** The hook's source, `tools/sage-cli/Uml4Net.Sage.Tools.Hook`, was removed in
 > #59: in the MCP refactor (#43) a launcher replaces it, and Phase 4 (#48) removes this folder with
 > the `hooks` block of `.claude-plugin/plugin.json`. Until then these are the binaries plugin 1.x
-> ships. Their source is at the tag `v1.6.0`, which is also what the marketplace installs.
+> ships. Their source is at the tag `v1.6.0`, which is also what the marketplace installs. The
+> hook's last source state is `241d319^`: it has one fix that never shipped in these binaries,
+> 9cc2bfd ("The hook reads the CLI's stderr and kills the CLI when cancelled"), so a 1.x hotfix of
+> the hook starts from `v1.6.0` with 9cc2bfd applied, not from `v1.6.0` alone.
 
 Committed, platform-specific `SessionStart` hook binaries: a small, dependency-free NativeAOT build
 of `tools/sage-cli/Uml4Net.Sage.Tools.Hook` (at `v1.6.0`). This binary only checks local knowledge-base status
