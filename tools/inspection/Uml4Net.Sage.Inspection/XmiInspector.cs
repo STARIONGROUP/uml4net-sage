@@ -1,0 +1,524 @@
+// SPDX-FileCopyrightText: 2026 Starion Group S.A.
+// SPDX-License-Identifier: Apache-2.0
+
+namespace Uml4Net.Sage.Inspection
+{
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+
+    using Microsoft.Extensions.Logging;
+
+    using uml4net;
+    using uml4net.CommonStructure;
+    using uml4net.Extensions;
+    using uml4net.Packages;
+    using uml4net.xmi;
+    using uml4net.xmi.Readers;
+
+    using Uml4Net.Sage.Knowledge.Metamodel.Generators;
+
+    /// <summary>
+    /// Loads a user-supplied <c>.xmi</c>/<c>.uml</c> file via <c>uml4net.xmi</c> - the same reader the
+    /// knowledge base itself is built with - and checks it against the generated metamodel.
+    /// </summary>
+    /// <remarks>
+    /// Checks, in order:
+    /// <list type="number">
+    /// <item>A plain XML pass (<see cref="XmiDocumentScanner"/>) flags every element whose <c>xmi:type</c> is an
+    /// abstract or unknown metaclass, and every duplicate <c>xmi:id</c>, with line numbers - even when
+    /// <c>uml4net.xmi</c> then cannot read the file.</item>
+    /// <item>The file is read with <see cref="uml4net.xmi.Settings.IXmiReaderSettings.ThrowOnUnresolvedReferences"/>, so every
+    /// reference the reader could not resolve comes back as a structured
+    /// <see cref="XmiReferenceResolutionFailure"/> (element, property, identifier, kind). Only when there are
+    /// failures is it read a second time, without throwing, to get the model for the next checks.</item>
+    /// <item>Every element read is checked against the lower and finite upper bounds of the non-derived
+    /// features its metaclass requires (from <c>metamodel.json</c>).</item>
+    /// <item>Every stereotype application is checked for a resolved stereotype and target, and for a target
+    /// whose metaclass the stereotype (or one of its generals) actually extends.</item>
+    /// <item>Any remaining reader warning/error is surfaced as a <c>reader-diagnostic</c>.</item>
+    /// </list>
+    /// </remarks>
+    public static class XmiInspector
+    {
+        private const string PathmapScheme = "pathmap://";
+
+        private const string Error = "error";
+
+        private const string Warning = "warning";
+
+        /// <summary>
+        /// Log categories whose messages the structured checks already report (unresolved references and
+        /// stereotype application resolution), so they are not repeated as <c>reader-diagnostic</c>s.
+        /// </summary>
+        private static readonly string[] StructurallyReportedLogCategories =
+        [
+            "uml4net.Assembler",
+            "uml4net.xmi.ReferenceResolver.ExternalReferenceResolver",
+            "uml4net.xmi.Readers.StereoTypeApplicationResolver",
+        ];
+
+        /// <summary>
+        /// Inspects <paramref name="modelPath"/> against the metamodel graph at <paramref name="metamodelJsonPath"/>.
+        /// </summary>
+        /// <param name="modelPath">The model file to inspect.</param>
+        /// <param name="metamodelJsonPath">The generated <c>metamodel.json</c> to check against.</param>
+        /// <param name="umlVersion">The UML version <paramref name="metamodelJsonPath"/> describes.</param>
+        /// <param name="pathMaps">
+        /// <c>pathmap://</c> mappings: a key naming a document (<c>pathmap://LIB/types.uml</c>) maps to that file; a
+        /// key naming a prefix (<c>pathmap://LIB</c>) whose value is a directory maps every referenced document
+        /// under that prefix into the directory.
+        /// </param>
+        /// <returns>The inspection report.</returns>
+        public static InspectionReport Inspect(string modelPath, string metamodelJsonPath, string umlVersion, IReadOnlyDictionary<string, string>? pathMaps = null)
+        {
+            var facts = MetamodelFacts.Load(metamodelJsonPath);
+            var scan = XmiDocumentScanner.Scan(modelPath);
+            var findings = new List<InspectionFinding>();
+
+            CheckDeclaredMetaclasses(scan, facts, findings);
+            CheckDuplicateXmiIds(scan, findings);
+
+            var resolvedPathMaps = ExpandPathMaps(pathMaps, scan.PathmapDocuments);
+            var documentName = Path.GetFileName(modelPath);
+
+            XmiReaderResult? result = null;
+            IReadOnlyList<XmiReferenceResolutionFailure> failures = [];
+            var loggerProvider = new CapturingLoggerProvider();
+
+            try
+            {
+                try
+                {
+                    result = Read(modelPath, resolvedPathMaps, throwOnUnresolvedReferences: true, loggerProvider);
+                }
+                catch (UnresolvedReferencesException exception)
+                {
+                    failures = exception.Failures;
+                    loggerProvider = new CapturingLoggerProvider();
+                    result = Read(modelPath, resolvedPathMaps, throwOnUnresolvedReferences: false, loggerProvider);
+                }
+            }
+            catch (Exception exception)
+            {
+                findings.Add(new InspectionFinding(
+                    Error,
+                    "read-aborted",
+                    null,
+                    $"uml4net.xmi could not read the model ({exception.GetType().Name}: {exception.Message}), so only the xmi:type and xmi:id checks ran."));
+            }
+
+            var ownFailures = failures
+                .Where(failure => string.Equals(failure.DocumentName, documentName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            ReportResolutionFailures(ownFailures, scan, resolvedPathMaps, findings);
+
+            if (result is not null)
+            {
+                var failedProperties = ownFailures
+                    .Select(failure => (failure.ElementXmiId, failure.PropertyName))
+                    .ToHashSet();
+
+                foreach (var element in result.DocumentRootElements.OfType<IElement>().SelectMany(Descendants))
+                {
+                    CheckMultiplicities(element, facts, failedProperties, scan, findings);
+                }
+
+                CheckStereotypeApplications(result, facts, scan, findings);
+            }
+
+            foreach (var entry in loggerProvider.Entries.Where(IsUnreportedDiagnostic))
+            {
+                findings.Add(new InspectionFinding(entry.Level == LogLevel.Error ? Error : Warning, "reader-diagnostic", null, entry.Message));
+            }
+
+            var ordered = findings
+                .OrderBy(finding => finding.Line ?? int.MaxValue)
+                .ThenBy(finding => finding.Category, StringComparer.Ordinal)
+                .ThenBy(finding => finding.ElementXmiId, StringComparer.Ordinal)
+                .ToList();
+
+            return new InspectionReport(modelPath, umlVersion, ordered);
+        }
+
+        /// <summary>
+        /// Reads the model file with <c>uml4net.xmi</c>, capturing the reader's warnings and errors.
+        /// </summary>
+        /// <param name="modelPath">The model file to read.</param>
+        /// <param name="pathMaps">The expanded <c>pathmap://</c> mappings, one entry per document URI.</param>
+        /// <param name="throwOnUnresolvedReferences">
+        /// Whether the reader throws an <see cref="UnresolvedReferencesException"/> when a reference cannot be resolved.
+        /// </param>
+        /// <param name="loggerProvider">The provider that collects the reader's log entries of level warning and above.</param>
+        /// <returns>The reader's result.</returns>
+        private static XmiReaderResult Read(string modelPath, IReadOnlyDictionary<string, string> pathMaps, bool throwOnUnresolvedReferences, CapturingLoggerProvider loggerProvider)
+        {
+            using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(loggerProvider).SetMinimumLevel(LogLevel.Warning));
+
+            var reader = XmiReaderBuilder.Create()
+                .UsingSettings(settings =>
+                {
+                    settings.LocalReferenceBasePath = Path.GetDirectoryName(Path.GetFullPath(modelPath)) ?? ".";
+                    settings.UseStrictReading = false;
+                    settings.ThrowOnUnresolvedReferences = throwOnUnresolvedReferences;
+
+                    foreach (var (key, value) in pathMaps)
+                    {
+                        settings.PathMaps[key] = value;
+                    }
+                })
+                .WithLogger(loggerFactory)
+                .Build();
+
+            using (reader)
+            {
+                return reader.Read(Path.GetFullPath(modelPath));
+            }
+        }
+
+        /// <summary>
+        /// Adds a finding for every scanned element whose <c>xmi:type</c> is unknown to the metamodel or abstract.
+        /// </summary>
+        /// <param name="scan">The plain XML scan of the model file.</param>
+        /// <param name="facts">The metamodel to check against.</param>
+        /// <param name="findings">The list the findings are added to.</param>
+        private static void CheckDeclaredMetaclasses(XmiDocumentScan scan, MetamodelFacts facts, List<InspectionFinding> findings)
+        {
+            foreach (var element in scan.Elements)
+            {
+                if (!facts.IsKnown(element.Metaclass))
+                {
+                    findings.Add(new InspectionFinding(
+                        Error,
+                        "unknown-metaclass",
+                        element.XmiId,
+                        $"xmi:type '{element.Metaclass}' is not a metaclass of the UML metamodel.",
+                        element.Line));
+                }
+                else if (facts.IsAbstract(element.Metaclass))
+                {
+                    findings.Add(new InspectionFinding(
+                        Error,
+                        "abstract-instantiation",
+                        element.XmiId,
+                        $"xmi:type '{element.Metaclass}' is abstract in the UML metamodel and cannot be instantiated directly.",
+                        element.Line));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a finding for every <c>xmi:id</c> declared more than once, placed at its second declaration.
+        /// </summary>
+        /// <param name="scan">The plain XML scan of the model file.</param>
+        /// <param name="findings">The list the findings are added to.</param>
+        private static void CheckDuplicateXmiIds(XmiDocumentScan scan, List<InspectionFinding> findings)
+        {
+            foreach (var (xmiId, lines) in scan.XmiIdLines.Where(entry => entry.Value.Count > 1))
+            {
+                findings.Add(new InspectionFinding(
+                    Error,
+                    "duplicate-xmi-id",
+                    xmiId,
+                    $"xmi:id '{xmiId}' is declared {lines.Count} times (lines {string.Join(", ", lines)}); a reader keeps only the first.",
+                    lines[1]));
+            }
+        }
+
+        /// <summary>
+        /// Turns each reference resolution failure into an <c>unresolved-reference</c> or <c>invalid-reference</c>
+        /// finding, with a hint about the <c>--pathmap</c> mapping for a <c>pathmap://</c> identifier.
+        /// </summary>
+        /// <param name="failures">The failures reported for the inspected document.</param>
+        /// <param name="scan">The plain XML scan of the model file, used for line numbers.</param>
+        /// <param name="pathMaps">The expanded <c>pathmap://</c> mappings.</param>
+        /// <param name="findings">The list the findings are added to.</param>
+        private static void ReportResolutionFailures(
+            IReadOnlyList<XmiReferenceResolutionFailure> failures,
+            XmiDocumentScan scan,
+            IReadOnlyDictionary<string, string> pathMaps,
+            List<InspectionFinding> findings)
+        {
+            foreach (var failure in failures)
+            {
+                var hint = string.Empty;
+                if (failure.Identifier?.StartsWith(PathmapScheme, StringComparison.Ordinal) == true)
+                {
+                    var document = failure.Identifier.Split('#')[0];
+                    hint = pathMaps.TryGetValue(document, out var mappedPath)
+                        ? $" (mapped to '{mappedPath}')"
+                        : " (no --pathmap was given for it)";
+                }
+
+                var subject = $"{failure.ElementXmiType} '{failure.ElementXmiId}'";
+                var message = failure.Kind switch
+                {
+                    XmiReferenceResolutionFailureKind.NotFound => $"{subject}: {failure.PropertyName} references '{failure.Identifier}', which could not be found{hint}.",
+                    XmiReferenceResolutionFailureKind.UnexpectedType => $"{subject}: {failure.PropertyName} references '{failure.Identifier}', whose type is not allowed for that property.",
+                    XmiReferenceResolutionFailureKind.AlreadyOwned => $"{subject}: {failure.PropertyName} claims to own '{failure.Identifier}', which another element already owns.",
+                    XmiReferenceResolutionFailureKind.MultiplicityExceeded => $"{subject}: {failure.PropertyName} holds more values than its multiplicity allows, so '{failure.Identifier}' was dropped.",
+                    _ => $"{subject}: {failure.PropertyName} -> '{failure.Identifier}' ({failure.Kind}).",
+                };
+
+                findings.Add(new InspectionFinding(
+                    Error,
+                    failure.Kind == XmiReferenceResolutionFailureKind.NotFound ? "unresolved-reference" : "invalid-reference",
+                    failure.ElementXmiId,
+                    message,
+                    LineOf(scan, failure.ElementXmiId)));
+            }
+        }
+
+        /// <summary>
+        /// Adds a <c>multiplicity-violation</c> finding for every required feature of the element's metaclass whose
+        /// value count lies outside its bounds. Properties that already have a resolution failure are skipped.
+        /// </summary>
+        /// <param name="element">The element to check.</param>
+        /// <param name="facts">The metamodel to check against.</param>
+        /// <param name="failedProperties">The element id and property name pairs that already failed to resolve.</param>
+        /// <param name="scan">The plain XML scan of the model file, used for line numbers.</param>
+        /// <param name="findings">The list the findings are added to.</param>
+        private static void CheckMultiplicities(
+            IElement element,
+            MetamodelFacts facts,
+            HashSet<(string ElementXmiId, string PropertyName)> failedProperties,
+            XmiDocumentScan scan,
+            List<InspectionFinding> findings)
+        {
+            if (element is not IXmiElement xmiElement || element.MetaclassInterface is null)
+            {
+                return;
+            }
+
+            var metaclass = element.MetaclassInterface.Name[1..];
+
+            foreach (var feature in facts.RequiredFeaturesOf(metaclass))
+            {
+                if (failedProperties.Contains((xmiElement.XmiId, feature.Name)) || !TryCountValues(element, feature.Name, out var count))
+                {
+                    continue;
+                }
+
+                if (count >= feature.Lower && count <= feature.UpperBound)
+                {
+                    continue;
+                }
+
+                findings.Add(new InspectionFinding(
+                    Error,
+                    "multiplicity-violation",
+                    xmiElement.XmiId,
+                    $"{Describe(element, metaclass, xmiElement.XmiId)}: {feature.OwnerName}::{feature.Name} [{feature.Lower}..{feature.Upper}] has {count} value(s).",
+                    LineOf(scan, xmiElement.XmiId)));
+            }
+        }
+
+        /// <summary>
+        /// Describes an element for a finding message, e.g. <c>Class 'Car' (Car)</c>, or <c>Generalization 'Car-gen'</c>
+        /// for an unnamed one.
+        /// </summary>
+        /// <param name="element">The element to describe.</param>
+        /// <param name="metaclass">The name of the element's metaclass.</param>
+        /// <param name="xmiId">The element's <c>xmi:id</c>.</param>
+        /// <returns>The description.</returns>
+        private static string Describe(IElement element, string metaclass, string xmiId)
+        {
+            var name = (element as INamedElement)?.Name;
+            return string.IsNullOrEmpty(name) ? $"{metaclass} '{xmiId}'" : $"{metaclass} '{name}' ({xmiId})";
+        }
+
+        /// <summary>
+        /// Counts the values <paramref name="element"/> holds for the metamodel feature <paramref name="featureName"/>,
+        /// via the uml4net property of the same (Pascal-cased) name. A value-typed property always holds a value and
+        /// is not counted.
+        /// </summary>
+        /// <param name="element">The element whose values are counted.</param>
+        /// <param name="featureName">The camel-cased metamodel feature name.</param>
+        /// <param name="count">The number of non-null values, or 0 when nothing was counted.</param>
+        /// <returns>
+        /// <c>true</c> when a matching, non-value-typed public property was found and counted; otherwise <c>false</c>.
+        /// </returns>
+        private static bool TryCountValues(IElement element, string featureName, out int count)
+        {
+            count = 0;
+            PropertyInfo? property;
+
+            try
+            {
+                property = element.GetType().GetProperty(char.ToUpperInvariant(featureName[0]) + featureName[1..], BindingFlags.Public | BindingFlags.Instance);
+            }
+            catch (AmbiguousMatchException)
+            {
+                return false;
+            }
+
+            if (property is null || property.PropertyType.IsValueType)
+            {
+                return false;
+            }
+
+            count = property.GetValue(element) switch
+            {
+                null => 0,
+                string => 1,
+                IEnumerable values => values.Cast<object?>().Count(item => item is not null),
+                _ => 1,
+            };
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks every stereotype application: an unresolved target is an error, an unresolved stereotype a
+        /// warning, and a target whose metaclass the stereotype does not extend an error.
+        /// </summary>
+        /// <param name="result">The reader's result holding the stereotype applications.</param>
+        /// <param name="facts">The metamodel, used for metaclass conformance.</param>
+        /// <param name="scan">The plain XML scan of the model file, used for line numbers.</param>
+        /// <param name="findings">The list the findings are added to.</param>
+        private static void CheckStereotypeApplications(XmiReaderResult result, MetamodelFacts facts, XmiDocumentScan scan, List<InspectionFinding> findings)
+        {
+            foreach (var application in result.XmiRoot?.StereoTypeApplications ?? [])
+            {
+                var line = LineOf(scan, application.XmiId);
+
+                if (application.ExtendedElement is null)
+                {
+                    findings.Add(new InspectionFinding(
+                        Error,
+                        "stereotype-target-unresolved",
+                        application.XmiId,
+                        $"«{application.StereoTypeName}» is applied to '{application.ElementIdentifier}' (base_{application.MetaClass}), which could not be found.",
+                        line));
+                    continue;
+                }
+
+                if (application.Stereotype is null)
+                {
+                    findings.Add(new InspectionFinding(
+                        Warning,
+                        "stereotype-unresolved",
+                        application.XmiId,
+                        $"«{application.StereoTypeName}» from profile '{application.ProfileName}' could not be resolved, so its application to '{application.ElementIdentifier}' was not checked - is the profile next to the model, or mapped with --pathmap?",
+                        line));
+                    continue;
+                }
+
+                if (application.ExtendedElement is not IElement target || target.MetaclassInterface is null)
+                {
+                    continue;
+                }
+
+                var targetMetaclass = target.MetaclassInterface.Name[1..];
+                var allowed = ExtendedMetaclassesOf(application.Stereotype);
+
+                if (allowed.Count > 0 && !allowed.Any(metaclass => facts.Conforms(targetMetaclass, metaclass)))
+                {
+                    findings.Add(new InspectionFinding(
+                        Error,
+                        "stereotype-misapplied",
+                        application.XmiId,
+                        $"«{application.Stereotype.Name}» extends {string.Join(", ", allowed)}, but is applied to {targetMetaclass} '{application.ElementIdentifier}'.",
+                        line));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the metaclasses <paramref name="stereotype"/> may be applied to: those it or any of its generals extends.
+        /// </summary>
+        /// <param name="stereotype">The stereotype.</param>
+        /// <returns>The distinct metaclass names, sorted ordinally; empty when there are no extensions.</returns>
+        private static IReadOnlyList<string> ExtendedMetaclassesOf(IStereotype stereotype)
+        {
+            var stereotypes = new List<IStereotype> { stereotype };
+            stereotypes.AddRange(stereotype.QueryAllGeneralClassifiers().OfType<IStereotype>());
+
+            return stereotypes
+                .SelectMany(StereotypeFileGenerator.ExtensionsOf)
+                .Select(extension => extension.Metaclass)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(name => name, StringComparer.Ordinal)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Expands the given <c>pathmap://</c> mappings into one entry per document URI. A mapping whose value is not
+        /// an existing directory is kept as is, with a full path; a mapping to a directory becomes one entry for each
+        /// referenced document under its prefix.
+        /// </summary>
+        /// <param name="pathMaps">The mappings as given on the command line, or <c>null</c>.</param>
+        /// <param name="referencedDocuments">The <c>pathmap://</c> documents the model file references.</param>
+        /// <returns>The expanded mappings, keyed by document URI.</returns>
+        private static Dictionary<string, string> ExpandPathMaps(IReadOnlyDictionary<string, string>? pathMaps, IReadOnlyList<string> referencedDocuments)
+        {
+            var expanded = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            foreach (var (key, value) in pathMaps ?? new Dictionary<string, string>())
+            {
+                if (!Directory.Exists(value))
+                {
+                    expanded[key] = Path.GetFullPath(value);
+                    continue;
+                }
+
+                var prefix = key.TrimEnd('/') + "/";
+                foreach (var document in referencedDocuments.Where(document => document.StartsWith(prefix, StringComparison.Ordinal)))
+                {
+                    expanded[document] = Path.GetFullPath(Path.Combine(value, document[prefix.Length..].Replace('/', Path.DirectorySeparatorChar)));
+                }
+            }
+
+            return expanded;
+        }
+
+        /// <summary>
+        /// Gets whether a captured log entry is not already covered by a structured check, so it is reported as a
+        /// <c>reader-diagnostic</c>.
+        /// </summary>
+        /// <param name="entry">The captured log entry.</param>
+        /// <returns>
+        /// <c>true</c> unless the entry comes from a structurally reported category or is a duplicate-id message.
+        /// </returns>
+        private static bool IsUnreportedDiagnostic(CapturedLogEntry entry)
+        {
+            // duplicate ids are reported, with line numbers, from the document scan; the reader also logs those of
+            // referenced documents (OMG's own UML.xmi has some), which are not the inspected model's problem
+            return !StructurallyReportedLogCategories.Contains(entry.Category, StringComparer.Ordinal)
+                && !entry.Message.Contains("is not unique within the document", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Gets the line of the first declaration of an <c>xmi:id</c>.
+        /// </summary>
+        /// <param name="scan">The plain XML scan of the model file.</param>
+        /// <param name="xmiId">The <c>xmi:id</c>, or <c>null</c>.</param>
+        /// <returns>The line number, or <c>null</c> when the id is <c>null</c> or was not scanned.</returns>
+        private static int? LineOf(XmiDocumentScan scan, string? xmiId)
+        {
+            return xmiId is not null && scan.XmiIdLines.TryGetValue(xmiId, out var lines) ? lines[0] : null;
+        }
+
+        /// <summary>
+        /// Enumerates an element and, depth first, every element it owns directly or indirectly.
+        /// </summary>
+        /// <param name="element">The element to start from.</param>
+        /// <returns>The element followed by its owned elements.</returns>
+        private static IEnumerable<IElement> Descendants(IElement element)
+        {
+            yield return element;
+
+            foreach (var owned in element.OwnedElement)
+            {
+                foreach (var descendant in Descendants(owned))
+                {
+                    yield return descendant;
+                }
+            }
+        }
+    }
+}

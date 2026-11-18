@@ -1,7 +1,10 @@
+# SPDX-FileCopyrightText: 2026 Starion Group S.A.
+# SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
 
+from pdf_fixtures import build_simple_pdf
+
 from spec_extract.pdf_reader import read_positioned_pages
-from tests.pdf_fixtures import build_simple_pdf
 
 
 def test_read_positioned_pages_extracts_text_and_positions(tmp_path: Path) -> None:

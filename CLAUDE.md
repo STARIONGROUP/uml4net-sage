@@ -26,7 +26,7 @@ dotnet build uml4net-sage.slnx
 dotnet test uml4net-sage.slnx --no-build
 
 # Run a single test project
-dotnet test tools/metamodel-gen/Uml4Net.Sage.MetamodelGen.Tests/Uml4Net.Sage.MetamodelGen.Tests.csproj
+dotnet test tools/metamodel-gen/Uml4Net.Sage.Knowledge.Metamodel.Tests/Uml4Net.Sage.Knowledge.Metamodel.Tests.csproj
 
 # Python (tools/spec-extract only)
 cd tools/spec-extract
@@ -52,15 +52,15 @@ before bumping either).
 
 | Project | Purpose |
 |---|---|
-| `tools/metamodel-gen/Uml4Net.Sage.MetamodelGen` | Reads UML.xmi/PrimitiveTypes.xmi/StandardProfile.xmi via `uml4net.xmi`, generates `metamodel/` + `standard-profile/` |
+| `tools/metamodel-gen/Uml4Net.Sage.Knowledge.Metamodel` | Reads UML.xmi/PrimitiveTypes.xmi/StandardProfile.xmi via `uml4net.xmi`, generates `metamodel/` + `standard-profile/` |
 | `tools/knowledge-gen/Uml4Net.Sage.Knowledge` | `KnownUmlVersions` registry, `SourceFetcher` (plain HTTPS GETs from omg.org), `PythonSpecExtractRunner` (the C#/Python seam), `DataPackageGenerator`, `InstalledVersionsStore` |
+| `tools/inspection/Uml4Net.Sage.Inspection` | Checks a UML model file serialized as XMI against the metamodel (`XmiDocumentScanner`, `XmiInspector`, `MetamodelFacts`); the `inspect` verb runs it |
 | `tools/sage-cli/Uml4Net.Sage.Tools` | The `uml4net-sage` CLI: `fetch`, `generate`, `versions`, `use`, `remove`, `check`, `inspect` |
-| `tools/sage-cli/Uml4Net.Sage.Tools.Hook` | The committed, NativeAOT, dependency-free SessionStart hook |
 | `tools/spec-extract` | Python: PDF-to-markdown clause extraction |
 
 ### Key types & patterns
 
-- **Reading UML metamodel XMI**: `Uml4Net.Sage.MetamodelGen.XmiModelReader.Read(path, localReferenceBasePath)`
+- **Reading UML metamodel XMI**: `Uml4Net.Sage.Knowledge.Metamodel.XmiModelReader.Read(path, localReferenceBasePath)`
   wraps `uml4net.xmi`'s `XmiReaderBuilder`. UML.xmi/PrimitiveTypes.xmi/StandardProfile.xmi/UMLDI.xmi
   cross-reference each other via **absolute http(s) hrefs** (e.g.
   `http://www.omg.org/spec/UML/20161101/UML.xmi#Class`), not `pathmap://` URIs - `uml4net.xmi`
@@ -89,8 +89,9 @@ before bumping either).
     the extensions whose `ExtensionEnd` is typed by that stereotype itself.
 - **Why the full CLI is not NativeAOT**: `uml4net.xmi` (reflection-heavy), Spectre.Console and
   System.CommandLine are not trim/AOT-friendly, so the CLI ships as a self-contained (non-AOT) publish
-  per runtime identifier (`.github/workflows/release.yml`). Only the dependency-free SessionStart hook
-  (`tools/sage-cli/Uml4Net.Sage.Tools.Hook`) is NativeAOT - see `hooks/native/README.md`.
+  per runtime identifier (`.github/workflows/release.yml`). Only plugin 1.x's SessionStart hook is
+  NativeAOT; its source was removed in #59 and its binaries stay in `hooks/native/` until Phase 4 of
+  the MCP refactor (#48) replaces it with the launcher (see `hooks/native/README.md`).
 - **`PythonSpecExtractRunner`'s `uv` fallback**: verbatim spec citation (both `uml-spec-citation` and
   `xmi-spec-citation`) shells out to
   `tools/spec-extract` (Python/pdfplumber). It first tries a `.venv` under that directory or a system
@@ -103,8 +104,8 @@ before bumping either).
   `SpecExtractionOutcome.Skipped` with a reason; it never throws or aborts the rest of `generate`.
 - **`--json` is a contract**: `check`, `versions` and `inspect` write through
   `Commands/JsonOutput` (one line on stdout, `{"error": "..."}` on every failure, including parse
-  errors handled in `Program.Main`). Keep the PascalCase property names: the committed hook binary's
-  `CheckResult` and the skills read them, and `JsonOutputTests` pins them. The shapes are in
+  errors handled in `Program.Main`). Keep the PascalCase property names: plugin 1.x's hook binary
+  and its skills read them, and `JsonOutputTests` pins them, until #61 moves them to camelCase. The shapes are in
   `tools/README.md`.
 - **Determinism of generated artifacts**: every generator sorts with `StringComparer.Ordinal`,
   writes LF line endings (`.gitattributes` pins this), and uses fixed `System.Text.Json` options
@@ -126,11 +127,11 @@ fresh, per machine, by `uml4net-sage fetch` + `generate`.
 **Committed**: everything version-independent - `knowledge/registry.json` and the `*.schema.json`
 files (they describe uml4net-sage's own output shape, not OMG content), `sources/README.md` and
 `knowledge/README.md` (provenance/shape documentation, no OMG text), the plugin's `skills/`/
-`agents/`/`commands/`, and `hooks/native/*` binaries (compiled from this repo's own C# source - see
-`hooks/native/README.md` for why binaries are the one exception to "nothing generated is
+`agents/`/`commands/`, and `hooks/native/*` binaries (compiled from this repo's own C# source, at tag `v1.6.0`;
+see `hooks/native/README.md` for why binaries are the one exception to "nothing generated is
 committed").
 
-**No committed test fixtures derived from OMG content**: `Uml4Net.Sage.MetamodelGen.Tests` uses
+**No committed test fixtures derived from OMG content**: `Uml4Net.Sage.Knowledge.Metamodel.Tests` uses
 small, hand-authored XMI describing a fictional toy metamodel (`Widget`/`Gadget`/`Sample`) under its
 own `Fixtures/` directory, specifically to sidestep any question about whether OMG's XMI may be
 legally redistributed as test data (its specification *license* only clearly covers the *text*, not
@@ -150,8 +151,22 @@ rationale, and known real-world extraction limitations (figure-embedded text, sy
 
 ## Conventions
 
-Pulled from the sibling `uml4net` repository's own `CLAUDE.md` for ecosystem consistency:
+Pulled from the sibling `uml4net` repository's own `CLAUDE.md` for ecosystem consistency, and from
+mycelium-hypha's, whose code Sage ports (`sage-mcp-refactor-plan.md`, section 2.0):
 
+- **C#:** block-scoped namespaces with `using`s *inside* the namespace, one public type per file,
+  NUnit, the `uml4net-sage.slnx` solution.
+- **C# dependencies and DI:** well-established NuGet packages are welcome; prefer a maintained
+  library over hand-rolling infrastructure. Services are registered through
+  `Microsoft.Extensions.DependencyInjection` and resolved rather than constructed, so the CLI
+  composes them in one place. Keep constructors injectable and free of hidden statics. Anything a
+  caller can vary belongs on `SageKnowledgeOptions`, not as another optional parameter on
+  `AddSageKnowledge`; anything a caller might want to watch goes through `ILogger`, not `Console`.
+  (#60 brings the options class and the registration, ported from hypha's.)
+- **Prose/docs, comments and XML docs** use no dashes as punctuation: neither the en dash nor the em
+  dash. Rewrite the sentence with a comma, a colon, parentheses, a semicolon or a full stop instead;
+  hyphens in compound words (`read-only`) are fine. This covers CHANGELOG entries, issues, PRs and
+  commit messages too.
 - 4 spaces indentation, no tabs; no `_` prefix on member names; use `this.` for instance members.
 - Use `var` unless the type is ambiguous; use C# type aliases (`int`, `string`, not `Int32`, `String`).
 - Always wrap blocks in curly braces, even single-line; no `#region` directives.
@@ -162,9 +177,14 @@ Pulled from the sibling `uml4net` repository's own `CLAUDE.md` for ecosystem con
 - Test methods (`[Test]`, `[TestCase]`, `[SetUp]`, `[TearDown]`) and test fixture classes carry no XML
   documentation; the test name says what it checks. Use a `//` comment where the reason for a test is
   not obvious. Test helpers (fakes, stubs, `RecordedConsole`, private helper methods) keep theirs.
-- Apache 2.0 copyright header on every `.cs` file (see any existing file for the exact template).
+- **License header:** every source file (C#, Python, TypeScript and JavaScript) opens with two SPDX
+  comment lines and nothing else: `SPDX-FileCopyrightText: 2026 Starion Group S.A.` and
+  `SPDX-License-Identifier: Apache-2.0`, as `//` or `#` comments, as mycelium-hypha's do. The root
+  `.editorconfig`'s `file_header_template` writes it into new C# files. The Handlebars templates
+  (#62) carry it in a `{{!-- --}}` comment, which renders nothing.
 - Default branch: `development` (never work directly on `master`). Create feature branches from
-  `development`; rebase before submitting PRs.
+  `development` (`feature/gh-<n>-<name>` or `fix/gh-<n>-<name>`); rebase before submitting PRs. Ask
+  before committing or pushing. Commit subject: `[Verb] <summary>; fixes #<n>` (or `refs #<n>`).
 
 ## Local do's and don'ts
 

@@ -1,22 +1,5 @@
-// -------------------------------------------------------------------------------------------------
-// <copyright file="KnowledgeGenerationService.cs" company="Starion Group S.A.">
-//
-//   Copyright (C) 2019-2026 Starion Group S.A.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-//   you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-//       http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-//   distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-//   limitations under the License.
-//
-// </copyright>
-// ------------------------------------------------------------------------------------------------
+// SPDX-FileCopyrightText: 2026 Starion Group S.A.
+// SPDX-License-Identifier: Apache-2.0
 
 namespace Uml4Net.Sage.Knowledge
 {
@@ -27,28 +10,7 @@ namespace Uml4Net.Sage.Knowledge
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Uml4Net.Sage.MetamodelGen;
-
-    /// <summary>
-    /// The result of a <see cref="KnowledgeGenerationService.FetchAsync"/> call.
-    /// </summary>
-    /// <param name="Entries">The manifest entries of the downloaded files.</param>
-    public sealed record FetchOutcome(IReadOnlyList<FetchManifestEntry> Entries);
-
-    /// <summary>
-    /// The result of a <see cref="KnowledgeGenerationService.FetchXmiSpecAsync"/> call.
-    /// </summary>
-    /// <param name="Succeeded">Whether the download completed.</param>
-    /// <param name="Warning">A human-readable reason when <paramref name="Succeeded"/> is <see langword="false"/>.</param>
-    /// <param name="Entries">The downloaded file's manifest entry, empty on failure.</param>
-    public sealed record XmiSpecFetchOutcome(bool Succeeded, string? Warning, IReadOnlyList<FetchManifestEntry> Entries);
-
-    /// <summary>
-    /// The result of a <see cref="KnowledgeGenerationService.GenerateAsync"/> call.
-    /// </summary>
-    /// <param name="SpecExtraction">The outcome of extracting the UML specification's clause text.</param>
-    /// <param name="XmiSpecExtraction">The outcome of extracting the companion XMI specification's clause text.</param>
-    public sealed record GenerateOutcome(SpecExtractionOutcome SpecExtraction, SpecExtractionOutcome XmiSpecExtraction);
+    using Uml4Net.Sage.Knowledge.Metamodel;
 
     /// <summary>
     /// Orchestrates the two knowledge-base steps the <c>uml4net-sage</c> CLI's <c>fetch</c> and

@@ -1,0 +1,183 @@
+// SPDX-FileCopyrightText: 2026 Starion Group S.A.
+// SPDX-License-Identifier: Apache-2.0
+
+namespace Uml4Net.Sage.Inspection
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Xml;
+
+    /// <summary>
+    /// Scans an XMI document with an <see cref="XmlReader"/> for <see cref="XmiDocumentScan"/>.
+    /// </summary>
+    public static class XmiDocumentScanner
+    {
+        private const string PathmapScheme = "pathmap://";
+
+        /// <summary>
+        /// Scans the document at <paramref name="path"/>.
+        /// </summary>
+        /// <param name="path">The XMI document to scan.</param>
+        /// <returns>The scan result.</returns>
+        public static XmiDocumentScan Scan(string path)
+        {
+            var elements = new List<ScannedElement>();
+            var xmiIdLines = new Dictionary<string, List<int>>(StringComparer.Ordinal);
+            var pathmapDocuments = new SortedSet<string>(StringComparer.Ordinal);
+
+            using var reader = XmlReader.Create(path, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore });
+            var lineInfo = (IXmlLineInfo)reader;
+
+            while (reader.Read())
+            {
+                if (reader.NodeType != XmlNodeType.Element)
+                {
+                    continue;
+                }
+
+                var line = lineInfo.LineNumber;
+                var attributes = ReadAttributes(reader);
+
+                if (attributes.XmiId is not null)
+                {
+                    RecordXmiId(xmiIdLines, attributes.XmiId, line);
+                }
+
+                if (attributes.Href is not null)
+                {
+                    // a proxy for an element declared elsewhere, not a declaration
+                    RecordPathmapDocument(pathmapDocuments, attributes.Href);
+                    continue;
+                }
+
+                var metaclass = MetaclassOf(reader, attributes.XmiType);
+                if (metaclass is not null)
+                {
+                    elements.Add(new ScannedElement(metaclass, attributes.XmiId, line));
+                }
+            }
+
+            var readOnlyLines = new Dictionary<string, IReadOnlyList<int>>(StringComparer.Ordinal);
+            foreach (var (id, lines) in xmiIdLines)
+            {
+                readOnlyLines[id] = lines;
+            }
+
+            return new XmiDocumentScan(elements, readOnlyLines, [.. pathmapDocuments]);
+        }
+
+        /// <summary>
+        /// Reads the <c>xmi:id</c>, <c>xmi:type</c> and <c>href</c> attributes of the element <paramref name="reader"/>
+        /// is positioned on, leaving it positioned on that element.
+        /// </summary>
+        /// <param name="reader">The reader, positioned on an element.</param>
+        /// <returns>The three attribute values; each is <c>null</c> when the element does not have it.</returns>
+        private static (string? XmiId, string? XmiType, string? Href) ReadAttributes(XmlReader reader)
+        {
+            string? xmiId = null;
+            string? xmiType = null;
+            string? href = null;
+
+            if (!reader.MoveToFirstAttribute())
+            {
+                return (xmiId, xmiType, href);
+            }
+
+            do
+            {
+                switch (reader.LocalName)
+                {
+                    case "id" when IsXmiNamespace(reader.NamespaceURI):
+                        xmiId = reader.Value;
+                        break;
+                    case "type" when IsXmiNamespace(reader.NamespaceURI):
+                        xmiType = reader.Value;
+                        break;
+                    case "href" when reader.NamespaceURI.Length == 0:
+                        href = reader.Value;
+                        break;
+                }
+            }
+            while (reader.MoveToNextAttribute());
+
+            reader.MoveToElement();
+            return (xmiId, xmiType, href);
+        }
+
+        /// <summary>
+        /// Adds <paramref name="line"/> to the lines that declare <paramref name="xmiId"/>.
+        /// </summary>
+        /// <param name="xmiIdLines">The declaring lines of every <c>xmi:id</c> seen so far.</param>
+        /// <param name="xmiId">The declared <c>xmi:id</c>.</param>
+        /// <param name="line">The line of the declaring element.</param>
+        private static void RecordXmiId(Dictionary<string, List<int>> xmiIdLines, string xmiId, int line)
+        {
+            if (!xmiIdLines.TryGetValue(xmiId, out var lines))
+            {
+                lines = [];
+                xmiIdLines[xmiId] = lines;
+            }
+
+            lines.Add(line);
+        }
+
+        /// <summary>
+        /// Adds the document part of <paramref name="href"/>, without its fragment, when it uses the <c>pathmap://</c> scheme.
+        /// </summary>
+        /// <param name="pathmapDocuments">The <c>pathmap://</c> documents seen so far.</param>
+        /// <param name="href">The value of an <c>href</c> attribute.</param>
+        private static void RecordPathmapDocument(SortedSet<string> pathmapDocuments, string href)
+        {
+            if (!href.StartsWith(PathmapScheme, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            var fragment = href.IndexOf('#');
+            pathmapDocuments.Add(fragment < 0 ? href : href[..fragment]);
+        }
+
+        /// <summary>
+        /// Gets the UML metaclass the element <paramref name="reader"/> is positioned on declares: the local part of its
+        /// <c>xmi:type</c> when that is in a UML namespace, otherwise - for an element without <c>xmi:type</c>, such as a
+        /// root <c>&lt;uml:Package&gt;</c> - its own name when the element itself is in a UML namespace.
+        /// </summary>
+        /// <param name="reader">The reader, positioned on an element.</param>
+        /// <param name="xmiType">The element's <c>xmi:type</c>, or <c>null</c> when it has none.</param>
+        /// <returns>The metaclass name, or <c>null</c> when the element is not a UML element.</returns>
+        private static string? MetaclassOf(XmlReader reader, string? xmiType)
+        {
+            if (xmiType is null)
+            {
+                return IsUmlNamespace(reader.NamespaceURI) ? reader.LocalName : null;
+            }
+
+            var separator = xmiType.IndexOf(':');
+            var prefix = separator < 0 ? string.Empty : xmiType[..separator];
+            var namespaceUri = reader.LookupNamespace(prefix);
+            return namespaceUri is not null && IsUmlNamespace(namespaceUri) ? xmiType[(separator + 1)..] : null;
+        }
+
+        /// <summary>
+        /// Gets whether <paramref name="namespaceUri"/> is an XMI namespace.
+        /// </summary>
+        /// <param name="namespaceUri">The namespace URI.</param>
+        /// <returns><c>true</c> when the URI contains <c>/XMI</c>.</returns>
+        private static bool IsXmiNamespace(string namespaceUri)
+        {
+            return namespaceUri.Contains("/XMI", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Gets whether <paramref name="namespaceUri"/> is an OMG UML or Eclipse UML2 namespace. Namespace URIs are
+        /// identifiers, not locations, so only their host and path are compared, never fetched.
+        /// </summary>
+        /// <param name="namespaceUri">The namespace URI.</param>
+        /// <returns><c>true</c> for an OMG UML or Eclipse UML2 namespace.</returns>
+        private static bool IsUmlNamespace(string namespaceUri)
+        {
+            return namespaceUri.Contains("www.omg.org/spec/UML/", StringComparison.Ordinal)
+                || namespaceUri.Contains("www.eclipse.org/uml2/", StringComparison.Ordinal);
+        }
+    }
+}

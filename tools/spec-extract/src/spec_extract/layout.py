@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Starion Group S.A.
+# SPDX-License-Identifier: Apache-2.0
 """Stage 2: reconstruct reading order and strip running headers/footers."""
 
 from __future__ import annotations

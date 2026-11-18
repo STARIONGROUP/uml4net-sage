@@ -1,9 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NUnit3TestAdapter" />
+  </ItemGroup>
 
   <ItemGroup>
     <Using Include="NUnit.Framework" />
@@ -14,7 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Fixtures\**\*.xmi;Fixtures\**\*.uml;Fixtures\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The model fixtures are the inspection library's; the inspect verb's tests read the same files. -->
+    <None Include="..\..\inspection\Uml4Net.Sage.Inspection.Tests\Fixtures\**\*.xmi;..\..\inspection\Uml4Net.Sage.Inspection.Tests\Fixtures\**\*.json" Link="Fixtures\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,82 @@
+// SPDX-FileCopyrightText: 2026 Starion Group S.A.
+// SPDX-License-Identifier: Apache-2.0
+
+namespace Uml4Net.Sage.Inspection
+{
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+
+    using Microsoft.Extensions.Logging;
+
+    /// <summary>
+    /// Captures <see cref="LogLevel.Warning"/>/<see cref="LogLevel.Error"/> log entries emitted while
+    /// <c>uml4net.xmi</c> reads a model, so <see cref="XmiInspector"/> can surface the reader diagnostics its
+    /// structured checks don't already cover as inspection findings, instead of them only going to the console.
+    /// </summary>
+    public sealed class CapturingLoggerProvider : ILoggerProvider
+    {
+        private readonly ConcurrentQueue<CapturedLogEntry> entries = new();
+
+        /// <summary>
+        /// Gets the captured warning/error entries, in the order they were logged.
+        /// </summary>
+        public IReadOnlyCollection<CapturedLogEntry> Entries => this.entries;
+
+        /// <summary>
+        /// Creates a logger that records its entries in this provider.
+        /// </summary>
+        /// <param name="categoryName">The category of the logger's entries.</param>
+        /// <returns>A logger that adds every entry to this provider's captured entries.</returns>
+        public ILogger CreateLogger(string categoryName) => new CapturingLogger(categoryName, this.entries);
+
+        /// <summary>
+        /// Does nothing: the provider holds no resources, and its captured entries stay readable.
+        /// </summary>
+        public void Dispose()
+        {
+        }
+
+        /// <summary>
+        /// A logger that adds every warning and error it is given to a shared queue.
+        /// </summary>
+        /// <param name="category">The category recorded with each entry.</param>
+        /// <param name="entries">The queue the entries are added to.</param>
+        private sealed class CapturingLogger(string category, ConcurrentQueue<CapturedLogEntry> entries) : ILogger
+        {
+            /// <summary>
+            /// Does not support scopes.
+            /// </summary>
+            /// <typeparam name="TState">The type of the scope state.</typeparam>
+            /// <param name="state">The scope state, which is ignored.</param>
+            /// <returns>Always <c>null</c>.</returns>
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            /// <summary>
+            /// Gets whether entries of <paramref name="logLevel"/> are captured.
+            /// </summary>
+            /// <param name="logLevel">The level to check.</param>
+            /// <returns><c>true</c> for <see cref="LogLevel.Warning"/> and above.</returns>
+            public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Warning;
+
+            /// <summary>
+            /// Adds the formatted entry to the queue when its level is enabled.
+            /// </summary>
+            /// <typeparam name="TState">The type of the entry's state.</typeparam>
+            /// <param name="logLevel">The entry's level.</param>
+            /// <param name="eventId">The entry's event id, which is not recorded.</param>
+            /// <param name="state">The entry's state.</param>
+            /// <param name="exception">The exception related to the entry, if any.</param>
+            /// <param name="formatter">Creates the message from <paramref name="state"/> and <paramref name="exception"/>.</param>
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                if (!this.IsEnabled(logLevel))
+                {
+                    return;
+                }
+
+                entries.Enqueue(new CapturedLogEntry(logLevel, category, formatter(state, exception)));
+            }
+        }
+    }
+}

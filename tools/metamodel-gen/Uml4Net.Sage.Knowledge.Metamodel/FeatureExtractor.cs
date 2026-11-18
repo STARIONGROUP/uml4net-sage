@@ -1,0 +1,172 @@
+// SPDX-FileCopyrightText: 2026 Starion Group S.A.
+// SPDX-License-Identifier: Apache-2.0
+
+namespace Uml4Net.Sage.Knowledge.Metamodel
+{
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using uml4net.Classification;
+    using uml4net.CommonStructure;
+    using uml4net.Extensions;
+    using uml4net.StructuredClassifiers;
+    using uml4net.Values;
+
+    using Uml4Net.Sage.Knowledge.Metamodel.Model;
+
+    /// <summary>
+    /// Converts <see cref="IProperty"/>/<see cref="IOperation"/> instances read from XMI into render-ready
+    /// <see cref="FeatureInfo"/> records (the MODEL provenance tier: read directly from the metamodel XMI).
+    /// </summary>
+    public static class FeatureExtractor
+    {
+        /// <summary>
+        /// Converts the attributes and operations <paramref name="classifier"/> inherits, per UML's
+        /// <see cref="IClassifier.InheritedMember"/>: non-private members of every ancestor, minus those a
+        /// more specific classifier redefines. Ordered by name, then owner (ordinal), for determinism.
+        /// </summary>
+        /// <param name="classifier">The classifier whose inherited members are converted.</param>
+        /// <returns>The inherited attributes and operations; inherited members of any other kind are left out.</returns>
+        public static IReadOnlyList<FeatureInfo> InheritedFeaturesOf(IClassifier classifier)
+        {
+            var features = new List<FeatureInfo>();
+
+            foreach (var member in classifier.InheritedMember)
+            {
+                var ownerQualifiedName = ElementNames.NamespaceOf(member);
+
+                switch (member)
+                {
+                    case IProperty property:
+                        features.Add(FromProperty(property, ownerQualifiedName));
+                        break;
+                    case IOperation operation:
+                        features.Add(FromOperation(operation, ownerQualifiedName));
+                        break;
+                }
+            }
+
+            return features
+                .OrderBy(feature => feature.Name, System.StringComparer.Ordinal)
+                .ThenBy(feature => feature.OwnerQualifiedName, System.StringComparer.Ordinal)
+                .ThenBy(feature => feature.Kind, System.StringComparer.Ordinal)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Converts an owned attribute.
+        /// </summary>
+        /// <param name="property">The property to convert.</param>
+        /// <param name="ownerQualifiedName">The qualified name of the classifier that owns <paramref name="property"/>.</param>
+        /// <returns>A <see cref="FeatureInfo"/> of kind <c>attribute</c>.</returns>
+        public static FeatureInfo FromProperty(IProperty property, string ownerQualifiedName)
+        {
+            var type = property.Type as INamedElement;
+
+            return new FeatureInfo(
+                Name: property.Name,
+                Kind: "attribute",
+                TypeName: type?.Name,
+                TypeQualifiedName: type?.QualifiedName,
+                Lower: property.Lower,
+                Upper: property.Upper,
+                IsDerived: property.IsDerived,
+                IsOrdered: property.IsOrdered,
+                IsUnique: property.IsUnique,
+                IsComposite: property.IsComposite,
+                Redefines: property.RedefinedProperty.Where(p => !string.IsNullOrEmpty(p.QualifiedName)).Select(p => p.QualifiedName).ToList(),
+                Subsets: property.SubsettedProperty.Where(p => !string.IsNullOrEmpty(p.QualifiedName)).Select(p => p.QualifiedName).ToList(),
+                OwnerQualifiedName: ownerQualifiedName,
+                Parameters: [],
+                Body: [],
+                IsStatic: property.IsStatic,
+                IsReadOnly: property.IsReadOnly,
+                IsDerivedUnion: property.IsDerivedUnion,
+                Aggregation: property.Aggregation.ToString().ToLowerInvariant(),
+                Opposite: property.Opposite?.QualifiedName,
+                DefaultValue: DefaultValueOf(property),
+                IsQuery: false,
+                IsAbstract: false);
+        }
+
+        /// <summary>
+        /// Converts an owned operation.
+        /// </summary>
+        /// <param name="operation">The operation to convert.</param>
+        /// <param name="ownerQualifiedName">The qualified name of the classifier that owns <paramref name="operation"/>.</param>
+        /// <returns>
+        /// A <see cref="FeatureInfo"/> of kind <c>operation</c>, whose type and multiplicity come from the return
+        /// parameter and whose parameter list excludes it.
+        /// </returns>
+        public static FeatureInfo FromOperation(IOperation operation, string ownerQualifiedName)
+        {
+            var type = operation.Type as INamedElement;
+
+            var parameters = operation.OwnedParameter
+                .Where(parameter => parameter.Direction != ParameterDirectionKind.Return)
+                .Select(parameter =>
+                {
+                    var parameterType = parameter.Type as INamedElement;
+
+                    return new ParameterInfo(
+                        Name: parameter.Name,
+                        TypeName: parameterType?.Name,
+                        TypeQualifiedName: parameterType?.QualifiedName,
+                        Lower: parameter.Lower,
+                        Upper: parameter.Upper,
+                        Direction: parameter.Direction.ToString().ToLowerInvariant());
+                })
+                .ToList();
+
+            return new FeatureInfo(
+                Name: operation.Name,
+                Kind: "operation",
+                TypeName: type?.Name,
+                TypeQualifiedName: type?.QualifiedName,
+                Lower: operation.Lower ?? 0,
+                Upper: operation.Upper ?? "0",
+                IsDerived: false,
+                IsOrdered: operation.IsOrdered,
+                IsUnique: operation.IsUnique,
+                IsComposite: false,
+                Redefines: operation.RedefinedOperation.Where(o => !string.IsNullOrEmpty(o.QualifiedName)).Select(o => o.QualifiedName).ToList(),
+                Subsets: [],
+                OwnerQualifiedName: ownerQualifiedName,
+                Parameters: parameters,
+                Body: ConstraintExtractor.FromOperationBody(operation),
+                IsStatic: operation.IsStatic,
+                IsReadOnly: false,
+                IsDerivedUnion: false,
+                Aggregation: null,
+                Opposite: null,
+                DefaultValue: null,
+                IsQuery: operation.IsQuery,
+                IsAbstract: operation.IsAbstract);
+        }
+
+        /// <summary>
+        /// Renders <paramref name="property"/>'s default value in UML notation, or <see langword="null"/> when it has
+        /// none. uml4net.Extensions' <see cref="uml4net.Extensions.PropertyExtensions.QueryDefaultValueAsString(uml4net.Classification.IProperty)"/> targets C#
+        /// code generation, so its spelling of an unlimited natural's <c>*</c> is mapped back. A
+        /// <c>LiteralUnlimitedNatural</c> written without a <c>value</c> (as OMG's own XMI does) holds that literal's
+        /// default, <c>0</c>.
+        /// </summary>
+        /// <param name="property">The property whose default value is rendered.</param>
+        /// <returns>The default value's text, or <see langword="null"/>.</returns>
+        private static string? DefaultValueOf(IProperty property)
+        {
+            if (!property.QueryHasDefaultValue())
+            {
+                return null;
+            }
+
+            if (property.DefaultValue[0] is ILiteralUnlimitedNatural { Value: null })
+            {
+                return "0";
+            }
+
+            var value = property.QueryDefaultValueAsString();
+            return value == "int.MaxValue" ? "*" : value;
+        }
+    }
+}

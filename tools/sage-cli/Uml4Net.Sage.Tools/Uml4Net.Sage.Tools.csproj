@@ -1,9 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\knowledge-gen\Uml4Net.Sage.Knowledge\Uml4Net.Sage.Knowledge.csproj" />
-    <ProjectReference Include="..\..\metamodel-gen\Uml4Net.Sage.MetamodelGen\Uml4Net.Sage.MetamodelGen.csproj" />
-  </ItemGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Uml4Net.Sage.Tools</RootNamespace>
+    <AssemblyName>uml4net-sage</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Assembly">
+    <!-- Hypha's Package group, with the .NET tool, and the rest of its Publish group come with the
+         release in Phase 5 (#49). -->
+    <Description>
+      Fetches the OMG UML and XMI specifications, generates a local knowledge base from them
+      (metamodel, Standard Profile, specification text) and checks UML model files against it, with
+      JSON output for editors and language-model tools.
+    </Description>
+    <Authors>Starion Group S.A.</Authors>
+    <Company>Starion Group S.A.</Company>
+    <Copyright>Copyright 2026 Starion Group S.A.</Copyright>
+    <RepositoryUrl>https://github.com/STARIONGROUP/uml4net-sage</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Publish">
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -14,11 +34,11 @@
     <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <AssemblyName>uml4net-sage</AssemblyName>
-  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\inspection\Uml4Net.Sage.Inspection\Uml4Net.Sage.Inspection.csproj" />
+    <ProjectReference Include="..\..\knowledge-gen\Uml4Net.Sage.Knowledge\Uml4Net.Sage.Knowledge.csproj" />
+    <ProjectReference Include="..\..\metamodel-gen\Uml4Net.Sage.Knowledge.Metamodel\Uml4Net.Sage.Knowledge.Metamodel.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Uml4Net.Sage.Tools.Tests" />
