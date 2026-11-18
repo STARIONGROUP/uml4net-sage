@@ -172,5 +172,30 @@ namespace Uml4Net.Sage.Inspection.Tests
             Assert.That(report.ModelPath, Is.EqualTo(modelPath));
             Assert.That(report.UmlVersion, Is.EqualTo("2.5.1"));
         }
+
+        [TestCase("{ not json")]
+        [TestCase("{}")]
+        [TestCase("[]")]
+        [TestCase("""{"classes": [{"name": "Class"}]}""")]
+        [TestCase("""{"classes": [{"name": "Class", "isAbstract": "no"}]}""")]
+        [TestCase("""{"classes": [{"name": "Class", "isAbstract": false, "ownedAttributes": [{"name": "a", "ownerQualifiedName": "UML::Class", "isDerived": false, "lower": 1.5, "upper": "1"}]}]}""")]
+        public void Inspect_rejects_a_metamodel_json_that_is_not_the_generated_shape(string content)
+        {
+            var metamodelJsonPath = Path.Combine(Path.GetTempPath(), "uml4net-sage-tests", Path.GetRandomFileName(), "metamodel.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(metamodelJsonPath)!);
+            File.WriteAllText(metamodelJsonPath, content);
+
+            try
+            {
+                var exception = Assert.Throws<InvalidDataException>(
+                    () => XmiInspector.Inspect(Path.Combine(FixturesDirectory, "model-valid.xmi"), metamodelJsonPath, "2.5.1"));
+
+                Assert.That(exception!.Message, Does.StartWith($"{metamodelJsonPath} is not a valid metamodel.json"));
+            }
+            finally
+            {
+                Directory.Delete(Path.GetDirectoryName(metamodelJsonPath)!, recursive: true);
+            }
+        }
     }
 }

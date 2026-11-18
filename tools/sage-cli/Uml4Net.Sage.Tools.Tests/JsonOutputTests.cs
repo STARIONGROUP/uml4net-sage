@@ -151,6 +151,26 @@ namespace Uml4Net.Sage.Tools.Tests
             });
         }
 
+        [Test]
+        public async Task Inspect_resolves_a_pathmap_against_the_linked_library_fixture()
+        {
+            // The library folder reaches this project through the csproj's fixture link; without the
+            // mapping the reference to its Parts.xmi is unresolved, with it the reference resolves.
+            this.InstallGeneratedVersion();
+            var library = Path.Combine(FixturesDirectory, "library");
+
+            using var unmapped = await this.RunDocument("inspect model-broken.xmi");
+            var mappedRun = await this.Run(["inspect", "model-broken.xmi", "--pathmap", $"pathmap://SAMPLE_LIBRARY={library}"]);
+            using var mapped = JsonDocument.Parse(mappedRun.Lines[0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(File.Exists(Path.Combine(library, "Parts.xmi")), Is.True);
+                Assert.That(ElementXmiIdsOf(unmapped.RootElement), Does.Contain("Car-wheel"));
+                Assert.That(ElementXmiIdsOf(mapped.RootElement), Does.Not.Contain("Car-wheel"));
+            });
+        }
+
         [TestCase("inspect model-valid.xmi", false, "has not been generated yet")]
         [TestCase("inspect no-such-model.xmi", true, "File not found")]
         [TestCase("inspect model-valid.xmi --pathmap pathmap://SAMPLE_LIBRARY", true, "Invalid --pathmap")]
@@ -522,6 +542,17 @@ namespace Uml4Net.Sage.Tools.Tests
         /// <exception cref="InvalidOperationException">The report has no finding of that category.</exception>
         private static JsonElement FindingOf(JsonElement report, string category) =>
             report.GetProperty("Findings").EnumerateArray().First(finding => finding.GetProperty("Category").GetString() == category);
+
+        /// <summary>
+        /// Gets the element ids the findings of an inspection report name, leaving out the findings without one.
+        /// </summary>
+        /// <param name="report">The report's root element.</param>
+        /// <returns>The element ids.</returns>
+        private static string[] ElementXmiIdsOf(JsonElement report) =>
+            report.GetProperty("Findings").EnumerateArray()
+                .Select(finding => finding.GetProperty("ElementXmiId").GetString())
+                .OfType<string>()
+                .ToArray();
 
         /// <summary>
         /// Asserts that a run wrote one error document containing <paramref name="expectedMessage"/> and nothing
