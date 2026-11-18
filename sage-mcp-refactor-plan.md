@@ -548,7 +548,7 @@ The only places Sage differs from hypha's source. Anything else that differs is 
 | The Systems Modeling API as the second version line: `Api/`, `IApiOperations`, `axis: api`, `hypha api ...`, `hypha_api`, the PIM and OpenAPI generators | The XMI specification as the second line: `Xmi/`, `IXmiSpecOperations`, `axis: xmi`, `uml4net-sage xmi ...`, `uml4net_sage_xmi_schema` and the XSD reader | Decided: two version lines, as hypha. UML has no API; its companion standard is XMI |
 | Upstream discovery: GitHub tags (`ReleaseDiscovery`, `CommitResolver`, `ReleaseCatalog`), the token and rate limit, `discover`, `check` against upstream, `hypha_check_releases` | A registry compiled into the CLI (`KnownUmlVersions`, `KnownXmiVersions`) with fixed omg.org addresses; `check` reports local state only | OMG publishes at fixed addresses, without tags or an API. A new UML version arrives with a tools release |
 | `Grammar/`, `Keywords/`, `TextualNotation/`, `ModelLibrary/`, worked examples, `hypha_syntax` | Not ported | UML has no textual notation and no model library in its sources |
-| `hypha_diff`, `move-window` and the release window | Not ported | One UML version is registered. The diff becomes a question on an existing tool when a second one is |
+| `hypha_diff`, `move-window` and the release window, and the CI comment about `move-window`'s pre-flight check | Not ported | One UML version is registered. The diff becomes a question on an existing tool when a second one is |
 | `Migration/`, `migrate`, `leftOut` | Not ported | Decided: plugin 1.x wrote no `schemaVersion`, so hypha's migration would copy nothing (2.5) |
 | Cross-references from the grammar: clause, production, feature-assignment and example edges | Clause edges only, matched on clause titles (`clause-title`); hypha's document types without the grammar and example edges | UML has no grammar; its specification has one "Classifier Descriptions" subclause per metaclass |
 | Metamodel generators for SysML's kinds, including `PimGenerator` and `ModelVocabulary` | hypha's generators for the kinds UML's metamodel has, plus associations, the Standard Profile and its stereotypes | UML's metamodel has associations and a Standard Profile; it has no PIM |
@@ -577,6 +577,23 @@ The only places Sage differs from hypha's source. Anything else that differs is 
 | No `Directory.Build.props` or `.editorconfig`; each project file sets the target framework, language version, nullable and implicit usings (enabled) | `Directory.Build.props` (implicit usings disabled) and `.editorconfig` kept | Decided: keep. A ported file that relies on hypha's implicit usings gets them written out, and nothing else in it changes |
 | `.github/scripts/first_start.py` | The First start check written in C# | `CLAUDE.md`: Python only in `tools/spec-extract` |
 | Branches `GH<n>` | Branches `feature/gh-<n>-<name>` and `fix/gh-<n>-<name>` | Sage's practice since its first pull request, and in its `CLAUDE.md` and `CONTRIBUTING.md` |
+
+**Until a later phase**
+
+Parts of files a phase has already ported that serve something Sage gets later. They are not
+divergences in the sense of rule 3, only ports not yet complete: the phase named in the last column
+brings them across from hypha, or makes them apply, and removes the row.
+
+| In hypha's file | In Sage until then | Resolved by |
+| --- | --- | --- |
+| `build-test-sonar.yml`: the three VS Code extension jobs | Left out | Phase 4 (#48), with `extensions/vscode` |
+| `build-test-sonar.yml`: `HYPHA_REQUIRE_JQ`, so that a runner without `jq` fails the jq golden tests | Left out | Phase 2 (#46), with those tests |
+| `dependabot.yml`: the npm entry for the VS Code extension, and the extension in the uv entry's comment | Left out | Phase 4 (#48) |
+| `CONTRIBUTING.md`: the `Live` test category, which needs `GITHUB_TOKEN` | Left out: Sage has no live tests | Phase 5 (#49), if its First start check is a live test |
+| `build-test-sonar.yml`: `sonar.coverage.exclusions="extensions/vscode/scripts/**"` | Kept; there is no `extensions/` yet | Phase 4 (#48) |
+| `build-test-sonar.yml`: a push to `main` runs it | Kept; Sage has no `main`, so it never fires | Nothing to do: kept so the file stays hypha's |
+| `CONTRIBUTING.md`: the link to the wiki | Kept; Sage's wiki starts in Phase 5 | Phase 5 (#49) |
+| `UvProvisioner.cs`: comments naming `bin/sage-launch.json` and `GenerationResult.Skipped` | Kept, ahead of the code they describe | Phases 4 (#48) and 1 (#45) |
 
 ---
 
