@@ -3,8 +3,6 @@
 
 namespace Uml4Net.Sage.Inspection
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// One finding produced by <see cref="XmiInspector"/>.
     /// </summary>
@@ -18,12 +16,4 @@ namespace Uml4Net.Sage.Inspection
     /// <param name="Message">A human-readable description.</param>
     /// <param name="Line">The 1-based line in the inspected file where the offending element starts, when known.</param>
     public sealed record InspectionFinding(string Severity, string Category, string? ElementXmiId, string Message, int? Line = null);
-
-    /// <summary>
-    /// The full result of inspecting one model file.
-    /// </summary>
-    /// <param name="ModelPath">The path of the inspected model file.</param>
-    /// <param name="UmlVersion">The UML version the model was checked against.</param>
-    /// <param name="Findings">The findings, ordered by line, then category, then element id.</param>
-    public sealed record InspectionReport(string ModelPath, string UmlVersion, IReadOnlyList<InspectionFinding> Findings);
 }

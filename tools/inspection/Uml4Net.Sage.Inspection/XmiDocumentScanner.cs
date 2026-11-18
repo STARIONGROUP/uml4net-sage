@@ -8,28 +8,6 @@ namespace Uml4Net.Sage.Inspection
     using System.Xml;
 
     /// <summary>
-    /// A UML element declared in the inspected document: its metaclass (from <c>xmi:type</c>, or the element
-    /// name for a root element such as <c>&lt;uml:Package&gt;</c>), its <c>xmi:id</c>, and where it starts.
-    /// </summary>
-    /// <param name="Metaclass">The UML metaclass name, e.g. <c>Class</c>.</param>
-    /// <param name="XmiId">The element's <c>xmi:id</c>, if it has one.</param>
-    /// <param name="Line">The 1-based line the element starts on.</param>
-    public sealed record ScannedElement(string Metaclass, string? XmiId, int Line);
-
-    /// <summary>
-    /// What a plain XML pass over the inspected document finds - independent of whether <c>uml4net.xmi</c> can
-    /// read it, so a file the reader aborts on (e.g. because of an abstract <c>xmi:type</c>) still gets
-    /// line-accurate findings.
-    /// </summary>
-    /// <param name="Elements">Every UML element declared (not merely referenced through an <c>href</c>), in document order.</param>
-    /// <param name="XmiIdLines">Every <c>xmi:id</c> with the line(s) declaring it; more than one line means a duplicate.</param>
-    /// <param name="PathmapDocuments">Every <c>pathmap://</c> document referenced through an <c>href</c> (without the fragment), sorted.</param>
-    public sealed record XmiDocumentScan(
-        IReadOnlyList<ScannedElement> Elements,
-        IReadOnlyDictionary<string, IReadOnlyList<int>> XmiIdLines,
-        IReadOnlyList<string> PathmapDocuments);
-
-    /// <summary>
     /// Scans an XMI document with an <see cref="XmlReader"/> for <see cref="XmiDocumentScan"/>.
     /// </summary>
     public static class XmiDocumentScanner

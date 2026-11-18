@@ -10,14 +10,6 @@ namespace Uml4Net.Sage.Inspection
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// One captured log entry.
-    /// </summary>
-    /// <param name="Level">The entry's level.</param>
-    /// <param name="Category">The logger category, i.e. the full name of the logging type.</param>
-    /// <param name="Message">The formatted message.</param>
-    public sealed record CapturedLogEntry(LogLevel Level, string Category, string Message);
-
-    /// <summary>
     /// Captures <see cref="LogLevel.Warning"/>/<see cref="LogLevel.Error"/> log entries emitted while
     /// <c>uml4net.xmi</c> reads a model, so <see cref="XmiInspector"/> can surface the reader diagnostics its
     /// structured checks don't already cover as inspection findings, instead of them only going to the console.

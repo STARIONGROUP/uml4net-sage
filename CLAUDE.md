@@ -91,7 +91,7 @@ before bumping either).
   System.CommandLine are not trim/AOT-friendly, so the CLI ships as a self-contained (non-AOT) publish
   per runtime identifier (`.github/workflows/release.yml`). Only plugin 1.x's SessionStart hook is
   NativeAOT; its source was removed in #59 and its binaries stay in `hooks/native/` until Phase 4 of
-  the MCP refactor (#48) replaces it with the launcher - see `hooks/native/README.md`.
+  the MCP refactor (#48) replaces it with the launcher (see `hooks/native/README.md`).
 - **`PythonSpecExtractRunner`'s `uv` fallback**: verbatim spec citation (both `uml-spec-citation` and
   `xmi-spec-citation`) shells out to
   `tools/spec-extract` (Python/pdfplumber). It first tries a `.venv` under that directory or a system
@@ -127,7 +127,7 @@ fresh, per machine, by `uml4net-sage fetch` + `generate`.
 **Committed**: everything version-independent - `knowledge/registry.json` and the `*.schema.json`
 files (they describe uml4net-sage's own output shape, not OMG content), `sources/README.md` and
 `knowledge/README.md` (provenance/shape documentation, no OMG text), the plugin's `skills/`/
-`agents/`/`commands/`, and `hooks/native/*` binaries (compiled from this repo's own C# source, at tag `v1.6.0` -
+`agents/`/`commands/`, and `hooks/native/*` binaries (compiled from this repo's own C# source, at tag `v1.6.0`;
 see `hooks/native/README.md` for why binaries are the one exception to "nothing generated is
 committed").
 
@@ -151,8 +151,22 @@ rationale, and known real-world extraction limitations (figure-embedded text, sy
 
 ## Conventions
 
-Pulled from the sibling `uml4net` repository's own `CLAUDE.md` for ecosystem consistency:
+Pulled from the sibling `uml4net` repository's own `CLAUDE.md` for ecosystem consistency, and from
+mycelium-hypha's, whose code Sage ports (`sage-mcp-refactor-plan.md`, section 2.0):
 
+- **C#:** block-scoped namespaces with `using`s *inside* the namespace, one public type per file,
+  NUnit, the `uml4net-sage.slnx` solution.
+- **C# dependencies and DI:** well-established NuGet packages are welcome; prefer a maintained
+  library over hand-rolling infrastructure. Services are registered through
+  `Microsoft.Extensions.DependencyInjection` and resolved rather than constructed, so the CLI
+  composes them in one place. Keep constructors injectable and free of hidden statics. Anything a
+  caller can vary belongs on `SageKnowledgeOptions`, not as another optional parameter on
+  `AddSageKnowledge`; anything a caller might want to watch goes through `ILogger`, not `Console`.
+  (#60 brings the options class and the registration, ported from hypha's.)
+- **Prose/docs, comments and XML docs** use no dashes as punctuation: neither the en dash nor the em
+  dash. Rewrite the sentence with a comma, a colon, parentheses, a semicolon or a full stop instead;
+  hyphens in compound words (`read-only`) are fine. This covers CHANGELOG entries, issues, PRs and
+  commit messages too.
 - 4 spaces indentation, no tabs; no `_` prefix on member names; use `this.` for instance members.
 - Use `var` unless the type is ambiguous; use C# type aliases (`int`, `string`, not `Int32`, `String`).
 - Always wrap blocks in curly braces, even single-line; no `#region` directives.
@@ -168,7 +182,8 @@ Pulled from the sibling `uml4net` repository's own `CLAUDE.md` for ecosystem con
   `SPDX-License-Identifier: Apache-2.0`, as `//` or `#` comments, as mycelium-hypha's do. The root
   `.editorconfig`'s `file_header_template` writes it into new C# files.
 - Default branch: `development` (never work directly on `master`). Create feature branches from
-  `development`; rebase before submitting PRs.
+  `development` (`feature/gh-<n>-<name>` or `fix/gh-<n>-<name>`); rebase before submitting PRs. Ask
+  before committing or pushing. Commit subject: `[Verb] <summary>; fixes #<n>` (or `refs #<n>`).
 
 ## Local do's and don'ts
 
