@@ -659,7 +659,7 @@ Hypha's names, folders, project files and file headers, with no change in behavi
 
 Ports from hypha: hypha's project files (each project's `RootNamespace`, `AssemblyName`, property groups, package references, `InternalsVisibleTo`), its solution folders and test project layout, its file header, and the conventions in its `CLAUDE.md`.
 
-- [ ] Projects: rename `Uml4Net.Sage.MetamodelGen` to `Uml4Net.Sage.Knowledge.Metamodel` (projects,
+- [x] Projects: rename `Uml4Net.Sage.MetamodelGen` to `Uml4Net.Sage.Knowledge.Metamodel` (projects,
       folders, namespaces, test project); move `Inspection/` into `Uml4Net.Sage.Inspection`. Delete
       `Uml4Net.Sage.Tools.Hook`, its tests and `hook-binaries.yml` now: the released plugin runs the
       committed binaries of its own tag.
@@ -671,16 +671,16 @@ Ports from hypha: hypha's project files (each project's `RootNamespace`, `Assemb
   - **Decided: inspection gets its own library**, `Uml4Net.Sage.Inspection` in `tools/inspection`,
     with its own test project. It needs `uml4net.xmi`, which stays out of `Uml4Net.Sage.Knowledge`,
     and the MCP library cannot reference the executable.
-- [ ] The solution structure of 2.4: project folders, project files in hypha's shape, test projects
+- [x] The solution structure of 2.4: project folders, project files in hypha's shape, test projects
       laid out as hypha's, `Nuget.Config` renamed `NuGet.config`, `coverlet.runsettings` removed.
-- [ ] Hypha's file header (2.0) on every `.cs` and `.py` file, in one mechanical commit, and
+- [x] Hypha's file header (2.0) on every `.cs` and `.py` file, in one mechanical commit, and
       `CLAUDE.md`'s header convention pointing at it.
   - **Decided: SPDX headers, as hypha** (17 November 2026), in place of the full Apache text in
     Sage's C# files and of no header in its Python files.
-- [ ] `CLAUDE.md` takes the conventions hypha's has and Sage's lacks: one public type per file;
+- [x] `CLAUDE.md` takes the conventions hypha's has and Sage's lacks: one public type per file;
       services through dependency injection, with options and `ILogger`; no dash as punctuation in
       prose. Sage's conventions that hypha's code also follows stay as they are.
-- [ ] Tests: the solution builds and every existing test passes after the moves and renames, with nothing but names, namespaces, folders and headers changed in the test code.
+- [x] Tests: the solution builds and every existing test passes after the moves and renames, with nothing but names, namespaces, folders and headers changed in the test code.
 
 #### Phase 1b: Foundations: layout, composition, toolchain and generation (#60)
 
