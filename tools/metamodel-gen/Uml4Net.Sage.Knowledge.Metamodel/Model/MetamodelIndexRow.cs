@@ -3,16 +3,9 @@
 
 namespace Uml4Net.Sage.Knowledge.Metamodel.Model
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// One row of <c>metamodel/index.json</c> - a Frictionless tabular-data-resource row, hence a flat
     /// array rather than a keyed map (see the root <c>datapackage.json</c>).
     /// </summary>
     public sealed record MetamodelIndexRow(string Name, string Kind, string Package, string QualifiedName, bool IsAbstract, string File);
-
-    /// <summary>
-    /// One row of <c>standard-profile/index.json</c>.
-    /// </summary>
-    public sealed record StandardProfileIndexRow(string QualifiedName, string Kind, string File, string Source, string Profile, IReadOnlyList<string> BaseMetaclasses);
 }

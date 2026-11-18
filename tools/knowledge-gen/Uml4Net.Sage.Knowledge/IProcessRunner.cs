@@ -8,14 +8,6 @@ namespace Uml4Net.Sage.Knowledge
     using System.Threading.Tasks;
 
     /// <summary>
-    /// The result of running an external process.
-    /// </summary>
-    /// <param name="ExitCode">The process's exit code.</param>
-    /// <param name="StandardOutput">Everything the process wrote to standard output.</param>
-    /// <param name="StandardError">Everything the process wrote to standard error.</param>
-    public sealed record ProcessRunResult(int ExitCode, string StandardOutput, string StandardError);
-
-    /// <summary>
     /// Abstracts running an external process, so the one place C# shells out to Python (the <c>spec</c>
     /// generation step) can be tested without actually invoking Python.
     /// </summary>

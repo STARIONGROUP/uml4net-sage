@@ -13,27 +13,6 @@ namespace Uml4Net.Sage.Knowledge
     using Uml4Net.Sage.Knowledge.Metamodel;
 
     /// <summary>
-    /// The result of a <see cref="KnowledgeGenerationService.FetchAsync"/> call.
-    /// </summary>
-    /// <param name="Entries">The manifest entries of the downloaded files.</param>
-    public sealed record FetchOutcome(IReadOnlyList<FetchManifestEntry> Entries);
-
-    /// <summary>
-    /// The result of a <see cref="KnowledgeGenerationService.FetchXmiSpecAsync"/> call.
-    /// </summary>
-    /// <param name="Succeeded">Whether the download completed.</param>
-    /// <param name="Warning">A human-readable reason when <paramref name="Succeeded"/> is <see langword="false"/>.</param>
-    /// <param name="Entries">The downloaded file's manifest entry, empty on failure.</param>
-    public sealed record XmiSpecFetchOutcome(bool Succeeded, string? Warning, IReadOnlyList<FetchManifestEntry> Entries);
-
-    /// <summary>
-    /// The result of a <see cref="KnowledgeGenerationService.GenerateAsync"/> call.
-    /// </summary>
-    /// <param name="SpecExtraction">The outcome of extracting the UML specification's clause text.</param>
-    /// <param name="XmiSpecExtraction">The outcome of extracting the companion XMI specification's clause text.</param>
-    public sealed record GenerateOutcome(SpecExtractionOutcome SpecExtraction, SpecExtractionOutcome XmiSpecExtraction);
-
-    /// <summary>
     /// Orchestrates the two knowledge-base steps the <c>uml4net-sage</c> CLI's <c>fetch</c> and
     /// <c>generate</c> verbs drive: downloading OMG's XMI/PDF sources, then generating the metamodel,
     /// standard-profile, (optionally) spec text, and the scoped <c>datapackage.json</c>.
