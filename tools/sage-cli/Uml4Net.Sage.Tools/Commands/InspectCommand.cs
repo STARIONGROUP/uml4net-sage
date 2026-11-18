@@ -29,8 +29,8 @@ namespace Uml4Net.Sage.Tools.Commands
 
     using Spectre.Console;
 
+    using Uml4Net.Sage.Inspection;
     using Uml4Net.Sage.Knowledge;
-    using Uml4Net.Sage.Tools.Inspection;
 
     /// <summary>
     /// <c>uml4net-sage inspect &lt;path&gt;</c>: loads a user-supplied <c>.xmi</c>/<c>.uml</c> file via

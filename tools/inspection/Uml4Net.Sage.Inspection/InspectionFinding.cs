@@ -18,7 +18,7 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------------
 
-namespace Uml4Net.Sage.Tools.Inspection
+namespace Uml4Net.Sage.Inspection
 {
     using System.Collections.Generic;
 

@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Uml4Net.Sage.Inspection</RootNamespace>
+    <AssemblyName>Uml4Net.Sage.Inspection</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Assembly">
+    <!-- Not a package of its own: the uml4net-sage CLI carries it. -->
+    <IsPackable>false</IsPackable>
+    <Description>
+      Checks a UML model file serialized as XMI against the UML metamodel: unresolved references,
+      abstract or unknown metaclasses, duplicate ids, multiplicities and misapplied stereotypes, read
+      with uml4net and reported as findings.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- LoggerFactory, through which uml4net reports what it could not read. -->
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="uml4net.xmi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- For the metamodel JSON's serializer options, until #60 moves them into Uml4Net.Sage.Knowledge. -->
+    <ProjectReference Include="..\..\metamodel-gen\Uml4Net.Sage.Knowledge.Metamodel\Uml4Net.Sage.Knowledge.Metamodel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Uml4Net.Sage.Inspection.Tests" />
+  </ItemGroup>
+
+</Project>

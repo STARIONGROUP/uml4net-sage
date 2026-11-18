@@ -54,6 +54,7 @@ before bumping either).
 |---|---|
 | `tools/metamodel-gen/Uml4Net.Sage.Knowledge.Metamodel` | Reads UML.xmi/PrimitiveTypes.xmi/StandardProfile.xmi via `uml4net.xmi`, generates `metamodel/` + `standard-profile/` |
 | `tools/knowledge-gen/Uml4Net.Sage.Knowledge` | `KnownUmlVersions` registry, `SourceFetcher` (plain HTTPS GETs from omg.org), `PythonSpecExtractRunner` (the C#/Python seam), `DataPackageGenerator`, `InstalledVersionsStore` |
+| `tools/inspection/Uml4Net.Sage.Inspection` | Checks a UML model file serialized as XMI against the metamodel (`XmiDocumentScanner`, `XmiInspector`, `MetamodelFacts`); the `inspect` verb runs it |
 | `tools/sage-cli/Uml4Net.Sage.Tools` | The `uml4net-sage` CLI: `fetch`, `generate`, `versions`, `use`, `remove`, `check`, `inspect` |
 | `tools/sage-cli/Uml4Net.Sage.Tools.Hook` | The committed, NativeAOT, dependency-free SessionStart hook |
 | `tools/spec-extract` | Python: PDF-to-markdown clause extraction |

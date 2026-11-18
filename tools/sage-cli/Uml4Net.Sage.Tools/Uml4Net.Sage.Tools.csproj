@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\..\inspection\Uml4Net.Sage.Inspection\Uml4Net.Sage.Inspection.csproj" />
     <ProjectReference Include="..\..\knowledge-gen\Uml4Net.Sage.Knowledge\Uml4Net.Sage.Knowledge.csproj" />
     <ProjectReference Include="..\..\metamodel-gen\Uml4Net.Sage.Knowledge.Metamodel\Uml4Net.Sage.Knowledge.Metamodel.csproj" />
   </ItemGroup>

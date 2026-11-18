@@ -559,6 +559,7 @@ The only places Sage differs from hypha's source. Anything else that differs is 
 | Sage | Why |
 | --- | --- |
 | `Uml4Net.Sage.Inspection`, the `inspect` verb, `uml4net_sage_inspect`, its prompt | Checking a user's UML model file is a Sage feature; hypha validates notation through a skill instead |
+| The package `Microsoft.Extensions.Logging` (at the version of hypha's other `Microsoft.Extensions` packages), referenced by `Uml4Net.Sage.Inspection` | The inspection creates a `LoggerFactory` to capture what uml4net reports while reading a model; hypha gets the package only through Serilog, in its CLI |
 | `uml4net_sage_association`, `uml4net_sage_stereotype`, the association and stereotype pages, `StandardProfile/` | UML's metamodel content (above) |
 | `datapackage.json` | An existing Sage output; no tool reads through it |
 

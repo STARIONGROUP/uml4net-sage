@@ -8,6 +8,7 @@ full CLI built here is downloaded on demand by the hook the first time it's actu
 
 | Directory | Responsibility |
 |---|---|
+| `inspection/Uml4Net.Sage.Inspection` | Checks a UML model file serialized as XMI against the generated metamodel, for the `inspect` verb (see its README) |
 | `sage-cli/Uml4Net.Sage.Tools` | The `uml4net-sage` CLI (`fetch`, `generate`, `versions`, `use`, `remove`, `check`, `inspect`) |
 | `sage-cli/Uml4Net.Sage.Tools.Hook` | The small, dependency-free NativeAOT SessionStart hook |
 | `knowledge-gen/Uml4Net.Sage.Knowledge` | Orchestration: the static version registry, source fetching, the Python `spec_extract` subprocess seam (falling back to an on-demand-provisioned `uv` when no Python is found), `datapackage.json` generation, local install-state tracking |

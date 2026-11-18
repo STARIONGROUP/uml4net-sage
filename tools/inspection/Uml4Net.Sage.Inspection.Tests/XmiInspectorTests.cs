@@ -18,13 +18,11 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------------
 
-namespace Uml4Net.Sage.Tools.Tests.Inspection
+namespace Uml4Net.Sage.Inspection.Tests
 {
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-
-    using Uml4Net.Sage.Tools.Inspection;
 
     [TestFixture]
     public class XmiInspectorTests
