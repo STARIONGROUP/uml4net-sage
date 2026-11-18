@@ -82,23 +82,16 @@ The rule, for every phase and every pull request:
    not the commit this plan names, and bring its changes to files Sage already ported across in that
    phase.
 
-File headers are hypha's, on every `.cs` and `.py` file (decided 17 November 2026):
+File headers are hypha's (decided 17 November 2026): every C#, Python, TypeScript and JavaScript
+file opens with two SPDX comment lines and nothing else, as hypha's do since its `1fd589d`:
 
 ```
-// ------------------------------------------------------------------------------------------------
-// <copyright file="FileName.cs" company="Starion Group S.A.">
-//
-//   Copyright 2026 Starion Group S.A.
-//   SPDX-License-Identifier: Apache-2.0
-//
-// </copyright>
-// ------------------------------------------------------------------------------------------------
+// SPDX-FileCopyrightText: 2026 Starion Group S.A.
+// SPDX-License-Identifier: Apache-2.0
 ```
 
-```
-# Copyright 2026 Starion Group S.A.
-# SPDX-License-Identifier: Apache-2.0
-```
+Python files take the same two lines as `#` comments. The `.editorconfig`'s `file_header_template`
+writes the header into new C# files, as hypha's does.
 
 ### 2.1 Principles (hypha's ten, unchanged)
 
@@ -575,7 +568,7 @@ The only places Sage differs from hypha's source. Anything else that differs is 
 
 | hypha | Sage | Why |
 | --- | --- | --- |
-| No `Directory.Build.props` or `.editorconfig`; each project file sets the target framework, language version, nullable and implicit usings (enabled) | `Directory.Build.props` (implicit usings disabled) and `.editorconfig` kept | Decided: keep. A ported file that relies on hypha's implicit usings gets them written out, and nothing else in it changes |
+| No `Directory.Build.props`, each project file setting the target framework, language version, nullable and implicit usings (enabled); an `.editorconfig` holding only the C# header template | `Directory.Build.props` (implicit usings disabled), and an `.editorconfig` that also enforces Sage's C# conventions, with hypha's header template | Decided: keep. A ported file that relies on hypha's implicit usings gets them written out, and nothing else in it changes |
 | `.github/scripts/first_start.py` | The First start check written in C# | `CLAUDE.md`: Python only in `tools/spec-extract` |
 | Branches `GH<n>` | Branches `feature/gh-<n>-<name>` and `fix/gh-<n>-<name>` | Sage's practice since its first pull request, and in its `CLAUDE.md` and `CONTRIBUTING.md` |
 

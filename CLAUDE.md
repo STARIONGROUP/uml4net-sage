@@ -163,7 +163,10 @@ Pulled from the sibling `uml4net` repository's own `CLAUDE.md` for ecosystem con
 - Test methods (`[Test]`, `[TestCase]`, `[SetUp]`, `[TearDown]`) and test fixture classes carry no XML
   documentation; the test name says what it checks. Use a `//` comment where the reason for a test is
   not obvious. Test helpers (fakes, stubs, `RecordedConsole`, private helper methods) keep theirs.
-- Apache 2.0 copyright header on every `.cs` file (see any existing file for the exact template).
+- **License header:** every source file (C#, Python, TypeScript and JavaScript) opens with two SPDX
+  comment lines and nothing else: `SPDX-FileCopyrightText: 2026 Starion Group S.A.` and
+  `SPDX-License-Identifier: Apache-2.0`, as `//` or `#` comments, as mycelium-hypha's do. The root
+  `.editorconfig`'s `file_header_template` writes it into new C# files.
 - Default branch: `development` (never work directly on `master`). Create feature branches from
   `development`; rebase before submitting PRs.
 

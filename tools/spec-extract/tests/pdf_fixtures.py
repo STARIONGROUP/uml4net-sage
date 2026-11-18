@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Starion Group S.A.
+# SPDX-License-Identifier: Apache-2.0
 """A minimal, hand-written (not OMG-derived) single-page PDF builder for pdf_reader tests.
 
 Avoids pulling in a PDF-generation dependency just to test PDF *reading*: this writes

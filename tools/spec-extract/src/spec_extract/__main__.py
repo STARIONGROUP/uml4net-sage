@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Starion Group S.A.
+# SPDX-License-Identifier: Apache-2.0
 """Thin, non-interactive entry point so the `uml4net-sage` C# CLI can invoke this pipeline.
 
     python -m spec_extract extract --pdf <path-to-pdf> --out <output-dir> [--document UML] [--version 2.5.1]

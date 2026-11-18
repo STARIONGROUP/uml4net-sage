@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Starion Group S.A.
+# SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
 
 from spec_extract.pdf_reader import read_positioned_pages
