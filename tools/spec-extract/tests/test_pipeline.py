@@ -5,9 +5,9 @@ import os
 from pathlib import Path
 
 import pytest
+from pdf_fixtures import build_simple_pdf
 
 from spec_extract.pipeline import extract_document
-from tests.pdf_fixtures import build_simple_pdf
 
 
 def test_extract_document_writes_clause_files_and_indexes(tmp_path: Path) -> None:
