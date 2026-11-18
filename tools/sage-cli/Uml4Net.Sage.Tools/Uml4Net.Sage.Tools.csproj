@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\knowledge-gen\Uml4Net.Sage.Knowledge\Uml4Net.Sage.Knowledge.csproj" />
-    <ProjectReference Include="..\..\metamodel-gen\Uml4Net.Sage.MetamodelGen\Uml4Net.Sage.MetamodelGen.csproj" />
+    <ProjectReference Include="..\..\metamodel-gen\Uml4Net.Sage.Knowledge.Metamodel\Uml4Net.Sage.Knowledge.Metamodel.csproj" />
   </ItemGroup>
 
   <ItemGroup>

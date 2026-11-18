@@ -27,7 +27,7 @@ namespace Uml4Net.Sage.Knowledge
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Uml4Net.Sage.MetamodelGen;
+    using Uml4Net.Sage.Knowledge.Metamodel;
 
     /// <summary>
     /// The result of a <see cref="KnowledgeGenerationService.FetchAsync"/> call.

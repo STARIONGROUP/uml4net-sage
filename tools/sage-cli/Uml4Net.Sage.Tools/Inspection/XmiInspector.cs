@@ -36,7 +36,7 @@ namespace Uml4Net.Sage.Tools.Inspection
     using uml4net.xmi;
     using uml4net.xmi.Readers;
 
-    using Uml4Net.Sage.MetamodelGen.Generators;
+    using Uml4Net.Sage.Knowledge.Metamodel.Generators;
 
     /// <summary>
     /// Loads a user-supplied <c>.xmi</c>/<c>.uml</c> file via <c>uml4net.xmi</c> - the same reader the

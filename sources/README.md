@@ -54,6 +54,6 @@ knowledge tree for them, unlike `spec/`'s PDF-extracted clauses.
 ## Test fixtures
 
 No file under `sources/` (or anything derived from it) is used as a committed test fixture -
-`Uml4Net.Sage.MetamodelGen.Tests` uses small, hand-authored XMI files under its own `Fixtures/`
+`Uml4Net.Sage.Knowledge.Metamodel.Tests` uses small, hand-authored XMI files under its own `Fixtures/`
 directory instead, describing a fictional toy metamodel (`Widget`/`Gadget`/`Sample`), specifically
 to avoid any question about whether OMG's XMI may be redistributed as test data.
